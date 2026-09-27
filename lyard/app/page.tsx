@@ -1,6 +1,6 @@
 import React from 'react';
-import Header  from '@/app/components/Header';
-import Footer from '@/app/components/Footer';
+import Header  from '@/app/components/Footer';
+import Footer from '@/app/components/Header';
 
 
 export default function Page() {
