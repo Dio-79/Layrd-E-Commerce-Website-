@@ -11,6 +11,7 @@ export default function LoginForm() {
       <Form>
         <div>
           <label htmlFor="email">Email</label>
+
           <Field id="email" name="email" type="email" />
           <ErrorMessage name="email" component="div" />
         </div>
