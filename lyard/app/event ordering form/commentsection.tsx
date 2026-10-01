@@ -14,7 +14,6 @@ export function Request() {
                 placeholder="Leave a comment"
                 aria-invalid={!!errors.comment}
             />
-            <button type="submit">Submit</button>
         </form>
     );
 }

@@ -8,8 +8,17 @@ const schema = yup.object({
   password: yup.string().required('Password is required'),
 });
 
-export default function LoginForm() {
+
+
+
+export default  function LoginForm() {
   return (
+  
+ 
+
+
+
+
     <Formik
       initialValues={{ email: '', password: '' }}
       validationSchema={schema}
@@ -58,7 +67,7 @@ export default function LoginForm() {
               type="Password"
           
           />
-         {errors.password && touched.password ? <div>{errors.password}</div> : null}
+                   {errors.password && touched.password ? <div>{errors.password}</div> : null}
 
         </Form>
       )}
