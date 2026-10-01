@@ -1,28 +1,28 @@
 import { useForm } from 'react-hook-form';
-import React, { useState } from 'react';
+import React from 'react';
 
+export default function SelectionForms() {
+  const { register, handleSubmit, formState: { errors } } = useForm();
 
-const size =[size ,setsize]= useState<>
+  const onSubmit = (data: Record<string, unknown>) => console.log(data);
 
-export default function SelectionForms(){
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <label htmlFor="flavor-slot">select a flavor per slot</label>
+      <select
+        id="flavor-slot"
+        defaultValue=""
+        {...register('flavorSlot', { required: 'Please select a flavor' })}
+      >
+        <option value="">Select</option>
+        <option value="vanilla">Vanilla</option>
+        <option value="chocolate">Chocolate</option>
+        <option value="strawberry">Strawberry</option>
+      </select>
+      {errors.flavorSlot && <span>{String(errors.flavorSlot.message)}</span>}
+      <button type="submit">Submit</button>
+    </form>
 
-    const { register, handleSubmit, formState: { errors } } = useForm()
-     const onSubmit = (data: null) => console.log(data);
-
-     return(
-        <form>
-     <select>
-   <label>select a flavor per slot </label>
-     <option value=""></option>
-     <option value=""></option>
-    <option value=""></option>
-
-     </select>
-     <button>
-
-
-     </button>
-</form>
-     )
-
+    
+  );
 }
