@@ -29,3 +29,6 @@ export interface Cart {
   cartId: number;
   items: CartItem[];
 }
+
+export interface Size { label: string; price: number };
+

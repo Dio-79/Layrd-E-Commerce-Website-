@@ -1,5 +1,8 @@
 import { Product, Customer } from "@/app/types/models";
 import db from '../lib/db';
+import { promises } from "dns";
+
+
 
 
 export const products: Product[] = [
@@ -10,6 +13,7 @@ export const products: Product[] = [
         tag: "LIMITED",
         description: "Vibrant, creamy fusion of earthy matcha and sweet strawberry.",
         imageUrl: "/images/Strawberry matcha.jpg"
+        
     },
     {
         productID: 2,
@@ -81,23 +85,29 @@ export const products: Product[] = [
         price: 6,
         tag: "",
         description: "Single and double duo offers a balanced caffeine pairing.",
-        imageUrl: "/images/expresso duo.jpg"  
+        imageUrl: "/images/expresso duo.jpg"  ,
+        
     },
     {
         productID: 11,
         name: "Espresso bundle",
         price: 14,
+
         tag: "",
         description: "Mixed espresso bundle for four. Or four for yourself.",
         imageUrl: "/images/classic bundle.jpg"  
     }
      
-
+ 
+    
     
 
 
 ];
 
+export async function getProduct(): Promise<Product[]> {
+  return products;
+}
 
 export async function login(email: string, password: string) {
   const response = await fetch('/api/login', {
