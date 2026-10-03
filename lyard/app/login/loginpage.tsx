@@ -1,11 +1,10 @@
 'use client';
-
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as yup from 'yup';
 
 const schema = yup.object({
-  email: yup.string().email('Invalid email format').required('Email is required'),
-  password: yup.string().required('Password is required'),
+  email: yup.string().trim().email('Invalid email format').required('Email is required'),
+  password: yup.string().trim().required('Password is required'),
 });
 
 
