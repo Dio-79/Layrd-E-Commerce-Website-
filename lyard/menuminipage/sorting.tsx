@@ -1,11 +1,20 @@
+import { useState, useMemo } from "react";
 import { products } from "@/lib/data";
 
+// Type definition for catalog items
+export interface Item {
+  id?: string | number;
+  name: string;
+  price: number;
+  popularity?: number;
+  dateAdded?: string | Date;
+}
 
 export interface CatalogHeaderProps {
   items?: Item[];
 }
 
-export default function CatalogHeader({ items = DEFAULT_ITEMS }: CatalogHeaderProps) {
+export default function CatalogHeader({ items = products }: CatalogHeaderProps) {
   const [sortBy, setSortBy] = useState<string>("Newest");
 
   const sortedItems = useMemo(() => {
@@ -18,11 +27,13 @@ export default function CatalogHeader({ items = DEFAULT_ITEMS }: CatalogHeaderPr
       case "Name: A to Z":
         return list.sort((a, b) => a.name.localeCompare(b.name));
       case "Popular":
-        return list.sort((a, b) => b.popularity - a.popularity);
+        return list.sort((a, b) => (b.popularity ?? 0) - (a.popularity ?? 0));
       case "Newest":
       default:
         return list.sort(
-          (a, b) => new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime()
+          (a, b) =>
+            new Date(b.dateAdded ?? 0).getTime() -
+            new Date(a.dateAdded ?? 0).getTime()
         );
     }
   }, [items, sortBy]);
