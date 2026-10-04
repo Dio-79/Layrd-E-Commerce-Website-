@@ -5,6 +5,14 @@ enum UserRole {
   Viewer = "Customer",
 }
 
+export interface FilterState {
+  categories: string[];
+  priceRanges: string[];
+  minPrice: string;
+  maxPrice: string;
+  sizes: string[];
+  flavorProfiles: string[];
+}
 
 export interface Product {
     productID: number;
@@ -47,6 +55,17 @@ export interface WholeSale extends User{
 
 
 
+}
+export interface ProductItem {
+  id: string;
+  name: string;
+  tag?: "LIMITED" | "CLASSIC" | "POPULAR";
+  description: string;
+  price: number;
+  category: "Cakes" | "Coffee" | "Bundles";
+  imageUrl: string;
+  bgGradient: string;
+  accentColor: string;
 }
 
 

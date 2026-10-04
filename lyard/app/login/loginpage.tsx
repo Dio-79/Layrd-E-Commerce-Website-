@@ -1,4 +1,5 @@
 'use client';
+
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as yup from 'yup';
 
@@ -10,14 +11,8 @@ const schema = yup.object({
 
 
 
-export default  function LoginForm() {
+export default function LoginForm() {
   return (
-  
- 
-
-
-
-
     <Formik
       initialValues={{ email: '', password: '' }}
       validationSchema={schema}
@@ -25,8 +20,8 @@ export default  function LoginForm() {
         console.log('Login values:', values);
       }}
     >
-      {({ values, handleChange, handleBlur, handleSubmit, errors, touched }) => (
-        <Form onSubmit={handleSubmit}>
+      {() => (
+        <Form>
           <div>
             <label htmlFor="email">Email</label>
             <Field id="email" name="email" type="email" />
@@ -46,28 +41,6 @@ export default  function LoginForm() {
           </div>
 
           <button type="button">Browse Shop</button>
-
-          <div>
-            <input
-              placeholder="Email"
-              value={values.email}
-              onChange={handleChange('email')}
-              onBlur={handleBlur('email')}
-              type="email"
-            />
-            {errors.email && touched.email ? <div>{errors.email}</div> : null}
-          </div>
-          <input
-          
-            placeholder="Password"
-              value={values.password}
-              onChange={handleChange('Password')}
-              onBlur={handleBlur('Password')}
-              type="Password"
-          
-          />
-                   {errors.password && touched.password ? <div>{errors.password}</div> : null}
-
         </Form>
       )}
     </Formik>
