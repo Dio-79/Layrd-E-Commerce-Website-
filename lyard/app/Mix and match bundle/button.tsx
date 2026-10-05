@@ -1,8 +1,11 @@
+
+'use client';
+
 import { products } from "@/lib/data";
-
-"use client";
-
 import React, { useState } from "react";
+
+
+import Link from "next/link";
 
 type Product = (typeof products)[number];
 
@@ -11,7 +14,7 @@ interface AddingItems {
   productId: number;
 }
 
-export default function Button() {
+export default function SortingItems() {
   const [items, setItems] = useState<AddingItems[]>([]);
 
   function handleAddMore(product: Product) {

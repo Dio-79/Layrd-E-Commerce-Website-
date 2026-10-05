@@ -13,6 +13,8 @@ export function Request() {
                 {...register('comment')}
                 placeholder="Leave a comment"
                 aria-invalid={!!errors.comment}
+                onChange={ (e)=> e.target.value
+                }
             />
         </form>
     );

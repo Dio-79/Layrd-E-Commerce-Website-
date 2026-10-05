@@ -32,6 +32,7 @@ export default function LoginForm() {
             <label htmlFor="password">Password</label>
             <Field id="password" name="password" type="password" />
             <ErrorMessage name="password" component="div" />
+            
           </div>
 
           <button type="submit">Login</button>
