@@ -1,9 +1,26 @@
 'use client';
 
-const wait =(ms:number )=> new Promise(resolve => setTimeout(resolve,ms))
-async function Login(email:string,password:string){await wait(150);return{token:"abc123"}}
+const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+async function Login(email: string, password: string) {
+  await wait(150);
+  return { token: 'abc123' };
+}
 
-export async  function LoginForm() {
-  return
+export function LoginForm() {
+  return (
+    <form
+      onSubmit={async (event) => {
+        event.preventDefault();
+        const formData = new FormData(event.currentTarget);
+        const email = String(formData.get('email') ?? '');
+        const password = String(formData.get('password') ?? '');
+        await Login(email, password);
+      }}
+    >
+      <input name="email" type="email" placeholder="Email" />
+      <input name="password" type="password" placeholder="Password" />
+      <button type="submit">Login</button>
+    </form>
+  );
 }

@@ -1,10 +1,15 @@
 
-enum UserRole {
-  Admin  = "ADMIN",
-  Editor = "EDITOR",
-  Viewer = "Customer",
-}
 
+// 1. Database / API role identifiers (ALL_CAPS)
+export type UserRole = "ADMIN" | "EDITOR" | "GUEST" | "CUSTOMER";
+
+// 2. Human-readable UI display labels
+export const ROLE_LABELS: Record<UserRole, string> = {
+  ADMIN: 'Administrator',
+  EDITOR: 'Editor',
+  GUEST: 'Guest User',
+  CUSTOMER: 'Customer',
+};
 export interface FilterState {
   categories: string[];
   priceRanges: string[];
