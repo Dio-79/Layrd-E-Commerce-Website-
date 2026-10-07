@@ -1,7 +1,7 @@
 
 
 'use client';
-
+import { SignupForm as submitSignupForm} from './SignupApi';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as yup from 'yup';
 
@@ -17,6 +17,7 @@ export default function SignupForm() {
       validationSchema={schema}
       onSubmit={(values) => {
         console.log('Login values:', values);
+        submitSignupForm();
       }}
     >
       {({ values, handleChange, handleBlur, handleSubmit, errors, touched }) => (
