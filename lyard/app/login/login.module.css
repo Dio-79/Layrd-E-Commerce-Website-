@@ -1,0 +1,124 @@
+/* LÄYRD login: frosted-glass cards over a photo background */
+.page {
+  --ink: #2b2118;
+  --ink-soft: rgba(43, 33, 24, .72);
+  --gold: #c9a227;
+  --gold-hover: #b48f1c;
+  --glass: rgba(255, 250, 242, .2);
+  --glass-edge: rgba(255, 255, 255, .45);
+
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(20px, 5vw, 56px) 16px;
+  box-sizing: border-box;
+  background: #d8c4a6 url('/images/login-bg.jpg') center / cover no-repeat;
+  color: var(--ink);
+  font-family: Montserrat, "Helvetica Neue", Arial, sans-serif;
+}
+.page *, .page *::before, .page *::after { box-sizing: border-box; }
+
+.layout { display: flex; gap: 14px; align-items: stretch; }
+.column { display: flex; flex-direction: column; gap: 10px; width: 300px; }
+
+.glass {
+  position: relative;
+  background: var(--glass);
+  border: 1px solid var(--glass-edge);
+  border-radius: 14px;
+  box-shadow: 0 18px 40px rgba(60, 40, 20, .18), inset 0 1px 0 rgba(255, 255, 255, .35);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2);
+  backdrop-filter: blur(18px) saturate(1.2);
+}
+
+/* login card */
+.loginCard { padding: 20px 20px 22px; }
+.cardTop { display: flex; justify-content: space-between; align-items: baseline; }
+.title { margin: 0; font-size: 22px; font-weight: 400; letter-spacing: .02em; }
+.signUp { font-size: 11px; color: var(--ink); text-decoration: underline; text-underline-offset: 2px; }
+.brandRow { display: flex; justify-content: space-between; align-items: flex-end; margin: 2px 0 14px; }
+.swirl { color: #1d1712; margin-left: 56px; }
+.social { display: flex; gap: 4px; }
+.social a { display: inline-flex; color: var(--ink); padding: 2px; border-radius: 4px; }
+.social a:hover { color: #000; }
+
+.form { display: flex; flex-direction: column; gap: 12px; }
+.field { display: flex; flex-direction: column; gap: 4px; }
+.inputPill {
+  display: flex; align-items: center; gap: 8px;
+  height: 34px; padding: 0 12px;
+  background: rgba(255, 255, 255, .32);
+  border: 1px solid rgba(255, 255, 255, .45);
+  border-radius: 999px;
+  transition: background .15s, border-color .15s;
+}
+.inputPill:focus-within { background: rgba(255, 255, 255, .55); border-color: var(--gold); }
+.inputPill input {
+  flex: 1; min-width: 0; border: 0; outline: 0; background: transparent;
+  font: inherit; font-size: 12px; color: var(--ink);
+}
+.inputPill input::placeholder { color: var(--ink-soft); }
+.inputIcon { display: inline-flex; color: var(--ink); }
+.eye { display: inline-flex; background: none; border: 0; padding: 4px; color: var(--ink-soft); cursor: pointer; border-radius: 50%; }
+.eye:hover { color: var(--ink); }
+.error { color: #8e1f12; font-size: 11px; font-weight: 600; padding-left: 14px; }
+.serverError { background: rgba(255, 235, 230, .7); color: #8e1f12; border-radius: 8px; padding: 7px 10px; font-size: 12px; font-weight: 600; }
+
+.submitRow { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 8px; }
+.tagline p { margin: 0 0 6px; font-size: 11px; }
+.tagline small { font-size: 10px; color: var(--ink-soft); }
+.goButton {
+  flex: none; width: 34px; height: 34px; border-radius: 50%; border: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--gold); color: #1d1712; cursor: pointer;
+  box-shadow: 0 4px 12px rgba(120, 90, 10, .3);
+  transition: background .15s, transform .15s;
+}
+.goButton:hover { background: var(--gold-hover); transform: translateX(2px); }
+.goButton:disabled { cursor: progress; transform: none; }
+.spinner { width: 14px; height: 14px; border: 2px solid rgba(29, 23, 18, .3); border-top-color: #1d1712; border-radius: 50%; animation: spin .7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* wholesale card */
+.wholesaleCard { padding: 16px 20px 18px; display: flex; flex-direction: column; }
+.wholesaleTitle { margin: 0 0 6px; font-size: 14px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; }
+.wholesaleCard p { margin: 0 0 18px; padding-left: 6px; font-size: 10px; line-height: 1.45; color: var(--ink-soft); }
+
+.goldPill {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  background: var(--gold); color: #1d1712;
+  border-radius: 999px; padding: 7px 18px;
+  font-size: 11px; font-weight: 500; text-decoration: none;
+  transition: background .15s;
+}
+.goldPill:hover { background: var(--gold-hover); }
+.wholesaleCard .goldPill { align-self: center; width: 85%; }
+
+/* brand card */
+.brandCard { width: 300px; padding: 22px 20px 22px; display: flex; flex-direction: column; justify-content: space-between; min-height: 100%; }
+.wordmark { font-family: "Cormorant Garamond", "Bodoni Moda", Didot, Georgia, serif; font-size: 52px; font-weight: 500; letter-spacing: .06em; line-height: 1; color: #120d09; }
+.subtitle { margin: 4px 0 0 2px; font-size: 13px; color: var(--ink); opacity: .85; }
+.brandCopy { margin: 56px 0 auto; padding-left: 14px; }
+.brandCopy p { margin: 0; }
+.muted { color: rgba(255, 255, 255, .9); font-size: 13px; }
+.strong { font-size: 13px; font-weight: 500; }
+.caps { font-size: 9px; text-transform: uppercase; letter-spacing: .06em; color: rgba(255, 255, 255, .85); }
+.brandBottom { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 28px; }
+.smallMark { font-family: "Cormorant Garamond", Didot, Georgia, serif; font-size: 15px; letter-spacing: .06em; }
+.shopPill { flex: 1; max-width: 200px; justify-content: space-between; }
+
+.srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.page a:focus-visible, .page button:focus-visible { outline: 2px solid #1d1712; outline-offset: 2px; }
+
+@media (max-width: 680px) {
+  .layout { flex-direction: column; width: 100%; max-width: 360px; }
+  .column, .brandCard { width: 100%; }
+  .brandCard { min-height: 340px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .goButton, .inputPill, .goldPill { transition: none; }
+  .spinner { animation-duration: 1.5s; }
+}
