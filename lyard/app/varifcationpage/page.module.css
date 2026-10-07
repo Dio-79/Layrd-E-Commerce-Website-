@@ -1,0 +1,149 @@
+/* Container & Background */
+.pageContainer {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.35)),
+    url('https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=1600&auto=format&fit=crop')
+      center/cover no-repeat;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: #ffffff;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* Glassmorphism Verification Card */
+.glassCard {
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 18px;
+  width: 380px;
+  padding: 36px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+  box-sizing: border-box;
+}
+
+/* Swirl Logo Icon */
+.logoWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #d4af37; /* Gold Accent */
+  margin-bottom: 16px;
+}
+
+/* Card Titles */
+.title {
+  color: #d4af37;
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 10px 0;
+  letter-spacing: 0.02em;
+}
+
+.subtitle {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.4;
+  margin: 0 0 24px 0;
+  max-width: 280px;
+}
+
+/* 6-Digit Code Inputs */
+.codeGrid {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.codeInput {
+  width: 40px;
+  height: 44px;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 6px;
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 700;
+  text-align: center;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.codeInput:focus {
+  background: rgba(255, 255, 255, 0.32);
+  border-color: #d4af37;
+  box-shadow: 0 0 8px rgba(212, 175, 55, 0.5);
+}
+
+/* Timer and Resend Link */
+.timerText {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.75);
+  margin-bottom: 8px;
+}
+
+.resendBtn {
+  background: none;
+  border: none;
+  color: #ffffff;
+  font-size: 11px;
+  text-decoration: underline;
+  cursor: pointer;
+  margin-bottom: 24px;
+  opacity: 0.85;
+  transition: opacity 0.2s ease;
+}
+
+.resendBtn:hover {
+  opacity: 1;
+}
+
+.resendBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  text-decoration: none;
+}
+
+/* Yellow/Gold Primary Button */
+.verifyBtn {
+  width: 100%;
+  padding: 12px 20px;
+  background-color: #d4af37;
+  color: #111111;
+  border: none;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: capitalize;
+  cursor: pointer;
+  margin-bottom: 16px;
+  transition: transform 0.1s ease, opacity 0.2s ease;
+}
+
+.verifyBtn:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+/* Back Link */
+.backLink {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 11px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.backLink:hover {
+  color: #ffffff;
+}
