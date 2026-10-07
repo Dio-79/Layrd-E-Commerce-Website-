@@ -16,6 +16,7 @@ export function LoginForm() {
         const email = String(formData.get('email') ?? '');
         const password = String(formData.get('password') ?? '');
         await Login(email, password);
+        window.location.href = '/';
       }}
     >
       <input name="email" type="email" placeholder="Email" />
