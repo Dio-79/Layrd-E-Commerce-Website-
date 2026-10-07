@@ -35,7 +35,7 @@ export interface CartItem {
   id: string;
   productId: number;
   selectedSize: string;
-  selectedFlavor: string; // <-- Added flavor field to cart item
+  selectedFlavor: string; 
   quantity: number;
 }
 
