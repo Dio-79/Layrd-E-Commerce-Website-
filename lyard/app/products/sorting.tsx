@@ -1,5 +1,8 @@
+"use client";
+
 import { useState, useMemo } from "react";
 import { products } from "@/lib/data";
+import styles from "./CatalogHeader.module.css";
 
 // Type definition for catalog items
 export interface Item {
@@ -39,15 +42,18 @@ export default function CatalogHeader({ items = products }: CatalogHeaderProps) 
   }, [items, sortBy]);
 
   return (
-    <div>
+    <div className={styles.container}>
       {/* Header bar showing item count and sort selector */}
-      <div>
-        <span>Showing {sortedItems.length} items</span>
+      <div className={styles.headerBar}>
+        <span className={styles.itemCount}>Showing {sortedItems.length} items</span>
 
-        <div>
-          <label htmlFor="sort-select">SORT BY: </label>
+        <div className={styles.sortGroup}>
+          <label htmlFor="sort-select" className={styles.sortLabel}>
+            SORT BY:{" "}
+          </label>
           <select
             id="sort-select"
+            className={styles.sortSelect}
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
           >
@@ -62,11 +68,12 @@ export default function CatalogHeader({ items = products }: CatalogHeaderProps) 
 
       {/* Output list displaying all items in sorted order */}
       <div>
-        <h3>Product Items</h3>
-        <ul>
+        <h3 className={styles.sectionTitle}>Product Items</h3>
+        <ul className={styles.productList}>
           {sortedItems.map((item: Item) => (
-            <li key={item.id}>
-              <span>{item.name}</span> - <span>${item.price}</span>
+            <li key={item.id ?? item.name} className={styles.productCard}>
+              <span className={styles.productName}>{item.name}</span>
+              <span className={styles.productPrice}>${item.price.toFixed(2)}</span>
             </li>
           ))}
         </ul>

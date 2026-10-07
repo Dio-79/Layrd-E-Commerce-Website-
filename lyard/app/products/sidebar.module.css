@@ -1,0 +1,161 @@
+/* Layout Structure */
+.container {
+  display: flex;
+  gap: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+  font-family: Montserrat, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: #111111;
+}
+
+/* Sidebar Styling (Matches Reference Image) */
+.sidebar {
+  width: 200px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  border-top: 1.5px solid #eab308; /* Yellow top border */
+  padding-top: 20px;
+}
+
+.filterGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.filterTitle {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 4px 0;
+  color: #111111;
+  letter-spacing: -0.01em;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: #333333;
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkboxLabel input[type="checkbox"] {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border: 1px solid #777777;
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+  position: relative;
+}
+
+.checkboxLabel input[type="checkbox"]:checked {
+  background-color: #000000;
+  border-color: #000000;
+}
+
+.checkboxLabel input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 3px;
+  height: 7px;
+  border: solid #ffffff;
+  border-width: 0 1.5px 1.5px 0;
+  transform: rotate(45deg);
+}
+
+.customPriceInputs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.minMaxInput {
+  width: 42px;
+  height: 22px;
+  border: 1px solid #aaaaaa;
+  background-color: #f3f4f6;
+  font-size: 10px;
+  padding: 0 4px;
+  box-sizing: border-box;
+}
+
+/* Main Content Styling */
+.mainContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.headerBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 12px;
+  font-size: 13px;
+  color: #555555;
+}
+
+.sortContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  color: #000000;
+  font-size: 12px;
+}
+
+.sortSelect {
+  border: 1px solid #000000;
+  background-color: #ffffff;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+}
+
+/* Product Grid Display */
+.productGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.productCard {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background-color: #ffffff;
+  transition: transform 0.15s ease;
+}
+
+.productCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.productName {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111111;
+}
+
+.productPrice {
+  font-size: 13px;
+  font-weight: 700;
+  color: #ca8a04;
+}

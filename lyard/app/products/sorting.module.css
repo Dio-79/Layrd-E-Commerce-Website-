@@ -1,0 +1,101 @@
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 16px;
+  font-family: Montserrat, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: #111111;
+}
+
+/* Header bar layout matching LÄYRD design */
+.headerBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 16px;
+  margin-bottom: 24px;
+}
+
+.itemCount {
+  font-size: 13px;
+  color: #666666;
+  font-weight: 500;
+}
+
+.sortGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sortLabel {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #111111;
+}
+
+.sortSelect {
+  border: 1.5px solid #000000;
+  background-color: #ffffff;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+  border-radius: 0;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 12px;
+  padding-right: 28px;
+}
+
+/* Product list output grid */
+.sectionTitle {
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin: 0 0 16px 0;
+}
+
+.productList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.productCard {
+  border: 1.5px solid #d4af37; /* LÄYRD Gold Border */
+  border-radius: 10px;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.productCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+}
+
+.productName {
+  font-size: 13px;
+  font-weight: 700;
+  color: #111111;
+}
+
+.productPrice {
+  font-size: 13px;
+  font-weight: 800;
+  color: #d4af37;
+}
