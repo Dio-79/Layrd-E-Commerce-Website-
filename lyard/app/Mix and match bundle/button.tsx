@@ -1,8 +1,8 @@
-import { products } from "@/lib/data";
-
 "use client";
 
 import React, { useState } from "react";
+import { products } from "@/lib/data";
+import styles from "./button.module.css";
 
 type Product = (typeof products)[number];
 
@@ -25,24 +25,33 @@ export default function Button() {
   }
 
   return (
-    <div>
+    <div className={styles.addMoreWrap}>
       <button
         type="button"
+        className={styles.addBtn}
         onClick={() => {
           const product = products[0];
           if (product) handleAddMore(product);
         }}
       >
-        AddMore
+        + Add More
       </button>
-      <ul>
-        {items.map((item) => (
-          <li key={item.id}>AddMore {item.productId}</li>
-        ))}
-      </ul>
-      <button type="button" onClick={handleCancel}>
-        Cancel
-      </button>
+
+      {items.length > 0 && (
+        <ul className={styles.itemList}>
+          {items.map((item) => (
+            <li key={item.id} className={styles.itemRow}>
+              Slot Item #{item.productId}
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {items.length > 0 && (
+        <button type="button" className={styles.cancelBtn} onClick={handleCancel}>
+          Cancel Slots
+        </button>
+      )}
     </div>
   );
 }

@@ -1,0 +1,179 @@
+.pageWrapper {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.mainContent {
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 40px 24px 60px;
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 48px;
+  box-sizing: border-box;
+}
+
+.leftColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.bundleList {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.bundleSlotCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+}
+
+.bundleSlotItem {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.slotImageFrame {
+  width: 90px;
+  height: 90px;
+  border: 2px solid #ca8a04;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.slotImageFrame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.slotTitle {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.controlsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: end;
+}
+
+.priceBox {
+  border: 1.5px solid #000000;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+  margin-top: 12px;
+}
+
+.sizeSelectorGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sizeLabel {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.sizeButtons {
+  display: flex;
+  gap: 8px;
+}
+
+.sizeOptionBtn {
+  flex: 1;
+  padding: 8px 0;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  border: 1.5px solid #000000;
+  background-color: #ffffff;
+  cursor: pointer;
+}
+
+.activeSize {
+  background-color: #000000;
+  color: #ffffff;
+}
+
+.addToBagRow {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.quantityStepper {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid #000000;
+}
+
+.stepperBtn {
+  background: none;
+  border: none;
+  padding: 8px 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.stepperValue {
+  padding: 0 8px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.addToBagBtn {
+  flex: 1;
+  background-color: #000000;
+  color: #ffffff;
+  border: none;
+  padding: 12px 20px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.rightSidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sidebarTitle {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #374151;
+}
+
+.recommendationCard {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border: 2px solid #ca8a04;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.recommendationCard img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

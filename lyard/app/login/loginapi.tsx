@@ -7,7 +7,7 @@ async function Login(email: string, password: string) {
   return { token: 'abc123' };
 }
 
-export function LoginForm() {
+export function LoginForms() {
   return (
     <form
       onSubmit={async (event) => {
@@ -22,6 +22,7 @@ export function LoginForm() {
       <input name="email" type="email" placeholder="Email" />
       <input name="password" type="password" placeholder="Password" />
       <button type="submit">Login</button>
+
     </form>
   );
 }

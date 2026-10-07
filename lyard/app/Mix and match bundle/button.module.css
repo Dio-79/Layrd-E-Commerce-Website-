@@ -1,0 +1,50 @@
+.addMoreWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.addBtn {
+  background-color: #000000;
+  color: #ffffff;
+  border: none;
+  border-radius: 9999px;
+  padding: 6px 16px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  align-self: flex-start;
+  transition: background-color 0.2s ease;
+}
+
+.addBtn:hover {
+  background-color: #374151;
+}
+
+.itemList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.itemRow {
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.cancelBtn {
+  background: none;
+  border: none;
+  color: #dc2626;
+  text-decoration: underline;
+  font-size: 11px;
+  cursor: pointer;
+  padding: 0;
+  align-self: flex-start;
+}
