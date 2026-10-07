@@ -1,11 +1,19 @@
 "use client";
-import { useForm } from 'react-hook-form';
 
 import React, { useState, useMemo } from "react";
 import { products } from "@/lib/data";
 import { getSizes, getPrice } from "@/lib/dataSize";
 
 type Product = (typeof products)[number];
+
+// Available flavor options
+const FLAVOR_OPTIONS = [
+  "Vanilla Layer Cake",
+  "Chocolate Espresso",
+  "Salted Caramel",
+  "Red Velvet",
+  "Hazelnut Crunch",
+];
 
 interface SizeByProductProps {
   productId: number;
@@ -27,6 +35,7 @@ export interface CartItem {
   id: string;
   productId: number;
   selectedSize: string;
+  selectedFlavor: string; // <-- Added flavor field to cart item
   quantity: number;
 }
 
@@ -34,13 +43,8 @@ interface CalculationProps {
   taxRate?: number;
 }
 
-
 export default function Calculation({ taxRate = 0.08 }: CalculationProps) {
   const [items, setItems] = useState<CartItem[]>([]);
-
-  const findProductById = (productId: number) => {
-    return products.find((p) => "id" in p && Number(p.id) === productId) as Product | undefined;
-  };
 
   const handleAddItem = (product: Product) => {
     const productId = "id" in product ? Number(product.id) : 0;
@@ -51,18 +55,18 @@ export default function Calculation({ taxRate = 0.08 }: CalculationProps) {
       id: crypto.randomUUID(),
       productId,
       selectedSize: defaultSize,
+      selectedFlavor: FLAVOR_OPTIONS[0], // Default flavor
       quantity: 1,
     };
 
     setItems((prev) => [...prev, newItem]);
   };
-   type OrderFormValues = {
-    Flavor?: string;
-  };
 
-  const { register } = useForm<OrderFormValues>({ mode: "onBlur" });
-
-  const handleUpdateItem = (id: string, field: "selectedSize" | "quantity", value: string | number) => {
+  const handleUpdateItem = (
+    id: string,
+    field: "selectedSize" | "selectedFlavor" | "quantity",
+    value: string | number
+  ) => {
     setItems((prev) =>
       prev.map((item) => (item.id === id ? { ...item, [field]: value } : item))
     );
@@ -132,7 +136,8 @@ export default function Calculation({ taxRate = 0.08 }: CalculationProps) {
           <table>
             <thead>
               <tr>
-                <th>Product & Size</th>
+                <th>Product & Details</th>
+                <th>Flavor</th>
                 <th>Quantity</th>
                 <th>Unit Price</th>
                 <th>Total</th>
@@ -162,12 +167,22 @@ export default function Calculation({ taxRate = 0.08 }: CalculationProps) {
                         <SizeByProduct productId={item.productId} selected={item.selectedSize} />
                       )}
                     </td>
+
+                    {/* Flavor Selector per Item */}
                     <td>
-                       <label htmlFor="Flavor">
-             <select id="Flavor" {...register('Flavor')}>
-                <option value={""}></option>
-                </select>  
-                </label>
+                      <select
+                        value={item.selectedFlavor}
+                        onChange={(e) => handleUpdateItem(item.id, "selectedFlavor", e.target.value)}
+                      >
+                        {FLAVOR_OPTIONS.map((flavor) => (
+                          <option key={flavor} value={flavor}>
+                            {flavor}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+
+                    <td>
                       <input
                         type="number"
                         min="1"
