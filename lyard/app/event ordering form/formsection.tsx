@@ -35,11 +35,7 @@ export default function SelectionForm(){
                  placeholder="Wedding"
              />
              {errors.type && <span>This field is required</span>} 
-             <label htmlFor="Flavor">
-             <select id="Flavor" {...register('Flavor')}>
-                <option value={""}></option>
-                </select>  
-                </label>
+            
             
                  </form>
   );

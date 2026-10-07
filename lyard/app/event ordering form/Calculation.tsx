@@ -1,4 +1,5 @@
 "use client";
+import { useForm } from 'react-hook-form';
 
 import React, { useState, useMemo } from "react";
 import { products } from "@/lib/data";
@@ -33,6 +34,7 @@ interface CalculationProps {
   taxRate?: number;
 }
 
+
 export default function Calculation({ taxRate = 0.08 }: CalculationProps) {
   const [items, setItems] = useState<CartItem[]>([]);
 
@@ -54,6 +56,11 @@ export default function Calculation({ taxRate = 0.08 }: CalculationProps) {
 
     setItems((prev) => [...prev, newItem]);
   };
+   type OrderFormValues = {
+    Flavor?: string;
+  };
+
+  const { register } = useForm<OrderFormValues>({ mode: "onBlur" });
 
   const handleUpdateItem = (id: string, field: "selectedSize" | "quantity", value: string | number) => {
     setItems((prev) =>
@@ -156,6 +163,11 @@ export default function Calculation({ taxRate = 0.08 }: CalculationProps) {
                       )}
                     </td>
                     <td>
+                       <label htmlFor="Flavor">
+             <select id="Flavor" {...register('Flavor')}>
+                <option value={""}></option>
+                </select>  
+                </label>
                       <input
                         type="number"
                         min="1"
