@@ -15,6 +15,7 @@ export default function LandingPageBody() {
   return (
     <>
       <Header />
+
       <div className={styles.bodyWrapper}>
         {/* 1. Hero Section */}
         <section className={styles.heroSection}>
@@ -49,7 +50,13 @@ export default function LandingPageBody() {
                 <div>
                   <div className={styles.imageContainer}>
                     {product.price && <span className={styles.cardBadge}>{product.name}</span>}
-                    <img src={product.imageUrl} alt={product.name} />
+                    <Image
+                      src={product.imageUrl}
+                      alt={product.name}
+                      width={400}
+                      height={300}
+                      unoptimized
+                    />
                   </div>
                   <h4 className={styles.cardTitle}>{product.name}</h4>
                   <p className={styles.cardDescription}>{product.description}</p>
@@ -117,15 +124,21 @@ export default function LandingPageBody() {
             </div>
 
             <div className={styles.valueImages}>
-              <img
+              <Image
                 src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=600&auto=format&fit=crop"
                 alt="Feature Cake Can"
                 className={styles.valueImgMain}
+                width={600}
+                height={420}
+                unoptimized
               />
-              <img
+              <Image
                 src="https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=400&auto=format&fit=crop"
                 alt="Feature Espresso"
                 className={styles.valueImgSub}
+                width={400}
+                height={300}
+                unoptimized
               />
             </div>
           </div>
@@ -138,13 +151,31 @@ export default function LandingPageBody() {
 
           <div className={styles.socialGrid}>
             <div className={styles.socialCard}>
-              <img src="https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=400&auto=format&fit=crop" alt="Social 1" />
+              <Image
+                src="https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=400&auto=format&fit=crop"
+                alt="Social 1"
+                width={400}
+                height={300}
+                unoptimized
+              />
             </div>
             <div className={styles.socialCard}>
-              <img src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400&auto=format&fit=crop" alt="Social 2" />
+              <Image
+                src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400&auto=format&fit=crop"
+                alt="Social 2"
+                width={400}
+                height={300}
+                unoptimized
+              />
             </div>
             <div className={styles.socialCard}>
-              <img src="https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=400&auto=format&fit=crop" alt="Social 3" />
+              <Image
+                src="https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=400&auto=format&fit=crop"
+                alt="Social 3"
+                width={400}
+                height={300}
+                unoptimized
+              />
             </div>
           </div>
 

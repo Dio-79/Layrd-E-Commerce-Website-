@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
  type timestamp ={Starttime:string ; number:string; type:string; Flavor:string }
 
 
-export default function SelectionForm(){
+export default function Selections(){
  const { register, handleSubmit, formState: { errors } } = useForm<timestamp>({mode:'onBlur'});
 
  const onSubmit = (data: timestamp) => console.log(data);

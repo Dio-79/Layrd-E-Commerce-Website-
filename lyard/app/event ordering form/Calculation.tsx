@@ -43,7 +43,7 @@ interface CalculationProps {
   taxRate?: number;
 }
 
-export default function Calculation({ taxRate = 0.08 }: CalculationProps) {
+export default function Calculationpage({ taxRate = 0.08 }: CalculationProps) {
   const [items, setItems] = useState<CartItem[]>([]);
 
   const handleAddItem = (product: Product) => {
