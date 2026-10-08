@@ -4,41 +4,9 @@ import React, { useState } from "react";
 import styles from "./LandingPageBody.module.css";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-interface Product {
-  id: number;
-  name: string;
-  badge?: string;
-  description: string;
-  price: string;
-  image: string;
-}
+import { Product } from "../types/models";
 
-const FEATURED_PRODUCTS: Product[] = [
-  {
-    id: 1,
-    name: "Oreo Cheesecake",
-    badge: "Popular",
-    description: "Creamy dessert chat blends chocolate with crushed Oreos.",
-    price: "$8.00",
-    image: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500&auto=format&fit=crop",
-  },
-  {
-    id: 2,
-    name: "Single Espresso",
-    badge: "Classic",
-    description: "Compact shot of rich, bold coffee sealed for freshness and ready to enjoy anywhere.",
-    price: "$4.00",
-    image: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=500&auto=format&fit=crop",
-  },
-  {
-    id: 3,
-    name: "Strawberry Matcha",
-    badge: "Limited",
-    description: "Vibrant, creamy fusion of earthy matcha and sweet strawberry.",
-    price: "$9.00",
-    image: "https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=500&auto=format&fit=crop",
-  },
-];
+const FEATURED_PRODUCTS: Product[] = [];
 
 export default function LandingPageBody() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -76,11 +44,11 @@ export default function LandingPageBody() {
 
           <div className={styles.productGrid}>
             {FEATURED_PRODUCTS.map((product) => (
-              <div key={product.id} className={styles.productCard}>
+              <div key={product.name} className={styles.productCard}>
                 <div>
                   <div className={styles.imageContainer}>
-                    {product.badge && <span className={styles.cardBadge}>{product.badge}</span>}
-                    <img src={product.image} alt={product.name} />
+                    {product.price && <span className={styles.cardBadge}>{product.name}</span>}
+                    <img src={product.imageUrl} alt={product.name} />
                   </div>
                   <h4 className={styles.cardTitle}>{product.name}</h4>
                   <p className={styles.cardDescription}>{product.description}</p>
