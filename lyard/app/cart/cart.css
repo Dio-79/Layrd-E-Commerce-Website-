@@ -1,0 +1,320 @@
+/* Container */
+.bodyWrapper {
+  width: 100%;
+  background-color: #ffffff;
+  color: #111111;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  box-sizing: border-box;
+}
+
+/* 1. Hero Section */
+.heroSection {
+  position: relative;
+  width: 100%;
+  height: 520px;
+  background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)),
+    url("https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=1600&auto=format&fit=crop")
+      center/cover no-repeat;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #ffffff;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.heroTitle {
+  font-size: 36px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  line-height: 1.25;
+  margin: 0 0 12px 0;
+  text-transform: uppercase;
+  max-width: 700px;
+}
+
+.heroSubtitle {
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  margin: 0 0 24px 0;
+  color: rgba(255, 255, 255, 0.9);
+  max-width: 500px;
+}
+
+.heroCtaBtn {
+  background-color: #ffffff;
+  color: #000000;
+  border: none;
+  padding: 12px 28px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.heroCtaBtn:hover {
+  background-color: #eab308;
+  transform: translateY(-2px);
+}
+
+/* 2. Featured Collection Section */
+.featuredSection {
+  max-width: 1200px;
+  margin: 60px auto;
+  padding: 0 24px;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 32px;
+}
+
+.sectionTitle {
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.highlightText {
+  color: #eab308;
+}
+
+.viewAllLink {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #666666;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.productGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.productCard {
+  border: 1.5px solid #eab308;
+  border-radius: 12px;
+  padding: 16px;
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.imageContainer {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #f3f4f6;
+  margin-bottom: 12px;
+}
+
+.imageContainer img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cardBadge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: #eab308;
+  color: #ffffff;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 4px 8px;
+  border-radius: 2px;
+}
+
+.cardTitle {
+  font-size: 14px;
+  font-weight: 800;
+  margin: 0 0 6px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.cardDescription {
+  font-size: 11px;
+  color: #666666;
+  line-height: 1.4;
+  margin-bottom: 16px;
+}
+
+.cardFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #f3f4f6;
+  padding-top: 12px;
+}
+
+.priceTag {
+  font-size: 13px;
+  font-weight: 800;
+  color: #eab308;
+}
+
+.detailsBtn {
+  background-color: #000000;
+  color: #ffffff;
+  border: none;
+  padding: 8px 18px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+/* 3. Value Proposition Section */
+.valueSection {
+  background-color: #000000;
+  color: #ffffff;
+  padding: 60px 24px;
+}
+
+.valueContainer {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  align-items: center;
+}
+
+.valueTitle {
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  color: #eab308;
+  margin: 0 0 32px 0;
+  text-transform: uppercase;
+}
+
+.valueFeatureList {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.valueItem {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.featureIcon {
+  font-size: 28px;
+}
+
+.featureHeading {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin: 0 0 4px 0;
+}
+
+.featureText {
+  font-size: 11px;
+  color: #a1a1aa;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.shopNowBtn {
+  background: none;
+  border: 1px solid #ffffff;
+  color: #ffffff;
+  padding: 10px 24px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  margin-top: 24px;
+  align-self: flex-start;
+}
+
+.valueImages {
+  display: flex;
+  gap: 16px;
+}
+
+.valueImgMain {
+  width: 60%;
+  aspect-ratio: 4 / 5;
+  border-radius: 12px;
+  border: 2px solid #eab308;
+  object-fit: cover;
+}
+
+.valueImgSub {
+  width: 35%;
+  aspect-ratio: 4 / 5;
+  border-radius: 12px;
+  border: 1px solid #3f3f46;
+  object-fit: cover;
+}
+
+/* 4. Social Media Gallery Section */
+.socialSection {
+  max-width: 1000px;
+  margin: 60px auto;
+  padding: 0 24px;
+  text-align: center;
+}
+
+.socialHandle {
+  font-size: 32px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  margin: 0 0 4px 0;
+}
+
+.socialTagline {
+  font-size: 12px;
+  color: #eab308;
+  margin-bottom: 32px;
+}
+
+.socialGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.socialCard {
+  border-radius: 8px;
+  overflow: hidden;
+  aspect-ratio: 1 / 1;
+  background-color: #f3f4f6;
+}
+
+.socialCard img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.instagramFooterLink {
+  display: inline-flex;
+  align-items: center;}
