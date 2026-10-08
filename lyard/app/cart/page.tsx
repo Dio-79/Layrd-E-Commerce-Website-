@@ -1,5 +1,6 @@
 'use client';
 
+import Image from "next/image";
 import React, { useState } from "react";
 import styles from "./LandingPageBody.module.css";
 import Header from "../components/Header";
