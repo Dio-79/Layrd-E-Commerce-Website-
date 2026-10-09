@@ -1,6 +1,5 @@
 "use client";
 
-import React, { useState } from "react";
 import Header from "@/app/components/Header";
 import Footer from "@/app/components/Footer";
 import SelectionForms from "./forms-slots";
