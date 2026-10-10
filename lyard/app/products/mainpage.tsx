@@ -5,6 +5,7 @@ import { ProductItem } from "@/app/types/models";
 import { products } from "@/lib/data";
 import styles from "./ProductGrid.module.css";
 
+
 interface ProductCardProps {
   product: ProductItem;
   onCustomize?: (product: ProductItem) => void;

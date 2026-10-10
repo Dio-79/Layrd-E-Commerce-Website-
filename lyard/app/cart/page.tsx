@@ -2,10 +2,10 @@
 
 import Image from "next/image";
 import React, { useState } from "react";
-import styles from "./LandingPageBody.module.css";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { Product } from "../types/models";
+import styles from "../components/LandingPageBody.module.css";
 
 const FEATURED_PRODUCTS: Product[] = [];
 

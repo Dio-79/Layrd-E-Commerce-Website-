@@ -117,6 +117,7 @@ export default function LoginForm() {
                           <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" />
                           <circle cx="12" cy="12" r="3" />
                           {showPassword && <path d="M4 4l16 16" />}
+                          <Link href={'/cart'}/>
                         </Icon>
                       </button>
                     </div>
@@ -170,7 +171,7 @@ export default function LoginForm() {
 
           <div className={styles.brandBottom}>
             <span className={styles.smallMark}>LÄYRD</span>
-            <Link href="/shop" className={`${styles.goldPill} ${styles.shopPill}`}>
+            <Link href="/cart" className={`${styles.goldPill} ${styles.shopPill}`}>
               Browse the shop <Arrow />
             </Link>
           </div>

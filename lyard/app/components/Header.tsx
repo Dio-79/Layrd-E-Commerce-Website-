@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 
 const Header = () => {
   return (
@@ -49,10 +50,10 @@ const Header = () => {
 
       {/* Navigation Sub-menu */}
       <nav className="flex justify-center space-x-8 py-3 text-xs font-bold uppercase tracking-wider text-black">
-        <a href="#" className="hover:underline">Drinks</a>
-        <a href="#" className="hover:underline">Cake-in-a-Can</a>
-        <a href="#" className="hover:underline">Bundles</a>
-        <a href="#" className="hover:underline">Event Ordering</a>
+        <a href="products" className="hover:underline">Drinks</a>
+        <a href="products" className="hover:underline">Cake-in-a-Can</a>
+        <a href="Mix and match Bundles" className="hover:underline">Bundles</a>
+        <a href="event ordering form" className="hover:underline">Event Ordering</a>
         <a href="#" className="hover:underline">More</a>
       </nav>
     </header>
