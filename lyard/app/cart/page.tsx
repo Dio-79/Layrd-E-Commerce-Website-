@@ -6,6 +6,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { Product } from "../types/models";
 import styles from "./cart.module.css";
+import ProductGrid from "./featuredcollection";
 const FEATURED_PRODUCTS: Product[] = [];
 
 export default function LandingPageBody() {
@@ -42,6 +43,7 @@ export default function LandingPageBody() {
             </h3>
             <span className={styles.viewAllLink}>VIEW ALL PRODUCTS ↗</span>
           </div>
+              <ProductGrid/>
 
           <div className={styles.productGrid}>
             {FEATURED_PRODUCTS.map((product) => (
