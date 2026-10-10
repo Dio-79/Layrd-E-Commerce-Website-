@@ -31,7 +31,7 @@ function ProductCard({ product, onCustomize }: ProductCardProps) {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={productImage}
-          alt={product.name}
+          alt={`${product.name} ${product.tag}`}
           className={styles.productImage}
         />
       </div>
@@ -74,8 +74,6 @@ export default function ProductGrid() {
       <header className={styles.headerBar}>
         <h1 className={styles.mainTitle}>OUR COLLECTION</h1>
         <div className={styles.headerMeta}>
-          <span>Showing {products.length} Items</span>
-          <span>SORT BY: Newest ∨</span>
         </div>
       </header>
 
