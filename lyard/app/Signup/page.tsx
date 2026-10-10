@@ -5,9 +5,9 @@ import Footer from '@/app/components/Footer';
 export default function Signup(){
 
 
-return(<><Header/>
+return(<>
      <Signup/>
-    <Footer/></>
+   </>
 )
 
 }

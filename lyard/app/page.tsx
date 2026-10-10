@@ -1,6 +1,7 @@
 import React from 'react';
 import Header  from '@/app/components/Header';
 import Footer from '@/app/components/Footer';
+import LoginForm from './login/loginpage';
 
 
 export default function Page() {
@@ -11,10 +12,7 @@ export default function Page() {
             <Header />
             {/* main page */}
             <main>
-               <div className="bg-[url(/classic-bundle.jpg)] bg-cover bg-center min-h-[500px]"></div>
-
-                <div className= "font-mono text-[30px]">THIS WEEK'S SPOTLIGHT</div>
-            
+              <LoginForm/>
 
             </main>
             
