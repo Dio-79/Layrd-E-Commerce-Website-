@@ -1,8 +1,9 @@
 /* Layout & Page Header */
 .container {
-  max-width: 1200px;
+  max-width: 1440px; 
+  width: 100%;
   margin: 0 auto;
-  padding: 24px 16px;
+  padding: 40px 24px; 
   font-family: Montserrat, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   color: #111111;
 }
@@ -35,8 +36,9 @@
 /* Grid Layout */
 .grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); 
+  gap: 32px; 
+  align-items: stretch;
 }
 
 @media (max-width: 900px) {
