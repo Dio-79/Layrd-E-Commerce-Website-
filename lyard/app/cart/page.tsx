@@ -46,7 +46,7 @@ export default function LandingPageBody() {
               
 
           <div className={styles.productGrid}>
-            <ProductRow/>
+            <ProductRow />
           </div>
         </section>
 

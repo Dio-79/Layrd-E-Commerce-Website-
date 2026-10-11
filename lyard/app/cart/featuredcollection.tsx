@@ -70,13 +70,7 @@ export default function ProductRow() {
 
   return (
     <div className={styles.container}>
-      {/* Header Section */}
-      <header className={styles.headerBar}>
-        <h1 className={styles.mainTitle}>OUR COLLECTION</h1>
-        <div className={styles.headerMeta}>
-        </div>
-      </header>
-
+     
       {/* Product Grid */}
       <div className={styles.grid}>
         {(products as unknown as ProductItem[]).map((product) => (
