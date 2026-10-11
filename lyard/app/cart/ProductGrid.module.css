@@ -35,11 +35,13 @@
 
 /* Grid Layout */
 .grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); 
-  gap: 32px; 
-  align-items: stretch;
-  
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap; 
+  gap: 24px;         
+  width: 100%;
+  overflow-x: auto;  
+  padding-bottom: 12px; 
 }
 
 @media (max-width: 900px) {
