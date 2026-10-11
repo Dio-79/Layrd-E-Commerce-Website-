@@ -1,15 +1,14 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 
-function Header() {
-  return (
-    <header className="site-header">
-      <div className="header-brand">LÄYRD</div>
-    </header>
-  );
-}
+
+import React, { useState, useMemo } from "react";
+import { products } from "@/lib/data";
+import { getSizes, getPrice } from "@/lib/dataSize";
+import styles from "./calculation.module.css";
+
+
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -24,7 +23,7 @@ export default function CheckoutPage() {
 
   return (
     <>
-      <Header />
+      <Header/>
 
       {/* Main Content */}
       <main className="checkout-container">
@@ -315,7 +314,6 @@ export default function CheckoutPage() {
         <div className="footer-bottom">
           ©2026 LÄYRD. ALL RIGHTS RESERVED.
         </div>
-
       </footer>
     </>
   );
