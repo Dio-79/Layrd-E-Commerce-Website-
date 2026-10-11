@@ -3,6 +3,14 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+function Header() {
+  return (
+    <header className="site-header">
+      <div className="header-brand">LÄYRD</div>
+    </header>
+  );
+}
+
 export default function CheckoutPage() {
   const router = useRouter();
 
@@ -15,39 +23,8 @@ export default function CheckoutPage() {
   };
 
   return (
-    <div className="checkout-page">
-
-      {/* Announcement */}
-      <div className="announcement-bar">
-        NEW LIMITED EDITION FLAVORS OUT THIS WEEKEND! • LEARN MORE
-      </div>
-
-      {/* Header */}
-      <header className="site-header">
-
-        <div className="header-top">
-          <button className="menu-button" aria-label="Menu">
-            ☰
-          </button>
-
-          <div className="site-logo">LÄYRD</div>
-
-          <div className="header-icons">
-            <span>⌕</span>
-            <span>♙</span>
-            <span>♧</span>
-          </div>
-        </div>
-
-        <nav className="main-nav">
-          <a href="#">DRINKS</a>
-          <a href="#">CAKE-IN-A-CAN</a>
-          <a href="#">BUNDLES</a>
-          <a href="#">EVENT ORDERING</a>
-          <a href="#">MORE</a>
-        </nav>
-
-      </header>
+    <>
+      <Header />
 
       {/* Main Content */}
       <main className="checkout-container">
@@ -340,7 +317,6 @@ export default function CheckoutPage() {
         </div>
 
       </footer>
-
-    </div>
+    </>
   );
 }
