@@ -25,9 +25,11 @@ export default function SelectionForms() {
         {...register("flavorSlot", { required: "Please select a flavor" })}
       >
         <option value="">Select</option>
-        <option value="vanilla">Vanilla</option>
-        <option value="chocolate">Chocolate</option>
-        <option value="strawberry">Strawberry</option>
+        <option value="Black">Black</option>
+        <option value="Sugar">Sugar</option>
+        <option value="Stevia">Stevia</option>
+        <option value="Brown-Sugar">Brown-Sugar</option>
+
       </select>
       {errors.flavorSlot && (
         <span className={styles.errorMessage}>{String(errors.flavorSlot.message)}</span>
