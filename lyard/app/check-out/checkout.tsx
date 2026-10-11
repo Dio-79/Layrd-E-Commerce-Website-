@@ -7,6 +7,8 @@ import React, { useState, useMemo } from "react";
 import { products } from "@/lib/data";
 import { getSizes, getPrice } from "@/lib/dataSize";
 import styles from "./calculation.module.css";
+import Header from "../components/Header";
+import Footer from "../components/Footer";
 
 
 
@@ -23,7 +25,7 @@ export default function CheckoutPage() {
 
   return (
     <>
-      <Header/>
+<Header/>
 
       {/* Main Content */}
       <main className="checkout-container">
@@ -198,63 +200,8 @@ export default function CheckoutPage() {
 
           <h2>Order Summary</h2>
 
-          <div className="order-item">
-
-            <div className="item-image fruit-image">
-              🥗
-            </div>
-
-            <div className="item-info">
-              <strong>Fruit Salad</strong>
-              <small>Standard Size ×6</small>
-            </div>
-
-            <strong>$44.00</strong>
-
-          </div>
-
-          <div className="order-item">
-
-            <div className="item-image coffee-image">
-              ☕
-            </div>
-
-            <div className="item-info">
-              <strong>Double Espresso</strong>
-              <small>Sweetness: Sugar ×1</small>
-            </div>
-
-            <strong>$4.00</strong>
-
-          </div>
-
-          <div className="summary-line">
-            <span>Subtotal</span>
-            <span>$48.00</span>
-          </div>
-
-          <div className="summary-line">
-            <span>Shipping</span>
-            <span>$1.99</span>
-          </div>
-
-          <div className="summary-line">
-            <span>Estimated Tax</span>
-            <span>$2.40</span>
-          </div>
-
-          <div className="summary-total">
-            <strong>Total</strong>
-            <strong>$53.39</strong>
-          </div>
-
-          <div className="promo-row">
-            <input
-              type="text"
-              placeholder="Promo Code"
-            />
             <button>APPLY</button>
-          </div>
+          
 
           <button
             className="complete-order"
@@ -267,54 +214,8 @@ export default function CheckoutPage() {
 
       </main>
 
-      {/* Footer */}
-      <footer className="site-footer">
-
-        <div className="footer-logo">
-          LÄYRD
-          <p>
-            Espresso Shots & Cake-in-a-Can.
-            <br />
-            Made fresh. Kept simple.
-          </p>
-        </div>
-
-        <div className="footer-column">
-          <h3>SUPPORT</h3>
-          <a href="#">Shipping</a>
-          <a href="#">Request Refund</a>
-          <a href="#">Contact Us</a>
-          <a href="#">Wholesale</a>
-        </div>
-
-        <div className="footer-column">
-          <h3>INFORMATION</h3>
-          <a href="#">FAQ</a>
-          <a href="#">About LÄYRD</a>
-          <a href="#">Privacy Policy</a>
-          <a href="#">Terms of Service</a>
-          <a href="#">Community</a>
-        </div>
-
-        <div className="footer-column">
-          <h3>OUR NEWSLETTER</h3>
-          <p>
-            Join our newsletter to receive
-            exclusive announcements and offers!
-          </p>
-
-          <input
-            type="email"
-            placeholder="Email Address"
-          />
-
-          <button>SUBSCRIBE</button>
-        </div>
-
-        <div className="footer-bottom">
-          ©2026 LÄYRD. ALL RIGHTS RESERVED.
-        </div>
-      </footer>
+      
+      <Footer />
     </>
   );
 }

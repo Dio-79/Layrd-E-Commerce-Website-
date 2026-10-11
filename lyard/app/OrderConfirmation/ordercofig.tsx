@@ -1,7 +1,12 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import React, { useState, useMemo } from "react";
+import { products } from "@/lib/data";
+import { getSizes, getPrice } from "@/lib/dataSize";
+import styles from "./calculation.module.css";
+
+
 
 export default function CheckoutPage() {
   const router = useRouter();
