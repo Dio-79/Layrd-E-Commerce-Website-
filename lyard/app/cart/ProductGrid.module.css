@@ -51,16 +51,16 @@
   }
 }
 
-/* Product Card Design */
 .card {
   position: relative;
-  border: 1.5px solid #d4af37; /* LÄYRD Gold Border */
+  border: 1.5px solid #d4af37;
   border-radius: 12px;
   overflow: hidden;
   background-color: #ffffff;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  height: 100%; 
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
