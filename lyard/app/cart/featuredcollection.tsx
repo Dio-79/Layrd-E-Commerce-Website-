@@ -61,7 +61,7 @@ function ProductCard({ product, onCustomize }: ProductCardProps) {
   );
 }
 
-export default function ProductGrid() {
+export default function ProductRow() {
   const [selectedProduct, setSelectedProduct] = useState<ProductItem | null>(null);
 
   const handleCustomize = (product: ProductItem) => {
