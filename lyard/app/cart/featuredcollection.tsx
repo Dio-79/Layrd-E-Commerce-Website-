@@ -16,8 +16,7 @@ type ProductWithImage = ProductItem & {
 };
 
 function ProductCard({ product, onCustomize }: ProductCardProps) {
-  const productImage = (product as ProductWithImage).image ||
-    "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500&auto=format&fit=crop";
+  const productImage = (product as ProductWithImage).image || "";
 
   return (
     <div className={styles.card}>
