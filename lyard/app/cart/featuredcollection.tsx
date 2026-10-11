@@ -73,12 +73,14 @@ export default function ProductRow() {
      
       {/* Product Grid */}
       <div className={styles.grid}>
-        {(products as unknown as ProductItem[]).map((product) => (
+        {(products as unknown as ProductItem[]).slice(0,3).map((product) => (
           <ProductCard
             key={`${product.name}-${product.category}`}
             product={product}
             onCustomize={handleCustomize}
+
           />
+          
         ))}
       </div>
 
