@@ -2,71 +2,97 @@
 
 import { createContext, useContext, useState, ReactNode } from "react";
 import { products } from "@/lib/data";
-import { getSizes } from "@/lib/dataSize";
+import { getPrice } from "@/lib/dataSize";
 
 export type Product = (typeof products)[number];
 
-export interface BundleItem {
-  id: string;
-  productId: number;
-  selectedSize: string;
-  quantity: number;
-}
+export const SLOT_COUNT = 6;
+export const SIZES = ["Small", "Regular", "Large"] as const;
+
+// ---- helpers (adjust field names to match your data) ----
+export const getProductId = (p: Product) => ("id" in p ? Number(p.id) : 0);
+export const getProductName = (p: Product) => ("name" in p ? String(p.name) : "Item");
+export const getBasePrice = (p: Product) => ("price" in p ? Number(p.price) : 0);
+export const getProductImage = (p: Product) => {
+  const record = p as unknown as Record<string, unknown>;
+  const imageUrl = typeof record.imageUrl === "string" ? record.imageUrl : undefined;
+  const image = typeof record.image === "string" ? record.image : undefined;
+  const images = Array.isArray(record.images)
+    ? record.images.filter((item): item is string => typeof item === "string")
+    : [];
+
+  return imageUrl || image || images[0] || "";
+};
+export const findProduct = (id: number | null) =>
+  id === null ? undefined : products.find((p) => getProductId(p) === id);
+
+export const getUnitPrice = (p: Product, size: string) => {
+  const sized = getPrice(p, size);
+  return sized && sized > 0 ? Number(sized) : getBasePrice(p);
+};
 
 interface BundleContextType {
-  items: BundleItem[];
-  addItem: (product: Product) => void;
-  updateItem: (
-    id: string,
-    field: "selectedSize" | "quantity",
-    value: string | number
-  ) => void;
-  removeItem: (id: string) => void;
-  clearAll: () => void;
+  slots: (number | null)[];      // productId per slot, null = empty
+  size: string;
+  quantity: number;
+  activeSlot: number | null;     // slot whose picker modal is open
+  unitPrice: number;             // price of one bundle at the chosen size
+  total: number;                 // unitPrice * quantity
+  openPicker: (slotIndex: number) => void;
+  closePicker: () => void;
+  selectProduct: (productId: number) => void;  // fills the active slot
+  fillEmptySlots: (productId: number) => void;
+  clearSlot: (slotIndex: number) => void;
+  setSize: (size: string) => void;
+  setQuantity: (q: number) => void;
+  reset: () => void;
 }
 
 const BundleContext = createContext<BundleContextType | undefined>(undefined);
 
 export function BundleProvider({ children }: { children: ReactNode }) {
-  const [items, setItems] = useState<BundleItem[]>([]);
+  const [slots, setSlots] = useState<(number | null)[]>(Array(SLOT_COUNT).fill(null));
+  const [size, setSize] = useState<string>("Small");
+  const [quantity, setQuantityState] = useState<number>(1);
+  const [activeSlot, setActiveSlot] = useState<number | null>(null);
 
-  function addItem(product: Product) {
-    const productId = "id" in product ? Number(product.id) : 0;
-    const availableSizes = getSizes(productId) ?? [];
-    const defaultSize =
-      availableSizes.length > 0 ? String(availableSizes[0]) : "Standard";
+  const openPicker = (i: number) => setActiveSlot(i);
+  const closePicker = () => setActiveSlot(null);
 
-    const newItem: BundleItem = {
-      id: crypto.randomUUID(),
-      productId,
-      selectedSize: defaultSize,
-      quantity: 1,
-    };
+  const selectProduct = (productId: number) => {
+    if (activeSlot === null) return;
+    setSlots((prev) => prev.map((s, i) => (i === activeSlot ? productId : s)));
+    setActiveSlot(null);
+  };
 
-    setItems((prev) => [...prev, newItem]);
-  }
+  const fillEmptySlots = (productId: number) =>
+    setSlots((prev) => prev.map((s) => (s === null ? productId : s)));
 
-  function updateItem(
-    id: string,
-    field: "selectedSize" | "quantity",
-    value: string | number
-  ) {
-    setItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, [field]: value } : item))
-    );
-  }
+  const clearSlot = (i: number) =>
+    setSlots((prev) => prev.map((s, idx) => (idx === i ? null : s)));
 
-  function removeItem(id: string) {
-    setItems((prev) => prev.filter((item) => item.id !== id));
-  }
+  const setQuantity = (q: number) => setQuantityState(Math.max(1, q));
 
-  function clearAll() {
-    setItems([]);
-  }
+  const reset = () => {
+    setSlots(Array(SLOT_COUNT).fill(null));
+    setSize("Small");
+    setQuantityState(1);
+    setActiveSlot(null);
+  };
+
+  const unitPrice: number = slots.reduce<number>((sum, id) => {
+    const p = findProduct(id);
+    return p ? sum + getUnitPrice(p, size) : sum;
+  }, 0);
 
   return (
     <BundleContext.Provider
-      value={{ items, addItem, updateItem, removeItem, clearAll }}
+      value={{
+        slots, size, quantity, activeSlot, unitPrice,
+        total: unitPrice * quantity,
+        openPicker, closePicker, selectProduct, fillEmptySlots,
+        clearSlot, setSize, setQuantity, reset,
+      }}
     >
       {children}
     </BundleContext.Provider>
