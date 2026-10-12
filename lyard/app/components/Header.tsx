@@ -53,7 +53,7 @@ const Header = () => {
         <Link href="/products" className="hover:underline">Drinks</Link>
         <Link href="/products" className="hover:underline">Cake-in-a-Can</Link>
         <Link href="/Bundle" className="hover:underline">Bundles</Link>      
-        <Link href="/event-ordering-form" className="hover:underline">Event Ordering</Link>
+        <Link href="/EventOrder" className="hover:underline">Event Ordering</Link>
         <Link href="#" className="hover:underline">More</Link>
       </nav>
     </header>
