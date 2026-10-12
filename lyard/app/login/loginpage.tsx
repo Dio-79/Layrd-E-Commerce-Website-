@@ -1,6 +1,5 @@
 'use client';
 
-
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -50,7 +49,7 @@ export default function LoginForm() {
           <section className={`${styles.glass} ${styles.loginCard}`} aria-labelledby="login-title">
             <div className={styles.cardTop}>
               <h1 id="login-title" className={styles.title}>Log in</h1>
-              <Link href="/signup" className={styles.signUp}>Sign up</Link>
+              <Link href="/Signup" className={styles.signUp}>Sign up</Link>
             </div>
 
             <div className={styles.brandRow}>
@@ -71,10 +70,10 @@ export default function LoginForm() {
               onSubmit={async () => {
                 setServerError('');
                 try {
-                  const response = submitLoginForm();
+                  const response = await submitLoginForm();
                   const token = (response as { token?: string } | null)?.token;
                   console.log('Logged in, token:', token); // store the token however your app needs
-                  router.push('/');
+                  router.push('/'); // or '/varificationpage' (check the folder spelling)
                 } catch (error) {
                   setServerError(error instanceof Error ? error.message : 'Login failed.');
                 }
@@ -117,7 +116,6 @@ export default function LoginForm() {
                           <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" />
                           <circle cx="12" cy="12" r="3" />
                           {showPassword && <path d="M4 4l16 16" />}
-                          <Link href={'/varificationpage'}/>
                         </Icon>
                       </button>
                     </div>
