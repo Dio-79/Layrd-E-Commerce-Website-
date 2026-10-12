@@ -52,7 +52,7 @@ const Header = () => {
       <nav className="flex justify-center space-x-8 py-3 text-xs font-bold uppercase tracking-wider text-black">
         <Link href="/products" className="hover:underline">Drinks</Link>
         <Link href="/products" className="hover:underline">Cake-in-a-Can</Link>
-        <Link href="/mix andmatch bundle" className="hover:underline">Bundles</Link>
+        <Link href="/mix-and-match-bundle" className="hover:underline">Bundles</Link>      
         <Link href="/event-ordering-form" className="hover:underline">Event Ordering</Link>
         <Link href="#" className="hover:underline">More</Link>
       </nav>

@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { ProductItem } from "@/app/types/models";
 import { ProductProvider, useProducts } from "@/app/context/productcontext";
-import { CartProvider, useCart } from "@/app/context/CartContext";
 import styles from "./mainpage.module.css";
 import Sidebar from "./sidebar";
 import CatalogHeader from "./sorting";
@@ -68,7 +67,6 @@ function ProductCard({ product, onCustomize }: ProductCardProps) {
 
 function CatalogContent() {
   const { filteredAndSortedProducts, selectedProduct, setSelectedProduct } = useProducts();
-  const { addItem } = useCart();
   
   // Modal local state for interactivity
   const prod = selectedProduct as ProductWithDetails | null;
@@ -89,9 +87,7 @@ function CatalogContent() {
 
   const handleAddToCart = () => {
     if (selectedProduct) {
-      for (let i = 0; i < quantity; i++) {
-        addItem(selectedProduct as unknown as Parameters<typeof addItem>[0]);
-      }
+      // Handle add to bag action here (e.g., local state or alert)
       setSelectedProduct(null);
     }
   };
@@ -243,12 +239,10 @@ function CatalogContent() {
 
 export default function ProductGrid() {
   return (
-    <CartProvider>
-      <ProductProvider>
-        <Header />
-        <CatalogContent />
-        <Footer />
-      </ProductProvider>
-    </CartProvider>
+    <ProductProvider>
+      <Header />
+      <CatalogContent />
+      <Footer />
+    </ProductProvider>
   );
 }
