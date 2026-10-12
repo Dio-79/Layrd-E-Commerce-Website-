@@ -61,6 +61,10 @@ function ProductCard({ product, onCustomize }: ProductCardProps) {
   );
 }
 
+function CatalogHeader() {
+  return <span>Catalog</span>;
+}
+
 export default function ProductGrid() {
   const [selectedProduct, setSelectedProduct] = useState<ProductItem | null>(null);
 
@@ -75,7 +79,7 @@ export default function ProductGrid() {
         <h1 className={styles.mainTitle}>OUR COLLECTION</h1>
         <div className={styles.headerMeta}>
           <span>Showing {products.length} Items</span>
-          <span>SORT BY: Newest ∨</span>
+          <CatalogHeader />
         </div>
       </header>
 

@@ -10,8 +10,9 @@ export default function Page() {
         <div className ="product container">
             <Header/>
 
-            <ProductGrid/>
             <Sidebar/>
+         <ProductGrid/>
+
             <CatalogHeader/>
 
             <Footer/>
