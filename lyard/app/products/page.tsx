@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { ProductItem } from "@/app/types/models";
 import { ProductProvider, useProducts } from "@/app/context/productcontext";
 import styles from "./mainpage.module.css";
@@ -13,17 +14,20 @@ interface ProductCardProps {
   onCustomize?: (product: ProductItem) => void;
 }
 
-type ProductWithImage = ProductItem & {
+type ProductWithDetails = ProductItem & {
   image?: string;
+  images?: string[];
+  shelfLife?: string;
+  allergens?: string;
 };
 
-// Full Product Card component with images, badges, and pricing footer
+// Full Product Card component
 function ProductCard({ product, onCustomize }: ProductCardProps) {
-  const productImage = (product as ProductWithImage).image || product.imageUrl;
+  const prod = product as ProductWithDetails;
+  const productImage = prod.image || prod.imageUrl;
 
   return (
     <div className={styles.card}>
-      {/* Image & Badge Wrapper */}
       <div className={styles.imageWrapper}>
         {product.tag && (
           <div className={styles.tagBadge}>
@@ -38,13 +42,11 @@ function ProductCard({ product, onCustomize }: ProductCardProps) {
         />
       </div>
 
-      {/* Text Content */}
       <div className={styles.content}>
         <h3 className={styles.productName}>{product.name}</h3>
         <p className={styles.description}>{product.description}</p>
       </div>
 
-      {/* Pricing & Action Footer */}
       <div className={styles.footerRow}>
         <div className={styles.priceBlock}>
           <span className={styles.fromLabel}>FROM</span>
@@ -65,6 +67,23 @@ function ProductCard({ product, onCustomize }: ProductCardProps) {
 
 function CatalogContent() {
   const { filteredAndSortedProducts, selectedProduct, setSelectedProduct } = useProducts();
+  
+  // Modal local state for interactivity
+  const prod = selectedProduct as ProductWithDetails | null;
+  const imagesList = prod?.images?.length ? prod.images : [prod?.imageUrl || prod?.image || ""];
+  const [activeImage, setActiveImage] = useState<string>(imagesList[0]);
+  const [selectedSize, setSelectedSize] = useState<string>("Small");
+  const [quantity, setQuantity] = useState<number>(1);
+
+  // Reset image preview when a new product is selected
+  const handleOpenModal = (product: ProductItem) => {
+    const p = product as ProductWithDetails;
+    const initialImg = p.images?.[0] || p.imageUrl || p.image || "";
+    setActiveImage(initialImg);
+    setSelectedSize("Small");
+    setQuantity(1);
+    setSelectedProduct(product);
+  };
 
   return (
     <div className={styles.container}>
@@ -81,51 +100,131 @@ function CatalogContent() {
         <Sidebar />
       </aside>
 
-      {/* Product Grid Section using full ProductCard */}
+      {/* Product Grid Section */}
       <div className={styles.grid}>
         {filteredAndSortedProducts.map((product) => (
           <ProductCard
             key={`${product.name}-${product.category}`}
             product={product}
-            onCustomize={setSelectedProduct}
+            onCustomize={handleOpenModal}
           />
         ))}
       </div>
 
-      {/* Customization Dialog / Modal */}
-      {selectedProduct && (
-        <div className={styles.modalBackdrop}>
-          <div className={styles.modalContent}>
-            <div className={styles.modalHeader}>
-              <h3 className={styles.modalTitle}>Customize {selectedProduct.name}</h3>
-              <button
-                type="button"
-                className={styles.closeBtn}
-                onClick={() => setSelectedProduct(null)}
-              >
-                ✕
-              </button>
+      {/* Rich Product Detail / Customization Modal */}
+      {selectedProduct && prod && (
+        <div className={styles.modalBackdrop} onClick={() => setSelectedProduct(null)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              className={styles.closeModalX}
+              onClick={() => setSelectedProduct(null)}
+            >
+              ✕
+            </button>
+
+            {/* Left Side: Images */}
+            <div className={styles.modalGallery}>
+              <div className={styles.modalMainImageWrapper}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={activeImage || prod.imageUrl}
+                  alt={prod.name}
+                  className={styles.modalMainImage}
+                />
+              </div>
+              <div className={styles.thumbnailRow}>
+                {imagesList.map((imgUrl, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    className={`${styles.thumbnailBtn} ${activeImage === imgUrl ? styles.activeThumb : ""}`}
+                    onClick={() => setActiveImage(imgUrl)}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={imgUrl} alt={`${prod.name} thumbnail ${idx}`} />
+                  </button>
+                ))}
+              </div>
             </div>
 
-            <p className={styles.description}>{selectedProduct.description}</p>
-            <div style={{ margin: "1rem 0" }}>
-              Base Price: <strong className={styles.priceValue}>${selectedProduct.price}</strong>
-            </div>
-            <div className={styles.modalActions}>
-              <button
-                type="button"
-                className={styles.cancelModalBtn}
-                onClick={() => setSelectedProduct(null)}
-              >
-                Close
-              </button>
-              <button
-                type="button"
-                className={styles.addToCartBtn}
-                onClick={() => setSelectedProduct(null)}
-              >
-                Add to Cart
-              </button>
+            {/* Right Side: Product Details & Options */}
+            <div className={styles.modalDetails}>
+              <div className={styles.breadcrumb}>
+                {prod.category} &gt; {prod.name}
+              </div>
+
+              <h2 className={styles.modalHeading}>{prod.name}</h2>
+              <p className={styles.modalSubtitle}>{prod.description}</p>
+              <div className={styles.modalPrice}>${prod.price.toFixed(2)}</div>
+              
+              <hr className={styles.modalDivider} />
+
+              <p className={styles.modalExtendedDesc}>{prod.description}</p>
+
+              {/* Size Selector */}
+              <div className={styles.optionGroup}>
+                <label className={styles.optionLabel}>SIZE</label>
+                <div className={styles.sizeButtons}>
+                  {["Small", "Regular", "Large"].map((size) => (
+                    <button
+                      key={size}
+                      type="button"
+                      className={`${styles.sizeBtn} ${selectedSize === size ? styles.selectedSize : ""}`}
+                      onClick={() => setSelectedSize(size)}
+                    >
+                      {size.toUpperCase()}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Quantity & Add to Bag */}
+              <div className={styles.actionRow}>
+                <div className={styles.qtyContainer}>
+                  <span className={styles.qtyLabel}>QTY</span>
+                  <div className={styles.qtyControls}>
+                    <button
+                      type="button"
+                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    >
+                      -
+                    </button>
+                    <span>{quantity}</span>
+                    <button
+                      type="button"
+                      onClick={() => setQuantity(quantity + 1)}
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  className={styles.addToBagBtn}
+                  onClick={() => {
+                    // Add to bag logic here
+                    setSelectedProduct(null);
+                  }}
+                >
+                  ADD TO BAG →
+                </button>
+              </div>
+
+              <hr className={styles.modalDivider} />
+
+              {/* Footer Notes */}
+              <div className={styles.productMetaNotes}>
+                <div className={styles.noteItem}>
+                  <span>📦</span>
+                  <span>{prod.shelfLife || "Shelf-stable for 6 months. Best enjoyed at room temperature."}</span>
+                </div>
+                <div className={styles.noteItem}>
+                  <span>ℹ️</span>
+                  <span>{prod.allergens || "Contains: Wheat, Milk, Eggs. Produced in a facility that also processes nuts."}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
