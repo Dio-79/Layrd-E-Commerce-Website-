@@ -5,11 +5,18 @@
   padding: 40px 24px 60px;
   font-family: "Montserrat", system-ui, sans-serif;
   color: #000;
+  overflow-x: hidden;
+}
+
+.builder *,
+.builder *::before,
+.builder *::after {
+  box-sizing: border-box;
 }
 
 .slotGrid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 40px 60px;
 }
 
@@ -17,8 +24,9 @@
 .slot {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 20px;
   min-height: 90px;
+  min-width: 0;
 }
 
 .emptyBox {
@@ -42,6 +50,7 @@
 
 .emptyLabel {
   flex: 1;
+  min-width: 0;
   color: #9ca3af;
   font-weight: 500;
   font-size: 15px;
@@ -57,8 +66,8 @@
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.5px;
-  cursor: pointer;
   white-space: nowrap;
+  cursor: pointer;
 }
 
 .addMoreBtn:hover {
@@ -70,12 +79,14 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
+  min-width: 0;
 }
 
 .slotTop {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 16px;
+  min-width: 0;
 }
 
 .slotImg {
@@ -87,6 +98,7 @@
   border: 2px solid #d4a017;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
   background: #f3f4f6;
+  font-size: 10px; /* keeps broken-image alt text small */
 }
 
 .slotInfo {
@@ -106,11 +118,19 @@
   margin-top: 6px;
 }
 
+.slotPrice {
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #d4a017;
+}
+
 .slotActions {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 8px;
+  flex-shrink: 0;
 }
 
 .changeBtn {
@@ -145,21 +165,24 @@
   color: #b91c1c;
 }
 
-/* Per-slot options row */
+/* ---------- Per-slot options ---------- */
 .slotOptions {
   display: flex;
-  align-items: flex-start;
-  gap: 18px;
   flex-wrap: wrap;
-  padding-left: 110px; /* image width + gap, lines up under the name */
+  align-items: flex-start;
+  gap: 16px 18px;
+  padding-left: 106px; /* image width + gap, lines up under the name */
+  min-width: 0;
 }
 
 .optionCol {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .optionLabel {
+  display: block;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 1px;
@@ -181,18 +204,23 @@
 
 .slotSizeBtns {
   display: flex;
+  flex-wrap: wrap; /* Large drops to a second row instead of being clipped */
   gap: 6px;
+  max-width: 260px;
 }
 
 .slotSizeBtn {
-  width: 34px;
+  min-width: 34px;
   height: 34px;
+  padding: 0 10px;
   border: 1px solid #000;
   background: #fff;
   color: #374151;
   font-family: inherit;
   font-size: 12px;
   font-weight: 700;
+  text-transform: capitalize;
+  white-space: nowrap;
   cursor: pointer;
 }
 
@@ -363,7 +391,7 @@
 
 .pickGrid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 20px;
 }
 
@@ -411,15 +439,31 @@
   opacity: 0.8;
 }
 
-/* ---------- Mobile ---------- */
-@media (max-width: 768px) {
+/* ---------- Tablet / mobile ---------- */
+@media (max-width: 900px) {
   .slotGrid {
-    grid-template-columns: 1fr;
-    gap: 28px;
+    gap: 32px 32px;
+  }
+}
+
+@media (max-width: 720px) {
+  .builder {
+    padding: 24px 16px 48px;
+  }
+
+  .slotGrid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 32px;
   }
 
   .slotOptions {
-    padding-left: 0;
+    padding-left: 0; /* options go full width under the image on small screens */
+  }
+
+  .slotImg,
+  .emptyBox {
+    width: 72px;
+    height: 72px;
   }
 
   .footer,
@@ -428,15 +472,21 @@
     align-items: stretch;
   }
 
-  .priceBox {
-    text-align: center;
-  }
-
+  .priceBox,
   .hint {
     text-align: center;
   }
 
   .pickGrid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .modal {
+    padding: 32px 20px 24px;
+  }
+
+  .modalTitle {
+    font-size: 18px;
+    letter-spacing: 2px;
   }
 }
