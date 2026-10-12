@@ -13,7 +13,6 @@ export default function Page() {
         <Header/>
 
       <BundleBuilder/>
-      <SelectionForms/>
       <Footer/>
     </BundleProvider>
   );
