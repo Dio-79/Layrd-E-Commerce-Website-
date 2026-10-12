@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { products } from "@/lib/data";
-import styles from "./CatalogHeader.module.css";
+import styles from "./sorting.module.css";
 
 // Type definition for catalog items
 export interface Item {
