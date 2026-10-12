@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { SignupForm as submitSignupForm } from './SignupApi';
+import { signup } from './SignupApi';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as yup from 'yup';
 import styles from './signup.module.css';
@@ -9,7 +9,10 @@ import styles from './signup.module.css';
 const schema = yup.object({
   username: yup.string().required('Full name is required'),
   email: yup.string().email('Invalid email format').required('Email is required'),
-  password: yup.string().min(6, 'Password must be at least 6 characters').required('Password is required'),
+  password: yup
+    .string()
+    .min(6, 'Password must be at least 6 characters')
+    .required('Password is required'),
   confirmPassword: yup
     .string()
     .oneOf([yup.ref('password')], 'Passwords must match')
@@ -34,12 +37,19 @@ export default function SignupForm() {
           <Formik
             initialValues={{ username: '', email: '', password: '', confirmPassword: '' }}
             validationSchema={schema}
-            onSubmit={(values) => {
-              console.log('Signup values:', values);
-              submitSignupForm();
+            onSubmit={async (values, { setSubmitting, setStatus }) => {
+              setStatus(undefined);
+              try {
+                const result = await signup(values.email, values.username, values.password);
+                console.log('Signed up:', result);
+              } catch (err) {
+                setStatus(err instanceof Error ? err.message : 'Something went wrong.');
+              } finally {
+                setSubmitting(false);
+              }
             }}
           >
-            {() => (
+            {({ isSubmitting, status }) => (
               <Form>
                 <div className={styles.inputGroup}>
                   {/* Name */}
@@ -103,10 +113,13 @@ export default function SignupForm() {
                   </div>
                 </div>
 
+                {/* Submit error from the API */}
+                {status && <div className={styles.errorText}>{status}</div>}
+
                 {/* Social Login Options */}
                 <div className={styles.socialButtons}>
                   <button type="button" className={styles.socialBtn}>
-                     Sign up with Apple
+                     Sign up with Apple
                   </button>
                   <button type="button" className={styles.socialBtn}>
                     G Sign up with Google
@@ -114,8 +127,8 @@ export default function SignupForm() {
                 </div>
 
                 {/* Main Submit CTA */}
-                <button type="submit" className={styles.submitBtn}>
-                  Create my account <span>→</span>
+                <button type="submit" className={styles.submitBtn} disabled={isSubmitting}>
+                  {isSubmitting ? 'Creating account…' : 'Create my account'} <span>→</span>
                 </button>
 
                 {/* Footer Notice */}

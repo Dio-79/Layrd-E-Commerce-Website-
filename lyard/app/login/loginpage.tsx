@@ -67,10 +67,10 @@ export default function LoginForm() {
             <Formik
               initialValues={{ email: '', password: '' }}
               validationSchema={schema}
-              onSubmit={async () => {
+              onSubmit={async (values) => {
                 setServerError('');
                 try {
-                  const response = await submitLoginForm();
+                  const response = await submitLoginForm(values);
                   const token = (response as { token?: string } | null)?.token;
                   console.log('Logged in, token:', token); // store the token however your app needs
                   router.push('/'); // or '/varificationpage' (check the folder spelling)
