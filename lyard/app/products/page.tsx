@@ -1,5 +1,7 @@
 "use client";
 
+import Footer from "../components/Footer";
+import Header from "../components/Header";
 import styles from "./mainpage.module.css";
 import Sidebar from "./sidebar";
 import CatalogHeader from "./sorting";
@@ -36,7 +38,9 @@ function CatalogContent() {
 export default function ProductGrid() {
   return (
     <ProductProvider>
+      <Header />
       <CatalogContent />
+      <Footer />
     </ProductProvider>
   );
 }
