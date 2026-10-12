@@ -1,0 +1,383 @@
+/* ---------- Layout ---------- */
+.builder {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px 24px 60px;
+  font-family: "Montserrat", system-ui, sans-serif;
+  color: #000;
+}
+
+/* ---------- Slot grid ---------- */
+.slotGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px 80px;
+}
+
+.slot {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  min-height: 90px;
+}
+
+.slotImg {
+  width: 90px;
+  height: 90px;
+  flex-shrink: 0;
+  object-fit: cover;
+  border-radius: 20px;
+  border: 2px solid #d4a017;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.slotInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.slotName {
+  font-weight: 600;
+  font-size: 17px;
+  letter-spacing: 0.3px;
+}
+
+.slotLabel {
+  font-family: "Courier New", monospace;
+  font-size: 11px;
+  color: #9ca3af;
+  margin-top: 8px;
+}
+
+/* Empty slot */
+.emptyBox {
+  width: 90px;
+  height: 90px;
+  flex-shrink: 0;
+  border-radius: 20px;
+  border: 2px dashed #d1d5db;
+  background: #f9fafb;
+  font-size: 32px;
+  font-weight: 300;
+  color: #9ca3af;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.emptyBox:hover {
+  border-color: #d4a017;
+  color: #d4a017;
+}
+
+.emptyLabel {
+  flex: 1;
+  color: #9ca3af;
+  font-weight: 500;
+  font-size: 15px;
+}
+
+/* Pill buttons (+ADD More / Change) */
+.addMoreBtn,
+.changeBtn {
+  background: #000;
+  color: #fff;
+  border: 0;
+  border-radius: 999px;
+  padding: 12px 24px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.15s;
+}
+
+.addMoreBtn:hover,
+.changeBtn:hover {
+  opacity: 0.8;
+}
+
+/* In your screenshot filled slots show no button, so Change stays subtle */
+.changeBtn {
+  background: transparent;
+  color: #6b7280;
+  border: 1px solid #d1d5db;
+  padding: 8px 16px;
+  font-size: 11px;
+}
+
+.changeBtn:hover {
+  opacity: 1;
+  border-color: #000;
+  color: #000;
+}
+
+.divider {
+  border: 0;
+  border-top: 1px solid #eee;
+  margin: 44px 0 32px;
+}
+
+/* ---------- Controls ---------- */
+.controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.flavorSelect {
+  min-width: 324px;
+  padding: 14px 16px;
+  border: 1px solid #000;
+  border-radius: 0;
+  background: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+.sizeGroup {
+  text-align: right;
+}
+
+.sizeButtons {
+  display: flex;
+  gap: 12px;
+}
+
+.sizeBtn {
+  padding: 13px 30px;
+  border: 1px solid #000;
+  background: #fff;
+  color: #374151;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.sizeBtn:hover {
+  background: #f3f4f6;
+}
+
+.sizeActive,
+.sizeActive:hover {
+  background: #000;
+  color: #fff;
+}
+
+/* ---------- Footer: price, qty, add to bag ---------- */
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-top: 32px;
+}
+
+.priceBox {
+  border: 1px solid #000;
+  padding: 16px 44px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.footerRight {
+  display: flex;
+  align-items: flex-end;
+  gap: 24px;
+}
+
+.qty {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  min-width: 114px;
+  border: 1px solid #e5e7eb;
+  padding: 12px 16px;
+  font-weight: 600;
+}
+
+.qty button {
+  border: 0;
+  background: none;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+.addToBag {
+  background: #000;
+  color: #fff;
+  border: 0;
+  padding: 20px 44px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  transition: opacity 0.15s;
+}
+
+.addToBag:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+.addToBag:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ---------- Picker modal ---------- */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.modal {
+  position: relative;
+  background: #fff;
+  border: 1px solid #d4a017;
+  padding: 36px 32px 32px;
+  width: min(580px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.closeX {
+  position: absolute;
+  top: 20px;
+  right: 24px;
+  border: 0;
+  background: none;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.modalTitle {
+  text-align: center;
+  font-family: "Cinzel", Georgia, serif;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  margin: 0;
+  padding: 0 24px;
+}
+
+.modalSub {
+  text-align: center;
+  color: #6b7280;
+  font-size: 14px;
+  margin: 10px 0 28px;
+}
+
+.pickGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.pickCard {
+  border: 1px solid #ddd;
+  padding: 24px 16px 20px;
+  text-align: center;
+}
+
+.pickImg {
+  width: 90px;
+  height: 90px;
+  object-fit: cover;
+  border-radius: 20px;
+  border: 2px solid #d4a017;
+}
+
+.pickName {
+  font-weight: 600;
+  font-size: 15px;
+  margin-top: 14px;
+}
+
+.pickPrice {
+  color: #6b7280;
+  font-size: 12px;
+  margin: 6px 0 16px;
+}
+
+.selectBtn {
+  background: #000;
+  color: #fff;
+  border: 0;
+  border-radius: 999px;
+  padding: 11px 28px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.selectBtn:hover {
+  opacity: 0.8;
+}
+
+/* ---------- Mobile ---------- */
+@media (max-width: 768px) {
+  .slotGrid {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+
+  .controls,
+  .footer,
+  .footerRight {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .flavorSelect {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .sizeGroup {
+    text-align: left;
+  }
+
+  .sizeBtn {
+    flex: 1;
+    padding: 13px 8px;
+  }
+
+  .priceBox {
+    text-align: center;
+  }
+
+  .pickGrid {
+    grid-template-columns: 1fr;
+  }
+}
