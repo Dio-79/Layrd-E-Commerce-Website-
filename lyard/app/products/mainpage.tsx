@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { ProductItem } from "@/app/types/models";
 import { products } from "@/lib/data";
-import styles from "./ProductGrid.module.css";
+import styles from "./mainpage.module.css";
 
 
 interface ProductCardProps {
