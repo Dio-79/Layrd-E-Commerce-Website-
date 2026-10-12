@@ -7,13 +7,13 @@
   color: #000;
 }
 
-/* ---------- Slot grid ---------- */
 .slotGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 48px 80px;
+  gap: 40px 60px;
 }
 
+/* ---------- Empty slot ---------- */
 .slot {
   display: flex;
   align-items: center;
@@ -21,35 +21,6 @@
   min-height: 90px;
 }
 
-.slotImg {
-  width: 90px;
-  height: 90px;
-  flex-shrink: 0;
-  object-fit: cover;
-  border-radius: 20px;
-  border: 2px solid #d4a017;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-}
-
-.slotInfo {
-  flex: 1;
-  min-width: 0;
-}
-
-.slotName {
-  font-weight: 600;
-  font-size: 17px;
-  letter-spacing: 0.3px;
-}
-
-.slotLabel {
-  font-family: "Courier New", monospace;
-  font-size: 11px;
-  color: #9ca3af;
-  margin-top: 8px;
-}
-
-/* Empty slot */
 .emptyBox {
   width: 90px;
   height: 90px;
@@ -76,9 +47,7 @@
   font-size: 15px;
 }
 
-/* Pill buttons (+ADD More / Change) */
-.addMoreBtn,
-.changeBtn {
+.addMoreBtn {
   background: #000;
   color: #fff;
   border: 0;
@@ -90,54 +59,179 @@
   letter-spacing: 0.5px;
   cursor: pointer;
   white-space: nowrap;
-  transition: opacity 0.15s;
 }
 
-.addMoreBtn:hover,
-.changeBtn:hover {
+.addMoreBtn:hover {
   opacity: 0.8;
 }
 
-/* In your screenshot filled slots show no button, so Change stays subtle */
+/* ---------- Filled slot ---------- */
+.slotFilled {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.slotTop {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.slotImg {
+  width: 90px;
+  height: 90px;
+  flex-shrink: 0;
+  object-fit: cover;
+  border-radius: 20px;
+  border: 2px solid #d4a017;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  background: #f3f4f6;
+}
+
+.slotInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.slotName {
+  font-weight: 600;
+  font-size: 17px;
+}
+
+.slotLabel {
+  font-family: "Courier New", monospace;
+  font-size: 11px;
+  color: #9ca3af;
+  margin-top: 6px;
+}
+
+.slotActions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
 .changeBtn {
   background: transparent;
   color: #6b7280;
   border: 1px solid #d1d5db;
-  padding: 8px 16px;
+  border-radius: 999px;
+  padding: 8px 18px;
+  font-family: inherit;
   font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
 }
 
 .changeBtn:hover {
-  opacity: 1;
   border-color: #000;
   color: #000;
 }
 
-.divider {
+.removeBtn {
+  background: none;
   border: 0;
-  border-top: 1px solid #eee;
-  margin: 44px 0 32px;
+  padding: 0;
+  color: #9ca3af;
+  font-family: inherit;
+  font-size: 11px;
+  text-decoration: underline;
+  cursor: pointer;
 }
 
-/* ---------- Controls ---------- */
-.controls {
+.removeBtn:hover {
+  color: #b91c1c;
+}
+
+/* Per-slot options row */
+.slotOptions {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  gap: 24px;
+  align-items: flex-start;
+  gap: 18px;
   flex-wrap: wrap;
+  padding-left: 110px; /* image width + gap, lines up under the name */
 }
 
-.flavorSelect {
-  min-width: 324px;
-  padding: 14px 16px;
+.optionCol {
+  display: flex;
+  flex-direction: column;
+}
+
+.optionLabel {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+
+.slotSelect {
+  height: 34px;
+  min-width: 110px;
+  padding: 0 10px;
   border: 1px solid #000;
   border-radius: 0;
   background: #fff;
   font-family: inherit;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
+}
+
+.slotSizeBtns {
+  display: flex;
+  gap: 6px;
+}
+
+.slotSizeBtn {
+  width: 34px;
+  height: 34px;
+  border: 1px solid #000;
+  background: #fff;
+  color: #374151;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.slotSizeBtn.sizeActive {
+  background: #000;
+  color: #fff;
+}
+
+.slotQty {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid #e5e7eb;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.slotQty button {
+  border: 0;
+  background: none;
+  font-size: 14px;
+  padding: 0 2px;
+  cursor: pointer;
+}
+
+.errorMessage {
+  color: #b91c1c;
+  font-size: 11px;
+  margin-top: 4px;
+}
+
+/* ---------- Footer ---------- */
+.divider {
+  border: 0;
+  border-top: 1px solid #eee;
+  margin: 44px 0 32px;
 }
 
 .label {
@@ -148,46 +242,12 @@
   margin-bottom: 8px;
 }
 
-.sizeGroup {
-  text-align: right;
-}
-
-.sizeButtons {
-  display: flex;
-  gap: 12px;
-}
-
-.sizeBtn {
-  padding: 13px 30px;
-  border: 1px solid #000;
-  background: #fff;
-  color: #374151;
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 1.5px;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s;
-}
-
-.sizeBtn:hover {
-  background: #f3f4f6;
-}
-
-.sizeActive,
-.sizeActive:hover {
-  background: #000;
-  color: #fff;
-}
-
-/* ---------- Footer: price, qty, add to bag ---------- */
 .footer {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
   gap: 24px;
   flex-wrap: wrap;
-  margin-top: 32px;
 }
 
 .priceBox {
@@ -218,8 +278,8 @@
   border: 0;
   background: none;
   font-size: 16px;
-  cursor: pointer;
   padding: 0 4px;
+  cursor: pointer;
 }
 
 .addToBag {
@@ -233,7 +293,6 @@
   letter-spacing: 1.5px;
   cursor: pointer;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
-  transition: opacity 0.15s;
 }
 
 .addToBag:hover:not(:disabled) {
@@ -244,6 +303,13 @@
   opacity: 0.35;
   cursor: not-allowed;
   box-shadow: none;
+}
+
+.hint {
+  margin-top: 14px;
+  text-align: right;
+  font-size: 12px;
+  color: #6b7280;
 }
 
 /* ---------- Picker modal ---------- */
@@ -313,6 +379,7 @@
   object-fit: cover;
   border-radius: 20px;
   border: 2px solid #d4a017;
+  background: #f3f4f6;
 }
 
 .pickName {
@@ -338,7 +405,6 @@
   font-weight: 700;
   letter-spacing: 1.5px;
   cursor: pointer;
-  transition: opacity 0.15s;
 }
 
 .selectBtn:hover {
@@ -352,28 +418,21 @@
     gap: 28px;
   }
 
-  .controls,
+  .slotOptions {
+    padding-left: 0;
+  }
+
   .footer,
   .footerRight {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .flavorSelect {
-    min-width: 0;
-    width: 100%;
-  }
-
-  .sizeGroup {
-    text-align: left;
-  }
-
-  .sizeBtn {
-    flex: 1;
-    padding: 13px 8px;
-  }
-
   .priceBox {
+    text-align: center;
+  }
+
+  .hint {
     text-align: center;
   }
 

@@ -1,20 +1,24 @@
 "use client";
 
 import { useState } from "react";
+import type { Product } from "@/app/types/models";
 import { products } from "@/lib/data";
 import { useCart } from "@/app/context/CartContext";
 import {
   useBundle,
   findProduct,
-  SIZES,
   FLAVORS,
   SLOT_COUNT,
   getProductId,
   getProductName,
   getProductImage,
   getBasePrice,
+  getProductSizes,
+  getUnitPrice,
 } from "@/app/context/Bundlecontext";
 import styles from "./bundlebuilder.module.css";
+
+const MIN_SLOTS = 3; // change this number to require more or fewer slots
 
 // Same slots/options => same id, so identical bundles merge into one cart line
 const makeBundleId = (key: string) => {
@@ -43,34 +47,39 @@ export default function BundleBuilder() {
   const { addItem } = useCart();
   const [showErrors, setShowErrors] = useState(false);
 
-  const allFilled = slots.every((s) => s !== null);
-  const missingFlavor = slots.some((s) => s && !s.flavor);
+  const filledCount = slots.filter((s) => s !== null).length;
+  const canAdd = filledCount >= MIN_SLOTS;
+  const missingFlavor = slots.some((s) => s && !s.flavor); // only checks filled slots
 
   const handleAddToBag = () => {
-    if (!allFilled) return;
+    if (!canAdd) return;
     if (missingFlavor) {
       setShowErrors(true);
       return;
     }
 
+    // Empty slots are skipped
     const summary = slots
+      .filter((s): s is NonNullable<typeof s> => s !== null)
       .map((s) => {
-        if (!s) return "";
         const name = getProductName(findProduct(s.productId)!);
         return `${name} x${s.quantity} (${s.size}, ${s.flavor})`;
       })
       .join(", ");
 
-    const bundleProduct: Parameters<typeof addItem>[0] = {
+    const bundleProduct: Product & { quantity: number } = {
       productID: makeBundleId(summary),
       name: `Custom Bundle: ${summary}`,
       price: unitPrice,
-      tag: "bundle",
-      description: `Custom bundle: ${summary}`,
-      imageUrl: getProductImage(findProduct(slots[0]!.productId)!),
+      tag: "Bundles",
+      description: summary,
+      imageUrl: "",
+      quantity,
     };
 
-    addItem(bundleProduct);
+    for (let i = 0; i < quantity; i++) {
+      addItem(bundleProduct as Product);
+    }
     setShowErrors(false);
     reset();
   };
@@ -96,6 +105,9 @@ export default function BundleBuilder() {
             );
           }
 
+          const sizes = getProductSizes(product);
+          const slotPrice = getUnitPrice(product, slot.size) * slot.quantity;
+
           return (
             <div key={i} className={styles.slotFilled}>
               <div className={styles.slotTop}>
@@ -108,6 +120,7 @@ export default function BundleBuilder() {
                 <div className={styles.slotInfo}>
                   <div className={styles.slotName}>{getProductName(product)}</div>
                   <div className={styles.slotLabel}>Slot #{i + 1}</div>
+                  <div className={styles.slotPrice}>${slotPrice.toFixed(2)}</div>
                 </div>
                 <div className={styles.slotActions}>
                   <button type="button" className={styles.changeBtn} onClick={() => openPicker(i)}>
@@ -143,18 +156,19 @@ export default function BundleBuilder() {
                   )}
                 </div>
 
-                {/* Size per slot */}
+                {/* Size per slot: only this product's sizes, each with its own price */}
                 <div className={styles.optionCol}>
                   <span className={styles.optionLabel}>SIZE</span>
                   <div className={styles.slotSizeBtns}>
-                    {SIZES.map((s) => (
+                    {sizes.map((s) => (
                       <button
                         key={s}
                         type="button"
                         className={`${styles.slotSizeBtn} ${slot.size === s ? styles.sizeActive : ""}`}
                         onClick={() => updateSlot(i, { size: s })}
+                        title={`$${getUnitPrice(product, s).toFixed(2)}`}
                       >
-                        {s.charAt(0)}
+                        {s}
                       </button>
                     ))}
                   </div>
@@ -202,7 +216,7 @@ export default function BundleBuilder() {
           <button
             type="button"
             className={styles.addToBag}
-            disabled={!allFilled}
+            disabled={!canAdd}
             onClick={handleAddToBag}
           >
             ADD TO BAG →
@@ -210,8 +224,16 @@ export default function BundleBuilder() {
         </div>
       </div>
 
+      {!canAdd && (
+        <p className={styles.hint}>
+          Fill at least {MIN_SLOTS} slots to add to bag ({filledCount}/{MIN_SLOTS} selected)
+        </p>
+      )}
+
       {showErrors && missingFlavor && (
-        <p className={styles.errorMessage}>Choose a flavor for every slot before adding to bag.</p>
+        <p className={styles.hint} style={{ color: "#b91c1c" }}>
+          Choose a flavor for every filled slot before adding to bag.
+        </p>
       )}
 
       {/* Picker modal */}

@@ -1,179 +1,116 @@
-.pageWrapper {
-  width: 100%;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.mainContent {
-  max-width: 1200px;
-  width: 100%;
-  margin: 0 auto;
-  padding: 40px 24px 60px;
-  display: grid;
-  grid-template-columns: 1fr 280px;
-  gap: 48px;
-  box-sizing: border-box;
-}
-
-.leftColumn {
-  display: flex;
-  flex-direction: column;
-  gap: 32px;
-}
-
-.bundleList {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.bundleSlotCard {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px;
-}
-
-.bundleSlotItem {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
-.slotImageFrame {
-  width: 90px;
-  height: 90px;
-  border: 2px solid #ca8a04;
-  border-radius: 12px;
-  overflow: hidden;
-}
-
-.slotImageFrame img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.slotTitle {
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.controlsGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  align-items: end;
-}
-
-.priceBox {
-  border: 1.5px solid #000000;
-  padding: 10px 16px;
-  font-size: 13px;
-  font-weight: 700;
-  text-align: center;
-  margin-top: 12px;
-}
-
-.sizeSelectorGroup {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.sizeLabel {
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.sizeButtons {
-  display: flex;
-  gap: 8px;
-}
-
-.sizeOptionBtn {
-  flex: 1;
-  padding: 8px 0;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  border: 1.5px solid #000000;
-  background-color: #ffffff;
-  cursor: pointer;
-}
-
-.activeSize {
-  background-color: #000000;
-  color: #ffffff;
-}
-
-.addToBagRow {
-  display: flex;
-  gap: 12px;
-  margin-top: 12px;
-}
-
-.quantityStepper {
-  display: flex;
-  align-items: center;
-  border: 1.5px solid #000000;
-}
-
-.stepperBtn {
-  background: none;
-  border: none;
-  padding: 8px 12px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.stepperValue {
-  padding: 0 8px;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.addToBagBtn {
-  flex: 1;
-  background-color: #000000;
-  color: #ffffff;
-  border: none;
-  padding: 12px 20px;
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  cursor: pointer;
-}
-
-.rightSidebar {
+/* ---------- Filled slot with per-slot options ---------- */
+.slotFilled {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.sidebarTitle {
+.slotTop {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.slotActions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.removeBtn {
+  background: transparent;
+  border: 0;
+  color: #9ca3af;
+  font-family: inherit;
+  font-size: 11px;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.removeBtn:hover {
+  color: #b91c1c;
+}
+
+.slotOptions {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  padding-left: 114px; /* image width + gap, lines options up under the name */
+}
+
+.optionCol {
+  display: flex;
+  flex-direction: column;
+}
+
+.optionLabel {
   font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+
+.slotSelect {
+  padding: 8px 10px;
+  border: 1px solid #000;
+  border-radius: 0;
+  background: #fff;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  min-width: 110px;
+  cursor: pointer;
+}
+
+.slotSizeBtns {
+  display: flex;
+  gap: 6px;
+}
+
+.slotSizeBtn {
+  width: 34px;
+  height: 34px;
+  border: 1px solid #000;
+  background: #fff;
   color: #374151;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
 }
 
-.recommendationCard {
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  border: 2px solid #ca8a04;
-  border-radius: 12px;
-  overflow: hidden;
+.slotSizeBtn.sizeActive {
+  background: #000;
+  color: #fff;
 }
 
-.recommendationCard img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.slotQty {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid #e5e7eb;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.slotQty button {
+  border: 0;
+  background: none;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 2px;
+}
+
+.errorMessage {
+  color: #b91c1c;
+  font-size: 11px;
+  margin-top: 4px;
+}
+
+@media (max-width: 768px) {
+  .slotOptions {
+    padding-left: 0;
+  }
 }

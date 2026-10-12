@@ -2,48 +2,63 @@
 
 import { createContext, useContext, useState, ReactNode } from "react";
 import { products } from "@/lib/data";
-import { getPrice } from "@/lib/dataSize";
+import { getSizes, getPrice } from "@/lib/dataSize";
 
 export type Product = (typeof products)[number];
 
 export const SLOT_COUNT = 6;
-export const SIZES = ["Small", "Regular", "Large"] as const;
 export const FLAVORS = ["Black", "Sugar", "Stevia", "Brown-Sugar"] as const;
+
+// Only used when a product has no sizes in dataSize
+export const FALLBACK_SIZES = ["Small", "Regular", "Large"];
+const FALLBACK_MULTIPLIER: Record<string, number> = {
+  small: 1,
+  regular: 1.25,
+  large: 1.5,
+};
 
 export interface SlotData {
   productId: number;
-  flavor: string;   // "" until the customer picks one
+  flavor: string; // "" until the customer picks one
   size: string;
   quantity: number;
 }
 
 // ---- helpers (adjust field names to match your data) ----
-export const getProductId = (p: Product) => ("id" in p ? Number(p.id) : 0);
+export const getProductId = (p: Product) => {
+  const x = p as any;
+  const id = x.id ?? x.productID ?? x.productId;
+  return id !== undefined ? Number(id) : products.indexOf(p) + 1;
+};
 export const getProductName = (p: Product) => ("name" in p ? String(p.name) : "Item");
 export const getBasePrice = (p: Product) => ("price" in p ? Number(p.price) : 0);
 export const getProductImage = (p: Product) => {
-  const productWithImage = p as Product & {
-    imageUrl?: string;
-    image?: string;
-    images?: string[];
-  };
-
-  return productWithImage.imageUrl ?? productWithImage.image ?? productWithImage.images?.[0] ?? "";
+  const x = p as any;
+  return x.imageUrl || x.image || x.images?.[0] || "";
 };
 export const findProduct = (id: number | null | undefined) =>
   id == null ? undefined : products.find((p) => getProductId(p) === id);
 
+// Sizes this product actually supports (from your dataSize file)
+export const getProductSizes = (p: Product): string[] => {
+  const sizes = getSizes(getProductId(p)) ?? [];
+  return sizes.length > 0 ? sizes.map((s) => String(s)) : [...FALLBACK_SIZES];
+};
+
+// Price of ONE unit at a given size
 export const getUnitPrice = (p: Product, size: string) => {
-  const sized = getPrice(p, size);
-  return sized && sized > 0 ? Number(sized) : getBasePrice(p);
+  const sized = Number(getPrice(p, size));
+  if (Number.isFinite(sized) && sized > 0) return sized;
+  // getPrice had nothing for this size: scale the base price
+  return getBasePrice(p) * (FALLBACK_MULTIPLIER[size.toLowerCase()] ?? 1);
 };
 
 interface BundleContextType {
   slots: (SlotData | null)[];
-  quantity: number;              // how many of the whole bundle
-  activeSlot: number | null;     // slot whose picker modal is open
-  unitPrice: number;             // price of ONE bundle (all slots)
-  total: number;                 // unitPrice * quantity
+  quantity: number;          // how many of the whole bundle
+  activeSlot: number | null; // slot whose picker modal is open
+  unitPrice: number;         // price of ONE bundle (all filled slots)
+  total: number;             // unitPrice * quantity
   openPicker: (slotIndex: number) => void;
   closePicker: () => void;
   selectProduct: (productId: number) => void;
@@ -63,15 +78,23 @@ export function BundleProvider({ children }: { children: ReactNode }) {
   const openPicker = (i: number) => setActiveSlot(i);
   const closePicker = () => setActiveSlot(null);
 
-  // Fills the active slot. If the slot already had options (Change), keep them.
+  // Fills the active slot. On Change, keeps flavor/qty and keeps size if the new product supports it.
   const selectProduct = (productId: number) => {
     if (activeSlot === null) return;
+    const product = findProduct(productId);
+    const sizes = product ? getProductSizes(product) : FALLBACK_SIZES;
+
     setSlots((prev) =>
-      prev.map((s, i) =>
-        i === activeSlot
-          ? { flavor: "", size: "Small", quantity: 1, ...(s ?? {}), productId }
-          : s
-      )
+      prev.map((s, i) => {
+        if (i !== activeSlot) return s;
+        const keepSize = s && sizes.includes(s.size) ? s.size : sizes[0];
+        return {
+          flavor: s?.flavor ?? "",
+          quantity: s?.quantity ?? 1,
+          size: keepSize,
+          productId,
+        };
+      })
     );
     setActiveSlot(null);
   };
