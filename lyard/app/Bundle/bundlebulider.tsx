@@ -3,50 +3,54 @@
 import { products } from "@/lib/data";
 import { useCart } from "@/app/context/CartContext";
 import {
-  useBundle, findProduct, SIZES, SLOT_COUNT,
-  getProductId, getProductName, getProductImage, getBasePrice,
+  useBundle,
+  findProduct,
+  SIZES,
+  SLOT_COUNT,
+  getProductId,
+  getProductName,
+  getProductImage,
+  getBasePrice,
 } from "@/app/context/Bundlecontext";
+import SelectionForms, { FORM_ID } from "./forms-slots";
 import styles from "./bundlebuilder.module.css";
-
-type BundleCartItem = {
-  productID: number;
-  name: string;
-  price: number;
-  tag: string;
-  description: string;
-  imageUrl: string;
-};
 
 export default function BundleBuilder() {
   const {
-    slots, size, quantity, activeSlot, total,
-    openPicker, closePicker, selectProduct, fillEmptySlots,
-    clearSlot, setSize, setQuantity, reset,
+    slots,
+    size,
+    quantity,
+    activeSlot,
+    unitPrice,
+    total,
+    flavorOption,
+    openPicker,
+    closePicker,
+    selectProduct,
+    setSize,
+    setQuantity,
+    reset,
   } = useBundle();
   const { addItem } = useCart();
 
   const allFilled = slots.every((s) => s !== null);
 
+  // Runs only after SelectionForms validation passes (flavor selected)
   const handleAddToBag = () => {
     if (!allFilled) return;
 
-    const bundlePrice = total / quantity;
-    const bundleItem: BundleCartItem = {
-      productID: Date.now(),
-      name: `Custom Bundle (${SLOT_COUNT} items, ${size})`,
-      price: bundlePrice,
-      tag: "Custom Bundle",
-      description: `Custom bundle with ${SLOT_COUNT} items in ${size} size`,
-      imageUrl: products[0]?.imageUrl ?? "/placeholder.png",
+    const bundleProduct = {
+      productID: Date.now(), // one id for all copies so they merge into one cart line
+      name: `Custom Bundle (${SLOT_COUNT} items, ${size}, ${flavorOption})`,
+      price: unitPrice,
+      tag: "bundle",
+      description: `Custom bundle with ${SLOT_COUNT} items in ${size} size and ${flavorOption} flavor.`,
+      imageUrl: "/images/custom-bundle.jpg",
     };
 
-    addItem(bundleItem);
-    for (let i = 1; i < quantity; i++) {
-      addItem({
-        ...bundleItem,
-        productID: Date.now(),
-      });
-    }
+    // CartContext.addItem adds 1 per call, so repeat for the quantity
+    for (let i = 0; i < quantity; i++) addItem(bundleProduct);
+
     reset();
   };
 
@@ -56,9 +60,11 @@ export default function BundleBuilder() {
       <div className={styles.slotGrid}>
         {slots.map((productId, i) => {
           const product = findProduct(productId);
+
           return product ? (
             <div key={i} className={styles.slot}>
-              <img src={getProductImage(product)} alt="" className={styles.slotImg} />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={getProductImage(product)} alt={getProductName(product)} className={styles.slotImg} />
               <div className={styles.slotInfo}>
                 <div className={styles.slotName}>{getProductName(product)}</div>
                 <div className={styles.slotLabel}>Slot #{i + 1}</div>
@@ -83,20 +89,9 @@ export default function BundleBuilder() {
 
       <hr className={styles.divider} />
 
-      {/* Controls */}
+      {/* Controls: flavor form + size */}
       <div className={styles.controls}>
-        <select
-          className={styles.flavorSelect}
-          value=""
-          onChange={(e) => e.target.value && fillEmptySlots(Number(e.target.value))}
-        >
-          <option value="">Select flavors per slot</option>
-          {products.map((p) => (
-            <option key={getProductId(p)} value={getProductId(p)}>
-              Fill empty slots with {getProductName(p)}
-            </option>
-          ))}
-        </select>
+        <SelectionForms onValid={handleAddToBag} />
 
         <div className={styles.sizeGroup}>
           <span className={styles.label}>SIZE</span>
@@ -115,6 +110,7 @@ export default function BundleBuilder() {
         </div>
       </div>
 
+      {/* Footer: price, qty, add to bag */}
       <div className={styles.footer}>
         <div className={styles.priceBox}>Price:${total.toFixed(2)}</div>
 
@@ -122,16 +118,22 @@ export default function BundleBuilder() {
           <div>
             <span className={styles.label}>QTY</span>
             <div className={styles.qty}>
-              <button type="button" onClick={() => setQuantity(quantity - 1)}>-</button>
+              <button type="button" onClick={() => setQuantity(quantity - 1)}>
+                -
+              </button>
               <span>{quantity}</span>
-              <button type="button" onClick={() => setQuantity(quantity + 1)}>+</button>
+              <button type="button" onClick={() => setQuantity(quantity + 1)}>
+                +
+              </button>
             </div>
           </div>
+
+          {/* Submits the flavor form from outside the <form> tag */}
           <button
-            type="button"
+            type="submit"
+            form={FORM_ID}
             className={styles.addToBag}
             disabled={!allFilled}
-            onClick={handleAddToBag}
           >
             ADD TO BAG →
           </button>
@@ -142,13 +144,18 @@ export default function BundleBuilder() {
       {activeSlot !== null && (
         <div className={styles.backdrop} onClick={closePicker}>
           <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <button type="button" className={styles.closeX} onClick={closePicker}>✕</button>
+            <button type="button" className={styles.closeX} onClick={closePicker}>
+              ✕
+            </button>
             <h2 className={styles.modalTitle}>CHOOSE ITEM FOR SLOT #{activeSlot + 1}</h2>
-            <p className={styles.modalSub}>Select a flavor to populate this slot in your custom bundle.</p>
+            <p className={styles.modalSub}>
+              Select a flavor to populate this slot in your custom bundle.
+            </p>
 
             <div className={styles.pickGrid}>
               {products.map((p) => (
                 <div key={getProductId(p)} className={styles.pickCard}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={getProductImage(p)} alt={getProductName(p)} className={styles.pickImg} />
                   <div className={styles.pickName}>{getProductName(p)}</div>
                   <div className={styles.pickPrice}>From ${getBasePrice(p).toFixed(2)}</div>

@@ -13,16 +13,18 @@ export const SIZES = ["Small", "Regular", "Large"] as const;
 export const getProductId = (p: Product) => ("id" in p ? Number(p.id) : 0);
 export const getProductName = (p: Product) => ("name" in p ? String(p.name) : "Item");
 export const getBasePrice = (p: Product) => ("price" in p ? Number(p.price) : 0);
-export const getProductImage = (p: Product) => {
-  const record = p as unknown as Record<string, unknown>;
-  const imageUrl = typeof record.imageUrl === "string" ? record.imageUrl : undefined;
-  const image = typeof record.image === "string" ? record.image : undefined;
-  const images = Array.isArray(record.images)
-    ? record.images.filter((item): item is string => typeof item === "string")
-    : [];
 
-  return imageUrl || image || images[0] || "";
+type ProductImageSource = Partial<Product> & {
+  imageUrl?: string;
+  image?: string;
+  images?: string[];
 };
+
+export const getProductImage = (p: Product): string => {
+  const x = p as ProductImageSource;
+  return x.imageUrl ?? x.image ?? x.images?.[0] ?? "";
+};
+
 export const findProduct = (id: number | null) =>
   id === null ? undefined : products.find((p) => getProductId(p) === id);
 
@@ -36,6 +38,7 @@ interface BundleContextType {
   size: string;
   quantity: number;
   activeSlot: number | null;     // slot whose picker modal is open
+  flavorOption: string;          // value from the SelectionForms dropdown
   unitPrice: number;             // price of one bundle at the chosen size
   total: number;                 // unitPrice * quantity
   openPicker: (slotIndex: number) => void;
@@ -45,6 +48,7 @@ interface BundleContextType {
   clearSlot: (slotIndex: number) => void;
   setSize: (size: string) => void;
   setQuantity: (q: number) => void;
+  setFlavorOption: (v: string) => void;
   reset: () => void;
 }
 
@@ -55,6 +59,7 @@ export function BundleProvider({ children }: { children: ReactNode }) {
   const [size, setSize] = useState<string>("Small");
   const [quantity, setQuantityState] = useState<number>(1);
   const [activeSlot, setActiveSlot] = useState<number | null>(null);
+  const [flavorOption, setFlavorOption] = useState<string>("");
 
   const openPicker = (i: number) => setActiveSlot(i);
   const closePicker = () => setActiveSlot(null);
@@ -78,9 +83,12 @@ export function BundleProvider({ children }: { children: ReactNode }) {
     setSize("Small");
     setQuantityState(1);
     setActiveSlot(null);
+    setFlavorOption("");
   };
 
   const unitPrice: number = slots.reduce<number>((sum, id) => {
+    if (id === null) return sum;
+
     const p = findProduct(id);
     return p ? sum + getUnitPrice(p, size) : sum;
   }, 0);
@@ -88,10 +96,22 @@ export function BundleProvider({ children }: { children: ReactNode }) {
   return (
     <BundleContext.Provider
       value={{
-        slots, size, quantity, activeSlot, unitPrice,
+        slots,
+        size,
+        quantity,
+        activeSlot,
+        flavorOption,
+        unitPrice,
         total: unitPrice * quantity,
-        openPicker, closePicker, selectProduct, fillEmptySlots,
-        clearSlot, setSize, setQuantity, reset,
+        openPicker,
+        closePicker,
+        selectProduct,
+        fillEmptySlots,
+        clearSlot,
+        setSize,
+        setQuantity,
+        setFlavorOption,
+        reset,
       }}
     >
       {children}
