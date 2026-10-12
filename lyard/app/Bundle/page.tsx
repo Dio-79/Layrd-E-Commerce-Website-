@@ -6,17 +6,21 @@ import SelectionForms from "./forms-slots";
 import Calculation from "./calculation";
 import Button from "./button";
 
-export default function MixAndMatchBundlePage() {
+import { BundleProvider } from "@/app/context/Bundlecontext";
 
-
+export default function Page() {
   return (
-    <>
-      <Header />
-  <Button/>
-     <Calculation/>
-    <SelectionForms/>
+    <BundleProvider>
+        <Header/>
 
-      <Footer />
-    </>
+      <Button />
+      <Calculation />
+      <SelectionForms/>
+      <Footer/>
+    </BundleProvider>
   );
 }
+
+
+      
+ 

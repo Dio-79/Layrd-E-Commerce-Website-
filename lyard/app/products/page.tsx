@@ -16,6 +16,7 @@ interface ProductCardProps {
 }
 
 type ProductWithDetails = ProductItem & {
+  productID?: number | string;
   image?: string;
   images?: string[];
   shelfLife?: string;
@@ -25,12 +26,14 @@ type ProductWithDetails = ProductItem & {
 // Converts a catalog item (ProductItem) into the shape the cart uses (Product)
 function toCartProduct(item: ProductItem): Product {
   const p = item as ProductWithDetails;
+  const productId = Number(p.productID ?? p.id ?? 0);
+
   return {
-    productID: (item as any).productID ?? (item as any).id, // <-- adjust to your real id field
+    productID: productId,
     name: item.name,
     price: item.price,
     imageUrl: p.images?.[0] || p.imageUrl || p.image || "",
-  } as Product; // remove the cast once the fields match your Product type exactly
+  } as Product;
 }
 
 // Full Product Card component

@@ -1,28 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { products } from "@/lib/data";
+import { useBundle } from "@/app/context/Bundlecontext";
 import styles from "./button.module.css";
 
-type Product = (typeof products)[number];
-
-interface AddingItems {
-  id: string;
-  productId: number;
-}
-
 export default function Button() {
-  const [items, setItems] = useState<AddingItems[]>([]);
-
-  function handleAddMore(product: Product) {
-    const productId = "id" in product ? Number(product.id) : 0;
-    const newItem = { id: crypto.randomUUID(), productId };
-    setItems((currentItems) => [...currentItems, newItem]);
-  }
-
-  function handleCancel() {
-    setItems([]);
-  }
+  const { items, addItem, clearAll } = useBundle();
 
   return (
     <div className={styles.addMoreWrap}>
@@ -31,7 +15,7 @@ export default function Button() {
         className={styles.addBtn}
         onClick={() => {
           const product = products[0];
-          if (product) handleAddMore(product);
+          if (product) addItem(product);
         }}
       >
         + Add More
@@ -48,7 +32,7 @@ export default function Button() {
       )}
 
       {items.length > 0 && (
-        <button type="button" className={styles.cancelBtn} onClick={handleCancel}>
+        <button type="button" className={styles.cancelBtn} onClick={clearAll}>
           Cancel Slots
         </button>
       )}

@@ -1,11 +1,13 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useMemo } from "react";
 import { products } from "@/lib/data";
 import { getSizes, getPrice } from "@/lib/dataSize";
+import { useBundle, BundleItem } from "@/app/context/Bundlecontext";
 import styles from "./calculation.module.css";
 
-type Product = (typeof products)[number];
+// Keeps any existing `import { CartItem } from "./calculation"` working
+export type CartItem = BundleItem;
 
 interface SizeByProductProps {
   productId: number;
@@ -23,46 +25,18 @@ function SizeByProduct({ productId, selected }: SizeByProductProps) {
   );
 }
 
-export interface CartItem {
-  id: string;
-  productId: number;
-  selectedSize: string;
-  quantity: number;
-}
-
 interface CalculationProps {
   taxRate?: number;
 }
 
 export default function Calculation({ taxRate = 0.08 }: CalculationProps) {
-  const [items, setItems] = useState<CartItem[]>([]);
-
-  const handleAddItem = (product: Product) => {
-    const productId = "id" in product ? Number(product.id) : 0;
-    const availableSizes = getSizes(productId) ?? [];
-    const defaultSize = availableSizes.length > 0 ? String(availableSizes[0]) : "Standard";
-
-    const newItem: CartItem = {
-      id: crypto.randomUUID(),
-      productId,
-      selectedSize: defaultSize,
-      quantity: 1,
-    };
-
-    setItems((prev) => [...prev, newItem]);
-  };
-
-  const handleUpdateItem = (id: string, field: "selectedSize" | "quantity", value: string | number) => {
-    setItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, [field]: value } : item))
-    );
-  };
-
-  const handleRemoveItem = (id: string) => {
-    setItems((prev) => prev.filter((item) => item.id !== id));
-  };
-
-  const handleClearAll = () => setItems([]);
+  const {
+    items,
+    addItem: handleAddItem,
+    updateItem: handleUpdateItem,
+    removeItem: handleRemoveItem,
+    clearAll: handleClearAll,
+  } = useBundle();
 
   const totals = useMemo(() => {
     const detailedItems = items.map((item) => {
