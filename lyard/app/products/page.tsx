@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ProductItem } from "@/app/types/models";
 import { ProductProvider, useProducts } from "@/app/context/productcontext";
+import { CartProvider, useCart } from "@/app/context/CartContext";
 import styles from "./mainpage.module.css";
 import Sidebar from "./sidebar";
 import CatalogHeader from "./sorting";
@@ -67,6 +68,7 @@ function ProductCard({ product, onCustomize }: ProductCardProps) {
 
 function CatalogContent() {
   const { filteredAndSortedProducts, selectedProduct, setSelectedProduct } = useProducts();
+  const { addItem } = useCart();
   
   // Modal local state for interactivity
   const prod = selectedProduct as ProductWithDetails | null;
@@ -75,14 +77,23 @@ function CatalogContent() {
   const [selectedSize, setSelectedSize] = useState<string>("Small");
   const [quantity, setQuantity] = useState<number>(1);
 
-  // Reset image preview when a new product is selected
-  const handleOpenModal = (product: ProductItem) => {
-    const p = product as ProductWithDetails;
+  // Reset preview when a new product is selected
+  const handleOpenModal = (item: ProductItem) => {
+    const p = item as ProductWithDetails;
     const initialImg = p.images?.[0] || p.imageUrl || p.image || "";
     setActiveImage(initialImg);
     setSelectedSize("Small");
     setQuantity(1);
-    setSelectedProduct(product);
+    setSelectedProduct(item);
+  };
+
+  const handleAddToCart = () => {
+    if (selectedProduct) {
+      for (let i = 0; i < quantity; i++) {
+        addItem(selectedProduct as unknown as Parameters<typeof addItem>[0]);
+      }
+      setSelectedProduct(null);
+    }
   };
 
   return (
@@ -96,16 +107,16 @@ function CatalogContent() {
       </header>
 
       {/* Sidebar Section */}
-      <aside>
+      <aside className={styles.sidebarSection}>
         <Sidebar />
       </aside>
 
       {/* Product Grid Section */}
       <div className={styles.grid}>
-        {filteredAndSortedProducts.map((product) => (
+        {filteredAndSortedProducts.map((item) => (
           <ProductCard
-            key={`${product.name}-${product.category}`}
-            product={product}
+            key={`${item.name}-${item.category}`}
+            product={item}
             onCustomize={handleOpenModal}
           />
         ))}
@@ -203,10 +214,7 @@ function CatalogContent() {
                 <button
                   type="button"
                   className={styles.addToBagBtn}
-                  onClick={() => {
-                    // Add to bag logic here
-                    setSelectedProduct(null);
-                  }}
+                  onClick={handleAddToCart}
                 >
                   ADD TO BAG →
                 </button>
@@ -235,10 +243,12 @@ function CatalogContent() {
 
 export default function ProductGrid() {
   return (
-    <ProductProvider>
-      <Header />
-      <CatalogContent />
-      <Footer />
-    </ProductProvider>
+    <CartProvider>
+      <ProductProvider>
+        <Header />
+        <CatalogContent />
+        <Footer />
+      </ProductProvider>
+    </CartProvider>
   );
 }
