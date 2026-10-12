@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { ProductItem } from "@/app/types/models";
 import { products } from "@/lib/data";
 import styles from "./mainpage.module.css";
+import Sidebar from './sidebar';
+import CatalogHeader from './sorting';
 
 
 interface ProductCardProps {
@@ -17,8 +19,7 @@ type ProductWithImage = ProductItem & {
 
 function ProductCard({ product, onCustomize }: ProductCardProps) {
   const productImage = (product as ProductWithImage).image ||
-    "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500&auto=format&fit=crop";
-
+    product.imageUrl
   return (
     <div className={styles.card}>
       {/* Image & Badge Wrapper */}
@@ -61,9 +62,7 @@ function ProductCard({ product, onCustomize }: ProductCardProps) {
   );
 }
 
-function CatalogHeader() {
-  return <span>Catalog</span>;
-}
+
 
 export default function ProductGrid() {
   const [selectedProduct, setSelectedProduct] = useState<ProductItem | null>(null);
@@ -78,11 +77,11 @@ export default function ProductGrid() {
       <header className={styles.headerBar}>
         <h1 className={styles.mainTitle}>OUR COLLECTION</h1>
         <div className={styles.headerMeta}>
+          <CatalogHeader/>
           <span>Showing {products.length} Items</span>
-          <CatalogHeader />
         </div>
       </header>
-
+   <aside><Sidebar/></aside>
       {/* Product Grid */}
       <div className={styles.grid}>
         {(products as unknown as ProductItem[]).map((product) => (
@@ -108,6 +107,8 @@ export default function ProductGrid() {
                 ✕
               </button>
             </div>
+
+            
             <p className={styles.description}>{selectedProduct.description}</p>
             <div>
               Base Price: <strong className={styles.priceValue}>${selectedProduct.price}</strong>

@@ -1,28 +1,12 @@
 "use client";
+
+import { useProducts } from "@/app/context/productcontext";
 import { FilterState } from "@/app/types/models";
-import React, { useState } from "react";
+import React from "react";
 
-
-
-interface SidebarProps {
-  /** Optional filter state passed down from a parent component */
-  filters?: FilterState;
-  /** Optional callback function to notify parent when filters change */
-  onFilterChange?: (filters: FilterState) => void;
-}
-
-export default function Sidebar({ filters: externalFilters, onFilterChange }: SidebarProps) {
-  // Internal state used if no external filter state is passed in
-  const [internalFilters, setInternalFilters] = useState<FilterState>({
-    categories: [],
-    priceRanges: [],
-    minPrice: "",
-    maxPrice: "",
-    sizes: [],
-    flavorProfiles: [],
-  });
-
-  const activeFilters = externalFilters || internalFilters;
+export default function Sidebar() {
+  // Grab filters and setFilters directly from context
+  const { filters, setFilters } = useProducts();
 
   // Filter static options matching UI requirements
   const categoryOptions = ["Cakes", "Coffee", "Bundles", "Limited"];
@@ -35,34 +19,22 @@ export default function Sidebar({ filters: externalFilters, onFilterChange }: Si
   const flavorOptions = ["Fruity", "Cookie", "Chocolatey", "Classic", "Creamy"];
 
   const handleToggle = (key: keyof FilterState, value: string) => {
-    const currentList = activeFilters[key] as string[];
+    const currentList = filters[key] as string[];
     const updatedList = currentList.includes(value)
       ? currentList.filter((item) => item !== value)
       : [...currentList, value];
 
-    const updatedFilters = {
-      ...activeFilters,
+    setFilters({
+      ...filters,
       [key]: updatedList,
-    };
-
-    if (onFilterChange) {
-      onFilterChange(updatedFilters);
-    } else {
-      setInternalFilters(updatedFilters);
-    }
+    });
   };
 
   const handlePriceInputChange = (field: "minPrice" | "maxPrice", val: string) => {
-    const updatedFilters = {
-      ...activeFilters,
+    setFilters({
+      ...filters,
       [field]: val,
-    };
-
-    if (onFilterChange) {
-      onFilterChange(updatedFilters);
-    } else {
-      setInternalFilters(updatedFilters);
-    }
+    });
   };
 
   return (
@@ -75,7 +47,7 @@ export default function Sidebar({ filters: externalFilters, onFilterChange }: Si
             <label key={cat}>
               <input
                 type="checkbox"
-                checked={activeFilters.categories.includes(cat)}
+                checked={filters.categories.includes(cat)}
                 onChange={() => handleToggle("categories", cat)}
               />
               <span>{cat}</span>
@@ -92,7 +64,7 @@ export default function Sidebar({ filters: externalFilters, onFilterChange }: Si
             <label key={opt.id}>
               <input
                 type="checkbox"
-                checked={activeFilters.priceRanges.includes(opt.id)}
+                checked={filters.priceRanges.includes(opt.id)}
                 onChange={() => handleToggle("priceRanges", opt.id)}
               />
               <span>{opt.label}</span>
@@ -104,14 +76,14 @@ export default function Sidebar({ filters: externalFilters, onFilterChange }: Si
             <input
               type="number"
               placeholder="Min"
-              value={activeFilters.minPrice}
+              value={filters.minPrice}
               onChange={(e) => handlePriceInputChange("minPrice", e.target.value)}
             />
             <span>-</span>
             <input
               type="number"
               placeholder="Max"
-              value={activeFilters.maxPrice}
+              value={filters.maxPrice}
               onChange={(e) => handlePriceInputChange("maxPrice", e.target.value)}
             />
           </div>
@@ -126,7 +98,7 @@ export default function Sidebar({ filters: externalFilters, onFilterChange }: Si
             <label key={sz}>
               <input
                 type="checkbox"
-                checked={activeFilters.sizes.includes(sz)}
+                checked={filters.sizes.includes(sz)}
                 onChange={() => handleToggle("sizes", sz)}
               />
               <span>{sz}</span>
@@ -143,7 +115,7 @@ export default function Sidebar({ filters: externalFilters, onFilterChange }: Si
             <label key={flavor}>
               <input
                 type="checkbox"
-                checked={activeFilters.flavorProfiles.includes(flavor)}
+                checked={filters.flavorProfiles.includes(flavor)}
                 onChange={() => handleToggle("flavorProfiles", flavor)}
               />
               <span>{flavor}</span>

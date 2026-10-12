@@ -29,7 +29,7 @@ function ProductCard({ product, onCustomize }: ProductCardProps) {
         )}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={productImage}
+          src={product.imageUrl}
           alt={`${product.name} ${product.tag}`}
           className={styles.productImage}
         />

@@ -1,26 +1,42 @@
-import React from 'react';
-import Header  from '@/app/components/Header';
-import Footer from '@/app/components/Footer';
-import ProductGrid from './mainpage';
-import Sidebar from './sidebar';
-import CatalogHeader from './sorting';
+"use client";
 
-export default function Page() {
-    return(
-        <div className ="product container">
-            <Header/>
+import styles from "./mainpage.module.css";
+import Sidebar from "./sidebar";
+import CatalogHeader from "./sorting";
+import { ProductProvider, useProducts } from "@/app/context/productcontext";
 
-            <Sidebar/>
-         <ProductGrid/>
+function CatalogContent() {
+  const { filteredAndSortedProducts, selectedProduct, setSelectedProduct } = useProducts();
 
-            <CatalogHeader/>
-
-            <Footer/>
-
-
-
-
+  return (
+    <div className={styles.container}>
+      <header className={styles.headerBar}>
+        <h1 className={styles.mainTitle}>OUR COLLECTION</h1>
+        <div className={styles.headerMeta}>
+          <CatalogHeader />
         </div>
-        
-    )
-};
+      </header>
+
+      <aside>
+        <Sidebar />
+      </aside>
+
+      <div className={styles.grid}>
+        {filteredAndSortedProducts.map((product) => (
+          <div key={product.name} onClick={() => setSelectedProduct(product)} className={styles.card}>
+            <h3>{product.name}</h3>
+            <p>${product.price}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default function ProductGrid() {
+  return (
+    <ProductProvider>
+      <CatalogContent />
+    </ProductProvider>
+  );
+}
