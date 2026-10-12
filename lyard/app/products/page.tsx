@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { ProductItem } from "@/app/types/models";
+import { ProductItem, Product } from "@/app/types/models";
 import { ProductProvider, useProducts } from "@/app/context/productcontext";
+import { useCart } from "@/app/context/CartContext";
 import styles from "./mainpage.module.css";
 import Sidebar from "./sidebar";
 import CatalogHeader from "./sorting";
@@ -20,6 +21,17 @@ type ProductWithDetails = ProductItem & {
   shelfLife?: string;
   allergens?: string;
 };
+
+// Converts a catalog item (ProductItem) into the shape the cart uses (Product)
+function toCartProduct(item: ProductItem): Product {
+  const p = item as ProductWithDetails;
+  return {
+    productID: (item as any).productID ?? (item as any).id, // <-- adjust to your real id field
+    name: item.name,
+    price: item.price,
+    imageUrl: p.images?.[0] || p.imageUrl || p.image || "",
+  } as Product; // remove the cast once the fields match your Product type exactly
+}
 
 // Full Product Card component
 function ProductCard({ product, onCustomize }: ProductCardProps) {
@@ -67,7 +79,8 @@ function ProductCard({ product, onCustomize }: ProductCardProps) {
 
 function CatalogContent() {
   const { filteredAndSortedProducts, selectedProduct, setSelectedProduct } = useProducts();
-  
+  const { addItem } = useCart(); // shared cart state
+
   // Modal local state for interactivity
   const prod = selectedProduct as ProductWithDetails | null;
   const imagesList = prod?.images?.length ? prod.images : [prod?.imageUrl || prod?.image || ""];
@@ -86,10 +99,17 @@ function CatalogContent() {
   };
 
   const handleAddToCart = () => {
-    if (selectedProduct) {
-      // Handle add to bag action here (e.g., local state or alert)
-      setSelectedProduct(null);
+    if (!selectedProduct) return;
+
+    const cartProduct = toCartProduct(selectedProduct);
+
+    // Your addItem adds 1 per call, so call it once per selected quantity.
+    // (Functional setState in the context makes this safe.)
+    for (let i = 0; i < quantity; i++) {
+      addItem(cartProduct);
     }
+
+    setSelectedProduct(null);
   };
 
   return (
@@ -164,7 +184,7 @@ function CatalogContent() {
               <h2 className={styles.modalHeading}>{prod.name}</h2>
               <p className={styles.modalSubtitle}>{prod.description}</p>
               <div className={styles.modalPrice}>${prod.price.toFixed(2)}</div>
-              
+
               <hr className={styles.modalDivider} />
 
               <p className={styles.modalExtendedDesc}>{prod.description}</p>

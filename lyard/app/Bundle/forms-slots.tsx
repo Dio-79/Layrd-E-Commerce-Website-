@@ -1,7 +1,7 @@
 "use client";
 
 import { useForm } from "react-hook-form";
-import styles from "./formsslots.module.css";
+import styles from "./formslot.module.css";
 
 export default function SelectionForms() {
   const {
