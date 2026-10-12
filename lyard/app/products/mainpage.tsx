@@ -1,12 +1,13 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
+import { useState } from "react";
 import { ProductItem } from "@/app/types/models";
-import { products } from "@/lib/data";
+import { ProductProvider, useProducts } from "@/app/context/productcontext";
 import styles from "./mainpage.module.css";
-import Sidebar from './sidebar';
-import CatalogHeader from './sorting';
-
+import Sidebar from "./sidebar";
+import CatalogHeader from "./sorting";
+import Header from "../components/Header";
+import Footer from "../components/Footer";
 
 interface ProductCardProps {
   product: ProductItem;
@@ -17,9 +18,11 @@ type ProductWithImage = ProductItem & {
   image?: string;
 };
 
+// 1. Full Product Card component with images, badges, and pricing footer
 function ProductCard({ product, onCustomize }: ProductCardProps) {
   const productImage = (product as ProductWithImage).image ||
-    product.imageUrl
+    "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500&auto=format&fit=crop";
+
   return (
     <div className={styles.card}>
       {/* Image & Badge Wrapper */}
@@ -62,14 +65,8 @@ function ProductCard({ product, onCustomize }: ProductCardProps) {
   );
 }
 
-
-
-export default function ProductGrid() {
-  const [selectedProduct, setSelectedProduct] = useState<ProductItem | null>(null);
-
-  const handleCustomize = (product: ProductItem) => {
-    setSelectedProduct(product);
-  };
+function CatalogContent() {
+  const { filteredAndSortedProducts, selectedProduct, setSelectedProduct } = useProducts();
 
   return (
     <div className={styles.container}>
@@ -77,18 +74,22 @@ export default function ProductGrid() {
       <header className={styles.headerBar}>
         <h1 className={styles.mainTitle}>OUR COLLECTION</h1>
         <div className={styles.headerMeta}>
-          <CatalogHeader/>
-          <span>Showing {products.length} Items</span>
+          <CatalogHeader />
         </div>
       </header>
-   <aside><Sidebar/></aside>
-      {/* Product Grid */}
+
+      {/* Sidebar Section */}
+      <aside>
+        <Sidebar />
+      </aside>
+
+      {/* Product Grid Section using full ProductCard */}
       <div className={styles.grid}>
-        {(products as unknown as ProductItem[]).map((product) => (
+        {filteredAndSortedProducts.map((product) => (
           <ProductCard
             key={`${product.name}-${product.category}`}
             product={product}
-            onCustomize={handleCustomize}
+            onCustomize={setSelectedProduct}
           />
         ))}
       </div>
@@ -108,7 +109,6 @@ export default function ProductGrid() {
               </button>
             </div>
 
-            
             <p className={styles.description}>{selectedProduct.description}</p>
             <div>
               Base Price: <strong className={styles.priceValue}>${selectedProduct.price}</strong>
@@ -133,5 +133,15 @@ export default function ProductGrid() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function ProductGrid() {
+  return (
+    <ProductProvider>
+      <Header/>
+      <CatalogContent />
+      <Footer/>
+    </ProductProvider>
   );
 }

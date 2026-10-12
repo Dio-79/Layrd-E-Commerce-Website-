@@ -1,170 +1,271 @@
+/* Main Page Layout Container */
 .container {
-  --gold: #c9a227;
-  --ink: #111;
-  --muted: #6b6b6b;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem 1.5rem 4rem;
-  font-family: "Montserrat", system-ui, sans-serif;
-  color: var(--ink);
-}
-
-/* Sidebar left, everything else right */
-.layout {
   display: grid;
-  grid-template-columns: 170px 1fr;
+  grid-template-columns: 260px 1fr;
+  grid-template-areas:
+    "sidebar header"
+    "sidebar grid";
   gap: 2.5rem;
+  padding: 2rem 3rem;
+  max-width: 1440px;
+  margin: 0 auto;
   align-items: start;
 }
-.sidebar { position: sticky; top: 1rem; }
-.main { min-width: 0; }
 
-/* Title + sort on one row */
-.headerBar {
+/* Sidebar positioning on the left */
+:global(aside) {
+  grid-area: sidebar;
+  border-right: 1px solid #eaeaea;
+  padding-right: 1.5rem;
+}
+
+:global(aside) > div {
+  margin-bottom: 2rem;
+}
+
+:global(aside) h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.75rem;
+  color: #111;
+}
+
+:global(aside) label {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-bottom: 1.75rem;
-}
-.mainTitle {
-  margin: 0;
-  font-size: 1.6rem;
-  font-weight: 800;
-  letter-spacing: 0.25em;
-  text-transform: uppercase;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: #333;
+  margin-bottom: 0.5rem;
+  cursor: pointer;
 }
 
-/* Grid */
+/* Header Bar (Top Right: Title on left, Sort/Count on right) */
+.headerBar {
+  grid-area: header;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.mainTitle {
+  font-size: 1.8rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: #111;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.headerMeta {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+/* Product Grid (3-Column Layout) */
 .grid {
+  grid-area: grid;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1.75rem 1.5rem;
+  gap: 1.5rem;
 }
 
-/* Card */
+/* Responsive fallback for smaller screens */
+@media (max-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "header"
+      "sidebar"
+      "grid";
+  }
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Product Card Styling */
 .card {
+  background: #ffffff;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  background: #fff;
-  border: 1px solid var(--gold);
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.card:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
 }
 
 .imageWrapper {
   position: relative;
-  aspect-ratio: 1 / 1.05;
-  background: #eee;
+  width: 100%;
+  height: 280px;
+  background: #f4f4f4;
 }
+
 .productImage {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  display: block;
 }
 
 .tagBadge {
   position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  z-index: 1;
-  background: var(--gold);
-  color: #fff;
-  padding: 0.15rem 0.5rem;
-  font-size: 0.55rem;
-  font-weight: 800;
-  letter-spacing: 0.1em;
+  top: 12px;
+  right: 12px;
+  background: #c5a059;
+  color: white;
+  padding: 4px 10px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  border-radius: 3px;
   text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.content { padding: 0.75rem 0.85rem 0.5rem; flex: 1; }
-.productName {
-  margin: 0 0 0.3rem;
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+.content {
+  padding: 1rem;
+  flex-grow: 1;
 }
+
+.productName {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #111;
+  margin-bottom: 0.3rem;
+}
+
 .description {
-  margin: 0;
-  font-size: 0.65rem;
+  font-size: 0.82rem;
+  color: #666;
   line-height: 1.4;
-  color: var(--muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .footerRow {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  padding: 0.5rem 0.85rem 0.8rem;
+  align-items: center;
+  padding: 0.9rem 1rem;
+  border-top: 1px solid #f0f0f0;
+  background: #fafafa;
 }
-.priceBlock { display: flex; align-items: baseline; gap: 0.35rem; }
-.fromLabel {
-  font-size: 0.55rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  color: var(--muted);
-}
-.priceValue { font-size: 0.8rem; font-weight: 800; color: var(--gold); }
 
-.customizeBtn {
-  background: #000;
-  color: #fff;
-  border: none;
-  padding: 0.4rem 1rem;
-  font-size: 0.6rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-.customizeBtn:hover { background: var(--gold); }
-
-.empty { text-align: center; padding: 4rem 1rem; color: var(--muted); }
-
-/* Modal */
-.modalBackdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: grid;
-  place-items: center;
-  padding: 1rem;
-  z-index: 100;
-}
-.modalContent {
-  background: #fff;
-  border-radius: 12px;
-  padding: 1.5rem;
-  width: min(440px, 100%);
+.priceBlock {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
 }
-.modalHeader { display: flex; justify-content: space-between; align-items: center; }
-.modalTitle { margin: 0; font-size: 1.1rem; }
-.closeBtn { background: none; border: none; font-size: 1.1rem; cursor: pointer; }
-.modalActions { display: flex; justify-content: flex-end; gap: 0.75rem; }
-.cancelModalBtn {
-  background: #fff; border: 1px solid #000; padding: 0.5rem 1rem;
-  font-weight: 700; cursor: pointer;
-}
-.addToCartBtn {
-  background: #000; color: #fff; border: none; padding: 0.5rem 1rem;
-  font-weight: 700; cursor: pointer;
-}
-.addToCartBtn:hover { background: var(--gold); }
 
-/* Responsive */
-@media (max-width: 960px) {
-  .grid { grid-template-columns: repeat(2, 1fr); }
+.fromLabel {
+  font-size: 0.55rem;
+  color: #888;
+  font-weight: 700;
+  letter-spacing: 0.5px;
 }
-@media (max-width: 700px) {
-  .layout { grid-template-columns: 1fr; }
-  .sidebar { position: static; }
-  .grid { grid-template-columns: 1fr; }
+
+.priceValue {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #111;
+}
+
+.customizeBtn {
+  background: #111;
+  color: white;
+  border: none;
+  padding: 0.45rem 1rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.customizeBtn:hover {
+  background: #333;
+}
+
+/* Modal Styling */
+.modalBackdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modalContent {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.modalTitle {
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.cancelModalBtn {
+  background: #eee;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.addToCartBtn {
+  background: #c5a059;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
 }
