@@ -3,7 +3,7 @@
 import { useProducts } from "@/app/context/productcontext";
 import { FilterState } from "@/app/types/models";
 import React from "react";
-import sidebar from '@/app/products/sorting.css'
+
 export default function Sidebar() {
   // Grab filters and setFilters directly from context
   const { filters, setFilters } = useProducts();
