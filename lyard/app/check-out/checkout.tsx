@@ -1,221 +1,218 @@
-"use client";
+import { useMemo, useSyncExternalStore } from "react";
+import type { Totals } from "@/lib/checkoutPricing";
 
-import { useRouter } from "next/navigation";
+/* ------------------------------------------------------------------ */
+/* Types                                                              */
+/* ------------------------------------------------------------------ */
 
+export interface OrderLine {
+  /** Unique id of the line */
+  id: string;
+  /** Where the line came from: the regular bag or an event order */
+  source: "bag" | "event";
+  /** Set for event lines: the event order they belong to */
+  eventId?: string;
+  productId: number | string;
+  name: string;
+  image?: string | null;
+  size?: string;
+  flavor?: string;
+  quantity: number;
+  /** Price the customer pays per unit */
+  unitPrice: number;
+  /** Regular price per unit, when the item is on sale */
+  originalUnitPrice?: number;
+}
 
-import React, { useState, useMemo } from "react";
-import { products } from "@/lib/data";
-import { getSizes, getPrice } from "@/lib/dataSize";
-import styles from "./calculation.module.css";
-import Header from "../components/Header";
-import Footer from "../components/Footer";
+export type NewLine = Omit<OrderLine, "source" | "eventId">;
 
+export interface EventDetails {
+  pickupDate: string;
+  eventType: string;
+  headcount: string;
+  comment: string;
+  fileName: string | null;
+}
 
+export interface EventOrderEntry {
+  id: string;
+  details: EventDetails;
+  lines: OrderLine[];
+}
 
-export default function CheckoutPage() {
-  const router = useRouter();
+export interface CustomerInfo {
+  email: string;
+  phone: string;
+  fullName: string;
+}
 
-  const [deliveryMethod, setDeliveryMethod] = useState<"ship" | "pickup">(
-    "ship"
-  );
+export interface DeliveryInfo {
+  method: "ship" | "pickup";
+  address?: { street: string; city: string; province: string; postal: string };
+  carrier?: "DoorDash";
+  deliveryId?: string;
+  etaMinutes?: number;
+  courierName?: string;
+  pickupLocation?: string;
+}
 
-  const handleCompleteOrder = () => {
-    router.push("/order-confirmation");
+export interface PlacedOrder {
+  orderNumber: string;
+  placedAt: string;
+  customer: CustomerInfo;
+  delivery: DeliveryInfo;
+  lines: OrderLine[];
+  events: EventDetails[];
+  promoCode: string | null;
+  totals: Totals;
+}
+
+interface State {
+  bag: OrderLine[];
+  events: EventOrderEntry[];
+  lastOrder: PlacedOrder | null;
+}
+
+/* ------------------------------------------------------------------ */
+/* Tiny localStorage-backed store (works across pages and tabs)       */
+/* ------------------------------------------------------------------ */
+
+const KEY = "layrd:checkout:v1";
+const EMPTY: State = { bag: [], events: [], lastOrder: null };
+
+const listeners = new Set<() => void>();
+let cachedRaw: string | null | undefined = undefined;
+let cached: State = EMPTY;
+
+function read(): State {
+  if (typeof window === "undefined") return EMPTY;
+
+  let raw: string | null = null;
+  try {
+    raw = window.localStorage.getItem(KEY);
+  } catch {
+    /* storage blocked: fall through with empty state */
+  }
+
+  if (raw === cachedRaw) return cached;
+
+  cachedRaw = raw;
+  try {
+    cached = raw ? { ...EMPTY, ...(JSON.parse(raw) as Partial<State>) } : EMPTY;
+  } catch {
+    cached = EMPTY;
+  }
+  return cached;
+}
+
+function commit(next: State) {
+  const raw = JSON.stringify(next);
+  try {
+    window.localStorage.setItem(KEY, raw);
+  } catch {
+    /* ignore quota / private-mode errors */
+  }
+  cachedRaw = raw;
+  cached = next;
+  listeners.forEach((listener) => listener());
+}
+
+function subscribe(callback: () => void) {
+  listeners.add(callback);
+  const onStorage = (e: StorageEvent) => {
+    if (e.key === KEY || e.key === null) callback();
   };
+  window.addEventListener("storage", onStorage);
+  return () => {
+    listeners.delete(callback);
+    window.removeEventListener("storage", onStorage);
+  };
+}
 
-  return (
-    <>
-<Header/>
+/* ------------------------------------------------------------------ */
+/* Hooks                                                              */
+/* ------------------------------------------------------------------ */
 
-      {/* Main Content */}
-      <main className="checkout-container">
-
-        <div className="checkout-left">
-
-          {/* Return to cart */}
-          <button
-            className="return-cart"
-            onClick={() => router.push("/")}
-          >
-            ← Return to Cart
-          </button>
-
-          {/* Customer Information */}
-          <section>
-            <h2>Customer Information</h2>
-
-            <div className="two-column">
-              <div className="form-group">
-                <label>Email Address</label>
-                <input
-                  type="email"
-                  placeholder="john.doe@gmail.com"
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Phone Number</label>
-                <input
-                  type="tel"
-                  placeholder="+1 (123) 456-7890"
-                />
-              </div>
-            </div>
-          </section>
-
-          {/* Delivery Method */}
-          <section>
-            <h2>Delivery Method</h2>
-
-            <div className="delivery-options">
-
-              <button
-                className={`delivery-option ${
-                  deliveryMethod === "ship" ? "selected" : ""
-                }`}
-                onClick={() => setDeliveryMethod("ship")}
-              >
-                <div className="delivery-icon">📍</div>
-                <strong>Ship to Address</strong>
-                <span>POWERED BY DoorDash</span>
-              </button>
-
-              <button
-                className={`delivery-option ${
-                  deliveryMethod === "pickup" ? "selected" : ""
-                }`}
-                onClick={() => setDeliveryMethod("pickup")}
-              >
-                <div className="delivery-icon">▣</div>
-                <strong>Pickup</strong>
-                <span>Pickup at 123 St. NE</span>
-              </button>
-
-            </div>
-          </section>
-
-          {/* Delivery Information */}
-          <section>
-            <h2>Delivery Information</h2>
-
-            <div className="form-group full">
-              <label>Full Name</label>
-              <input type="text" placeholder="John Doe" />
-            </div>
-
-            <div className="form-group full">
-              <label>Street Address</label>
-              <input
-                type="text"
-                placeholder="456, Example Ave, SE"
-              />
-            </div>
-
-            <div className="three-column">
-
-              <div className="form-group">
-                <label>City</label>
-                <input type="text" placeholder="Calgary" />
-              </div>
-
-              <div className="form-group">
-                <label>Province</label>
-                <input type="text" placeholder="AB" />
-              </div>
-
-              <div className="form-group">
-                <label>ZIP Code</label>
-                <input type="text" placeholder="EX1 123" />
-              </div>
-
-            </div>
-          </section>
-
-          {/* Payment */}
-          <section>
-            <h2>Payment Details</h2>
-
-            <div className="payment-card">
-
-              <div className="payment-title">
-                💳 Credit / Debit Card
-              </div>
-
-              <div className="card-inputs">
-
-                <div className="form-group">
-                  <label>Card Number</label>
-                  <input
-                    type="text"
-                    placeholder="0000 0000 0000 0000"
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>Expiration</label>
-                  <input
-                    type="text"
-                    placeholder="MM/YY"
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>Security Code</label>
-                  <input
-                    type="text"
-                    placeholder="CVC"
-                  />
-                </div>
-
-              </div>
-
-              <div className="payment-logos">
-                <span>VISA</span>
-                <span>●●</span>
-              </div>
-
-            </div>
-
-            <button className="alternative-payment">
-              Apple Pay
-              <span>Pay</span>
-            </button>
-
-            <button className="alternative-payment">
-              Google Pay
-              <span>G Pay</span>
-            </button>
-
-            <button className="alternative-payment">
-              PayPal
-              <span>PayPal</span>
-            </button>
-
-          </section>
-
-        </div>
-
-        {/* Order Summary */}
-        <aside className="order-summary">
-
-          <h2>Order Summary</h2>
-
-            <button>APPLY</button>
-          
-
-          <button
-            className="complete-order"
-            onClick={handleCompleteOrder}
-          >
-            COMPLETE ORDER
-          </button>
-
-        </aside>
-
-      </main>
-
-      
-      <Footer />
-    </>
+export function useCheckout() {
+  const state = useSyncExternalStore(subscribe, read, () => EMPTY);
+  const lines = useMemo(
+    () => [...state.bag, ...state.events.flatMap((e) => e.lines)],
+    [state]
   );
+  return { ...state, lines };
+}
+
+/** false on the server and during hydration, true afterwards */
+export function useHydrated() {
+  return useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Actions (plain functions: call them from any client component)     */
+/* ------------------------------------------------------------------ */
+
+/** The cart page calls this whenever its items change. The bag is replaced, not appended. */
+export function setBagLines(lines: NewLine[]) {
+  const state = read();
+  const bag: OrderLine[] = lines.map((l) => ({ ...l, source: "bag" }));
+  if (JSON.stringify(bag) === JSON.stringify(state.bag)) return;
+  commit({ ...state, bag });
+}
+
+/** The event order page calls this when the Submit button is pressed. */
+export function addEventOrder(input: { id?: string; details: EventDetails; lines: NewLine[] }): string {
+  const state = read();
+  const id = input.id ?? crypto.randomUUID();
+  const entry: EventOrderEntry = {
+    id,
+    details: input.details,
+    lines: input.lines.map((l) => ({
+      ...l,
+      id: `${id}:${l.id}`,
+      source: "event",
+      eventId: id,
+    })),
+  };
+  const others = state.events.filter((e) => e.id !== id);
+  commit({ ...state, events: [...others, entry] });
+  return id;
+}
+
+export function removeEventOrder(eventId: string) {
+  const state = read();
+  commit({ ...state, events: state.events.filter((e) => e.id !== eventId) });
+}
+
+function makeOrderNumber() {
+  const time = Date.now().toString(36).toUpperCase().slice(-6);
+  const rand = Math.floor(Math.random() * 90 + 10);
+  return `LYD-${time}${rand}`;
+}
+
+/** Saves the finished order and empties the bag and event orders. */
+export function placeOrder(input: {
+  customer: CustomerInfo;
+  delivery: DeliveryInfo;
+  promoCode: string | null;
+  totals: Totals;
+}): PlacedOrder {
+  const state = read();
+  const order: PlacedOrder = {
+    orderNumber: makeOrderNumber(),
+    placedAt: new Date().toISOString(),
+    ...input,
+    lines: [...state.bag, ...state.events.flatMap((e) => e.lines)],
+    events: state.events.map((e) => e.details),
+  };
+  commit({ bag: [], events: [], lastOrder: order });
+  return order;
+}
+
+export function clearLastOrder() {
+  const state = read();
+  commit({ ...state, lastOrder: null });
 }
