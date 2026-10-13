@@ -108,7 +108,7 @@ function SlotCard({ item, index, onChange }: SlotCardProps) {
   const name = product ? getProductName(product) : item.productName;
   const sizes = getProductSizes(item.productId); // unique string labels
   const flavorMissing = status === "error" && !item.selectedFlavor;
-
+console.log("productId", item.productId, "sizes", getProductSizes(item.productId));
   return (
     <li className={styles.slot}>
       <div className={styles.slotThumb}>
