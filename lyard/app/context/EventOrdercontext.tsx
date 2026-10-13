@@ -18,11 +18,11 @@ import { getSizes, getPrice } from "@/lib/dataSize";
 
 export type Product = (typeof products)[number];
 
-// Same shape as the `timestamp` type in your Selections form.
 export type EventDetails = {
   Starttime: string;
   number: string;
   type: string;
+  Flavor: string; // event-level flavor from the Selections form
 };
 
 export interface CartItem {
@@ -32,6 +32,12 @@ export interface CartItem {
   selectedFlavor: string;
   quantity: number;
 }
+
+export type DetailedItem = CartItem & {
+  productName: string;
+  unitPrice: number;
+  itemTotal: number;
+};
 
 export type SubmitStatus = "idle" | "submitting" | "success" | "error";
 
@@ -47,10 +53,103 @@ export const FLAVOR_OPTIONS = [
 const ORDER_ENDPOINT = "/api/event-orders";
 
 /* ------------------------------------------------------------------ */
+/* Product helpers                                                    */
+/* ------------------------------------------------------------------ */
+
+// Your data uses `productID`; `id` / `productId` are kept as fallbacks.
+export function getProductId(product: Product): number {
+  const x = product as unknown as Record<string, unknown>;
+  const raw = x.productID ?? x.productId ?? x.id;
+  const n = Number(raw);
+  return raw !== undefined && Number.isFinite(n) ? n : products.indexOf(product) + 1;
+}
+
+export function findProduct(id: number): Product | undefined {
+  return products.find((p) => getProductId(p) === id);
+}
+
+export function getProductName(product: Product): string {
+  return "name" in product ? String(product.name) : `Product #${getProductId(product)}`;
+}
+
+export function getProductImage(product: Product): string | null {
+  const x = product as unknown as Record<string, unknown>;
+  const images = x.images as unknown[] | undefined;
+  const candidates = [x.imageUrl, x.image, x.img, x.src, x.thumbnail, images?.[0]];
+
+  for (const value of candidates) {
+    let src = "";
+    if (typeof value === "string") src = value;
+    else if (value && typeof value === "object" && "src" in value) {
+      src = String((value as { src: unknown }).src);
+    }
+    if (src) {
+      // local paths need a leading slash ("images/a.jpg" -> "/images/a.jpg")
+      return /^(https?:|\/|data:)/.test(src) ? src : `/${src}`;
+    }
+  }
+  return null;
+}
+
+/* ----- sizes: getSizes may return strings OR objects like { size, price } ----- */
+
+const sizeLabel = (s: unknown): string => {
+  if (typeof s === "string" || typeof s === "number") return String(s);
+  if (s && typeof s === "object") {
+    const o = s as Record<string, unknown>;
+    const v = o.size ?? o.label ?? o.name ?? o.value ?? o.title;
+    if (v != null) return String(v);
+  }
+  return "";
+};
+
+const rawSizes = (productId: number): unknown[] =>
+  (getSizes(productId) as unknown[] | undefined) ?? [];
+
+// Unique size labels for a product (use this in SlotCard instead of .map(String))
+export function getProductSizes(productId: number): string[] {
+  return Array.from(new Set(rawSizes(productId).map(sizeLabel).filter(Boolean)));
+}
+
+const getBase = (product: Product) => ("price" in product ? Number(product.price) : 0);
+
+// Price of ONE unit at a size: size entry price, then getPrice, then base price
+export function getUnitPrice(product: Product, size: string): number {
+  const entry = rawSizes(getProductId(product)).find((s) => sizeLabel(s) === size);
+  if (entry && typeof entry === "object") {
+    const o = entry as Record<string, unknown>;
+    const v = Number(o.price ?? o.cost ?? o.amount);
+    if (Number.isFinite(v) && v > 0) return v;
+  }
+
+  const sized = Number(getPrice(product, size));
+  if (Number.isFinite(sized) && sized > 0) return sized;
+
+  return getBase(product);
+}
+
+// "From $X": the lowest price across the product's sizes.
+export function getFromPrice(product: Product): number {
+  const sizes = getProductSizes(getProductId(product));
+  const prices = sizes.map((s) => getUnitPrice(product, s)).filter((p) => p > 0);
+  return prices.length > 0 ? Math.min(...prices) : getBase(product);
+}
+
+/* ------------------------------------------------------------------ */
 /* Context shape                                                      */
 /* ------------------------------------------------------------------ */
 
-type Validator = () => Promise<boolean>;
+type Validator = () => Promise<boolean> | boolean | void;
+
+export interface SubmittedOrder {
+  details: EventDetails;
+  comment: string;
+  fileName: string | null;
+  items: DetailedItem[];
+  subtotal: number;
+  taxAmount: number;
+  grandTotal: number;
+}
 
 interface EventOrderContextValue {
   // Event details (Selections form)
@@ -65,7 +164,7 @@ interface EventOrderContextValue {
   file: File | null;
   setFile: (file: File | null) => void;
 
-  // Cart (Calculationpage)
+  // Slots (ProductPicker / Calculationpage)
   items: CartItem[];
   addItem: (product: Product) => void;
   updateItem: (
@@ -78,9 +177,7 @@ interface EventOrderContextValue {
   clearItems: () => void;
   taxRate: number;
   totals: {
-    detailedItems: Array<
-      CartItem & { productName: string; unitPrice: number; itemTotal: number }
-    >;
+    detailedItems: DetailedItem[];
     totalItems: number;
     subtotal: number;
     taxAmount: number;
@@ -92,6 +189,7 @@ interface EventOrderContextValue {
   submitOrder: () => Promise<void>;
   status: SubmitStatus;
   submitError: string;
+  order: SubmittedOrder | null; // snapshot after a successful Submit (for OrderSummary)
 }
 
 const EventOrderContext = createContext<EventOrderContextValue | null>(null);
@@ -100,6 +198,8 @@ const EventOrderContext = createContext<EventOrderContextValue | null>(null);
 /* Provider                                                           */
 /* ------------------------------------------------------------------ */
 
+const EMPTY_DETAILS: EventDetails = { Starttime: "", number: "", type: "", Flavor: "" };
+
 export function EventOrderProvider({
   children,
   taxRate = 0.08,
@@ -107,19 +207,15 @@ export function EventOrderProvider({
   children: ReactNode;
   taxRate?: number;
 }) {
-  const [details, setDetails] = useState<EventDetails>({
-    Starttime: "",
-    number: "",
-    type: "",
-  });
+  const [details, setDetails] = useState<EventDetails>(EMPTY_DETAILS);
   const [comment, setComment] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [items, setItems] = useState<CartItem[]>([]);
   const [status, setStatus] = useState<SubmitStatus>("idle");
   const [submitError, setSubmitError] = useState("");
+  const [order, setOrder] = useState<SubmittedOrder | null>(null);
 
-  // Each form registers its own validate/trigger function here,
-  // so the Submit button can check every form before sending.
+  // Each form registers its validate/trigger function here so Submit can check every form.
   const validators = useRef(new Map<string, Validator>());
 
   const registerValidator = useCallback((key: string, fn: Validator) => {
@@ -129,22 +225,27 @@ export function EventOrderProvider({
     };
   }, []);
 
+  // Skips the state update when nothing changed, so repeated pushes can't cause a render loop
   const updateDetails = useCallback((patch: Partial<EventDetails>) => {
-    setDetails((prev) => ({ ...prev, ...patch }));
+    setDetails((prev) => {
+      const next = { ...prev, ...patch };
+      const same = (Object.keys(next) as (keyof EventDetails)[]).every(
+        (k) => next[k] === prev[k]
+      );
+      return same ? prev : next;
+    });
   }, []);
 
-  /* ----- cart actions (from your Calculationpage) ----- */
+  /* ----- slot actions ----- */
+
+  const defaultSizeFor = (productId: number) => getProductSizes(productId)[0] ?? "Standard";
 
   const addItem = useCallback((product: Product) => {
-    const productId = "id" in product ? Number(product.id) : 0;
-    const availableSizes = getSizes(productId) ?? [];
-    const defaultSize =
-      availableSizes.length > 0 ? String(availableSizes[0]) : "Standard";
-
+    const productId = getProductId(product);
     const newItem: CartItem = {
       id: crypto.randomUUID(),
       productId,
-      selectedSize: defaultSize,
+      selectedSize: defaultSizeFor(productId),
       selectedFlavor: "",
       quantity: 1,
     };
@@ -168,14 +269,21 @@ export function EventOrderProvider({
     setItems((prev) => prev.filter((item) => item.id !== id));
   }, []);
 
-  // "Change" on a slot: swap the product, keep flavor + quantity, reset size.
+  // "Change": swap the product, keep flavor + quantity, keep size if still offered
   const replaceItem = useCallback((id: string, product: Product) => {
-    const productId = "id" in product ? Number(product.id) : 0;
-    const sizes = getSizes(productId) ?? [];
-    const defaultSize = sizes.length > 0 ? String(sizes[0]) : "Standard";
+    const productId = getProductId(product);
+    const sizes = getProductSizes(productId);
     setItems((prev) =>
       prev.map((item) =>
-        item.id === id ? { ...item, productId, selectedSize: defaultSize } : item
+        item.id === id
+          ? {
+              ...item,
+              productId,
+              selectedSize: sizes.includes(item.selectedSize)
+                ? item.selectedSize
+                : sizes[0] ?? "Standard",
+            }
+          : item
       )
     );
   }, []);
@@ -183,22 +291,13 @@ export function EventOrderProvider({
   const clearItems = useCallback(() => setItems([]), []);
 
   const totals = useMemo(() => {
-    const detailedItems = items.map((item) => {
-      const product = products.find(
-        (p) => "id" in p && Number(p.id) === item.productId
-      );
-      const basePrice = product && "price" in product ? Number(product.price) : 0;
-      const sizePrice = product
-        ? getPrice(product, item.selectedSize) ?? basePrice
-        : basePrice;
-      const unitPrice = sizePrice > 0 ? sizePrice : basePrice;
+    const detailedItems: DetailedItem[] = items.map((item) => {
+      const product = findProduct(item.productId);
+      const unitPrice = product ? getUnitPrice(product, item.selectedSize) : 0;
 
       return {
         ...item,
-        productName:
-          product && "name" in product
-            ? String(product.name)
-            : `Product #${item.productId}`,
+        productName: product ? getProductName(product) : `Product #${item.productId}`,
         unitPrice,
         itemTotal: unitPrice * item.quantity,
       };
@@ -208,13 +307,7 @@ export function EventOrderProvider({
     const subtotal = detailedItems.reduce((s, i) => s + i.itemTotal, 0);
     const taxAmount = subtotal * taxRate;
 
-    return {
-      detailedItems,
-      totalItems,
-      subtotal,
-      taxAmount,
-      grandTotal: subtotal + taxAmount,
-    };
+    return { detailedItems, totalItems, subtotal, taxAmount, grandTotal: subtotal + taxAmount };
   }, [items, taxRate]);
 
   /* ----- submit everything in one request ----- */
@@ -223,7 +316,7 @@ export function EventOrderProvider({
     setSubmitError("");
 
     const results = await Promise.all(
-      [...validators.current.values()].map((validate) => validate())
+      [...validators.current.values()].map(async (validate) => (await validate()) !== false)
     );
     if (results.some((ok) => !ok)) {
       setStatus("error");
@@ -244,30 +337,29 @@ export function EventOrderProvider({
 
     setStatus("submitting");
     try {
+      const snapshot: SubmittedOrder = {
+        details,
+        comment,
+        fileName: file?.name ?? null,
+        items: totals.detailedItems,
+        subtotal: totals.subtotal,
+        taxAmount: totals.taxAmount,
+        grandTotal: totals.grandTotal,
+      };
+
       const body = new FormData();
-      body.append(
-        "order",
-        JSON.stringify({
-          details,
-          comment,
-          items: totals.detailedItems,
-          subtotal: totals.subtotal,
-          taxAmount: totals.taxAmount,
-          grandTotal: totals.grandTotal,
-        })
-      );
+      body.append("order", JSON.stringify(snapshot));
       // Don't set Content-Type manually: the browser adds the multipart boundary.
       if (file) body.append("file", file);
 
       const response = await fetch(ORDER_ENDPOINT, { method: "POST", body });
       if (!response.ok) throw new Error("The order could not be sent.");
 
+      setOrder(snapshot);
       setStatus("success");
     } catch (error) {
       setStatus("error");
-      setSubmitError(
-        error instanceof Error ? error.message : "The order could not be sent."
-      );
+      setSubmitError(error instanceof Error ? error.message : "The order could not be sent.");
     }
   }, [comment, details, file, items, totals]);
 
@@ -291,19 +383,16 @@ export function EventOrderProvider({
       submitOrder,
       status,
       submitError,
+      order,
     }),
     [
-      details, updateDetails, comment, file, items, addItem, updateItem,
-      removeItem, replaceItem, clearItems, taxRate, totals, registerValidator, submitOrder,
-      status, submitError,
+      details, updateDetails, comment, file, items, addItem, updateItem, removeItem,
+      replaceItem, clearItems, taxRate, totals, registerValidator, submitOrder,
+      status, submitError, order,
     ]
   );
 
-  return (
-    <EventOrderContext.Provider value={value}>
-      {children}
-    </EventOrderContext.Provider>
-  );
+  return <EventOrderContext.Provider value={value}>{children}</EventOrderContext.Provider>;
 }
 
 /* ------------------------------------------------------------------ */
@@ -316,39 +405,4 @@ export function useEventOrder() {
     throw new Error("useEventOrder must be used inside <EventOrderProvider>");
   }
   return ctx;
-}
-
-/* ------------------------------------------------------------------ */
-/* Product helpers (used by Calculationpage)                          */
-/* ------------------------------------------------------------------ */
-
-export function getProductId(product: Product): number {
-  return "id" in product ? Number(product.id) : 0;
-}
-
-export function getProductName(product: Product): string {
-  return "name" in product ? String(product.name) : `Product #${getProductId(product)}`;
-}
-
-// Your product data shape isn't known here, so look for a few common image keys.
-export function getProductImage(product: Product): string | null {
-  const record = product as unknown as Record<string, unknown>;
-  for (const key of ["image", "img", "imageUrl", "src", "thumbnail"]) {
-    const value = record[key];
-    if (typeof value === "string" && value) return value;
-    if (value && typeof value === "object" && "src" in value) {
-      return String((value as { src: unknown }).src);
-    }
-  }
-  return null;
-}
-
-// "From $X": the lowest price across the product's sizes.
-export function getFromPrice(product: Product): number {
-  const base = "price" in product ? Number(product.price) : 0;
-  const sizes = getSizes(getProductId(product)) ?? [];
-  const prices = sizes
-    .map((sz) => Number(getPrice(product, String(sz)) ?? base))
-    .filter((p) => p > 0);
-  return prices.length > 0 ? Math.min(...prices) : base;
 }

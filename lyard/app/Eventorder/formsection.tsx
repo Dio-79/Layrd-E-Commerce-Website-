@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
-import { useForm, useWatch } from "react-hook-form";
+import { useEffect, useRef } from "react";
+import { useForm } from "react-hook-form";
 import { useEventOrder } from "@/app/context/EventOrdercontext";
 import styles from "./event.module.css";
 
@@ -13,49 +13,61 @@ type EventDetails = {
   [key: string]: unknown;
 };
 
-const FLAVOR_OPTIONS = [
-  "Vanilla",
-  "Chocolate",
-  "Strawberry",
-  "Red Velvet",
-  "Cookies & Cream",
-];
+type EventOrderValue = {
+  details?: Partial<EventDetails>;
+  updateDetails?: (values: Partial<EventDetails>) => void;
+  registerValidator?: (
+    name: string,
+    validator: () => Promise<boolean> | boolean | void
+  ) => void;
+};
+
+// Event-level flavors (separate from the per-slot flavors in the context)
+const EVENT_FLAVORS = ["Vanilla", "Chocolate", "Strawberry", "Red Velvet", "Cookies & Cream"];
+
+// Local date as YYYY-MM-DD (toISOString uses UTC and can be off by a day)
+const todayLocal = () => {
+  const d = new Date();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+};
 
 export default function Selections() {
-  const eventOrder = useEventOrder() as ReturnType<typeof useEventOrder> & {
-    details?: Partial<EventDetails>;
-    updateDetails?: (values: Partial<EventDetails>) => void;
-    registerValidator?: (
-      name: string,
-      validator: () => Promise<boolean> | boolean | void,
-    ) => void;
-  };
-  const { details, registerValidator, updateDetails } = eventOrder;
+  const { details, updateDetails, registerValidator } = useEventOrder() as unknown as EventOrderValue;
+
+  // Keep the latest context functions in refs so effects never re-run because of them
+  const updateRef = useRef(updateDetails);
+  const registerRef = useRef(registerValidator);
+  updateRef.current = updateDetails;
+  registerRef.current = registerValidator;
 
   const {
     register,
-    control,
+    watch,
     trigger,
+    getValues,
     formState: { errors },
-  } = useForm<EventDetails>({ mode: "onBlur", defaultValues: details });
-  const watchedValues = useWatch({ control });
+  } = useForm<EventDetails>({
+    mode: "onBlur",
+    defaultValues: { number: "", Starttime: "", type: "", Flavor: "", ...details },
+  });
 
-  const today = new Date().toISOString().split("T")[0];
+  const today = todayLocal();
 
+  // Push values to the context only when a field changes (no render-loop)
   useEffect(() => {
-    if (updateDetails) {
-      updateDetails((watchedValues ?? {}) as Partial<EventDetails>);
-    }
-  }, [watchedValues, updateDetails]);
+    updateRef.current?.(getValues());
+    const subscription = watch((values) => updateRef.current?.(values as Partial<EventDetails>));
+    return () => subscription.unsubscribe();
+  }, [watch, getValues]);
 
+  // Register the validator once so Submit can run this form's checks
   useEffect(() => {
-    if (registerValidator) {
-      registerValidator("selection", () => trigger());
-    }
-  }, [registerValidator, trigger]);
+    registerRef.current?.("selection", () => trigger());
+  }, [trigger]);
 
   return (
-    <form id="selection-form" className={styles.fields} onSubmit={(e) => e.preventDefault()}>
+    <form id="selection-form" className={styles.fields} onSubmit={(e) => e.preventDefault()} noValidate>
       <label className={styles.field}>
         <span className={styles.label}>Quantity</span>
         <input
@@ -74,13 +86,11 @@ export default function Selections() {
         <span className={styles.label}>Enter Date of Event</span>
         <input
           type="date"
+          min={today}
           aria-invalid={!!errors.Starttime}
           {...register("Starttime", {
             required: "Enter the date of your event",
-            validate: (v) => {
-              if (!v) return true;
-              return v >= today || "The date can't be in the past";
-            },
+            validate: (v) => !v || v >= today || "The date can't be in the past",
           })}
         />
         {errors.Starttime && <span className={styles.error}>{errors.Starttime.message}</span>}
@@ -106,7 +116,7 @@ export default function Selections() {
           <option value="" disabled hidden>
             Flavors
           </option>
-          {FLAVOR_OPTIONS.map((flavor: string) => (
+          {EVENT_FLAVORS.map((flavor) => (
             <option key={flavor} value={flavor}>
               {flavor}
             </option>

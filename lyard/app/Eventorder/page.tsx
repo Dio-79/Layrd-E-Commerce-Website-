@@ -3,8 +3,9 @@ import { EventOrderProvider } from "@/app/context/EventOrdercontext";
 import Calculationpage from "./Calculation";
 import { Request } from "./Request";
 import Uploadfile from "./uploadimages";
-import Selections from "./commentsection";
+import Selections from "./formsection"; // event details form: quantity, date, type, flavors
 import SubmitButton from "./SubmitButton";
+import OrderSummary from "./OrderSummary";
 import styles from "./event.module.css";
 
 const montserrat = Montserrat({ subsets: ["latin"], variable: "--font-montserrat" });
@@ -23,6 +24,7 @@ export default function EventOrderPage() {
         <aside className={styles.right}>
           <Selections />
           <SubmitButton />
+          <OrderSummary />
         </aside>
       </main>
     </EventOrderProvider>
