@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { useEventOrder } from "@/app/context/EventOrdercontext";
 import styles from "./event.module.css";
 
@@ -23,6 +23,7 @@ const FLAVOR_OPTIONS = [
 
 export default function Selections() {
   const eventOrder = useEventOrder() as ReturnType<typeof useEventOrder> & {
+    details?: Partial<EventDetails>;
     updateDetails?: (values: Partial<EventDetails>) => void;
     registerValidator?: (
       name: string,
@@ -33,22 +34,19 @@ export default function Selections() {
 
   const {
     register,
-    watch,
+    control,
     trigger,
     formState: { errors },
   } = useForm<EventDetails>({ mode: "onBlur", defaultValues: details });
+  const watchedValues = useWatch({ control });
 
   const today = new Date().toISOString().split("T")[0];
 
   useEffect(() => {
-    const subscription = watch((values: Partial<EventDetails>) => {
-      if (updateDetails) {
-        updateDetails(values);
-      }
-    }) as { unsubscribe?: () => void } | undefined;
-
-    return () => subscription?.unsubscribe?.();
-  }, [watch, updateDetails]);
+    if (updateDetails) {
+      updateDetails((watchedValues ?? {}) as Partial<EventDetails>);
+    }
+  }, [watchedValues, updateDetails]);
 
   useEffect(() => {
     if (registerValidator) {
@@ -79,7 +77,10 @@ export default function Selections() {
           aria-invalid={!!errors.Starttime}
           {...register("Starttime", {
             required: "Enter the date of your event",
-            validate: (v) => v >= today || "The date can't be in the past",
+            validate: (v) => {
+              if (!v) return true;
+              return v >= today || "The date can't be in the past";
+            },
           })}
         />
         {errors.Starttime && <span className={styles.error}>{errors.Starttime.message}</span>}

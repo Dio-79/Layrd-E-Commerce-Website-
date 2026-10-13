@@ -10,7 +10,7 @@ type CommentForm = { comment: string };
 type EventOrderContextValue = {
   comment: string;
   setComment: (value: string) => void;
-  registerValidator?: (field: string, callback: () => void) => void;
+  registerValidator?: (field: string, callback: () => boolean | Promise<boolean>) => void;
 };
 
 export function Request() {
