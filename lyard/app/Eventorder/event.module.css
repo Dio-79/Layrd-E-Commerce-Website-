@@ -1,14 +1,168 @@
+/* ------------------------------------------------------------------ */
+/* Tokens                                                             */
+/* ------------------------------------------------------------------ */
 .page {
-  max-width: 52rem;
-  margin: 0 auto;
-  padding: 2rem 1rem 4rem;
+  --gold: #e6c200;
+  --blue: #1e88e5;
+  --ink: #111;
+  --field: #e4e4e4;
+  --field-border: #8a8a8a;
+  --pill: #d6d6d6;
+
+  font-family: var(--font-montserrat), Montserrat, system-ui, sans-serif;
+  color: var(--ink);
+  background: #fff;
+  min-height: 100vh;
+  border-top: 2px solid var(--gold);
+  padding: 3.5rem clamp(1rem, 5vw, 4rem) 3rem;
+
   display: grid;
-  gap: 1.5rem;
+  grid-template-columns: minmax(0, 1fr) minmax(14rem, 18rem);
+  gap: clamp(1.5rem, 6vw, 5rem);
+  align-items: stretch;
 }
 
-.section {
+.left {
   display: grid;
+  gap: 1rem;
+  align-content: start;
+}
+
+.right {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* ------------------------------------------------------------------ */
+/* Product picker                                                     */
+/* ------------------------------------------------------------------ */
+.gallery {
+  display: flex;
+  align-items: center;
   gap: 0.75rem;
+  flex-wrap: wrap;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.product {
+  display: block;
+  width: clamp(8rem, 22vw, 13rem);
+  aspect-ratio: 6 / 5;
+  padding: 0;
+  border: 3px solid transparent;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--pill);
+  cursor: pointer;
+}
+
+.product img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.product[aria-pressed="true"] {
+  border-color: var(--blue);
+}
+
+.product:focus-visible,
+.addMore:focus-visible,
+.upload:focus-within,
+.submit:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 3px;
+}
+
+.productName {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  padding: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.addMore {
+  margin-left: 1.5rem;
+  width: 3.4rem;
+  height: 2.1rem;
+  padding: 0;
+  border: 1.5px solid var(--gold);
+  border-radius: 999px;
+  background: #000;
+  color: #fff;
+  font: inherit;
+  font-size: 0.5rem;
+  font-weight: 600;
+  line-height: 1.15;
+  cursor: pointer;
+}
+
+/* ------------------------------------------------------------------ */
+/* Comment box + upload                                               */
+/* ------------------------------------------------------------------ */
+.comment {
+  display: block;
+  width: 100%;
+  min-height: 11rem;
+  padding: 0.5rem 0.625rem;
+  border: 1px solid #000;
+  border-radius: 0;
+  font: inherit;
+  font-size: 0.85rem;
+  resize: vertical;
+}
+
+.comment::placeholder {
+  color: #333;
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.uploadRow {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.upload {
+  position: relative;
+  display: inline-block;
+  padding: 0.2rem 2.5rem;
+  border-radius: 999px;
+  background: var(--pill);
+  font-size: 0.6rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* The native file input stays in the DOM (keyboard + screen readers) */
+.upload input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.fileName {
+  font-size: 0.7rem;
+}
+
+/* ------------------------------------------------------------------ */
+/* Right column: event details                                        */
+/* ------------------------------------------------------------------ */
+.fields {
+  display: grid;
+  gap: 0.9rem;
 }
 
 .field {
@@ -16,24 +170,87 @@
   gap: 0.25rem;
 }
 
+.label {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
 .field input,
 .field select {
-  padding: 0.5rem 0.625rem;
-  border: 1px solid #b8b3a8;
-  border-radius: 4px;
+  width: 100%;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--field-border);
+  border-radius: 3px;
+  background: var(--field);
   font: inherit;
+  font-size: 0.65rem;
+  color: var(--ink);
 }
 
 .field input:focus-visible,
-.field select:focus-visible,
-.submit:focus-visible {
-  outline: 2px solid #1f4e79;
-  outline-offset: 2px;
+.field select:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 1px;
+}
+
+.select {
+  width: 8.5rem;
+  padding: 0.35rem 1.8rem 0.35rem 0.5rem;
+  border: 1px solid #000;
+  border-radius: 3px;
+  background: #fff
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23000' stroke-width='1.5'/%3E%3C/svg%3E")
+    no-repeat right 0.55rem center;
+  appearance: none;
+  font: inherit;
+  font-size: 0.75rem;
+}
+
+.field .select {
+  width: 8.5rem;
+  background-color: #fff;
+  border-color: #000;
+  font-size: 0.75rem;
 }
 
 .error {
   color: #a32020;
-  font-size: 0.875rem;
+  font-size: 0.7rem;
+}
+
+/* ------------------------------------------------------------------ */
+/* Submit                                                             */
+/* ------------------------------------------------------------------ */
+.submitWrap {
+  margin-top: auto;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.submit {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 0;
+  border-radius: 0;
+  background: #000;
+  color: #fff;
+  font: inherit;
+  font-size: 0.95rem;
+  letter-spacing: 0.18em;
+  cursor: pointer;
+}
+
+.submit:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+/* ------------------------------------------------------------------ */
+/* Still used by Calculationpage                                      */
+/* ------------------------------------------------------------------ */
+.section {
+  display: grid;
+  gap: 0.75rem;
 }
 
 .tableWrap {
@@ -47,19 +264,20 @@
   margin-left: auto;
 }
 
-.submit {
-  justify-self: start;
-  padding: 0.75rem 1.5rem;
-  border: 0;
-  border-radius: 4px;
-  background: #1f4e79;
-  color: #fff;
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-}
+/* ------------------------------------------------------------------ */
+/* Narrow screens: stack, details first                               */
+/* ------------------------------------------------------------------ */
+@media (max-width: 760px) {
+  .page {
+    grid-template-columns: 1fr;
+    padding-top: 2rem;
+  }
 
-.submit:disabled {
-  opacity: 0.6;
-  cursor: progress;
+  .right {
+    order: -1;
+  }
+
+  .submitWrap {
+    margin-top: 0;
+  }
 }
