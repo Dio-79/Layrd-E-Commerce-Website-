@@ -26,6 +26,7 @@
   display: grid;
   gap: 1rem;
   align-content: start;
+  min-width: 0;
 }
 
 .right {
@@ -234,6 +235,11 @@
   align-items: start;
 }
 
+/* Lets the details column shrink instead of pushing content out of view */
+.slot > div {
+  min-width: 0;
+}
+
 .slotThumb,
 .choiceImg {
   overflow: hidden;
@@ -316,6 +322,7 @@
   align-items: flex-start;
   gap: 1.25rem 1.5rem;
   margin-top: 1rem;
+  min-width: 0;
 }
 
 .optionLabel {
@@ -333,12 +340,16 @@
   font-size: 0.85rem;
 }
 
+/* Sizes: wrap instead of clipping, never squash a button */
 .sizes {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.4rem;
+  min-width: 0;
 }
 
 .size {
+  flex: 0 0 auto;
   padding: 0.65rem 0.85rem;
   border: 1px solid #000;
   background: #fff;
@@ -346,6 +357,8 @@
   font: inherit;
   font-size: 0.8rem;
   font-weight: 600;
+  text-transform: capitalize; /* "small" displays as "Small" */
+  white-space: nowrap;
   cursor: pointer;
 }
 
@@ -541,4 +554,10 @@
   .choices {
     grid-template-columns: 1fr;
   }
+
+  .bagTotal {
+  margin-top: 1rem;
+  font-size: 1rem;
+  font-weight: 700;
+}
 }

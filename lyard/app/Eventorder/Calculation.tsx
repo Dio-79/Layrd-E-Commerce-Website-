@@ -2,31 +2,18 @@
 
 import { useEffect, useRef, useState } from "react";
 import { products } from "@/lib/data";
-import { getSizes } from "@/lib/dataSize";
-import { useCart } from "@/app/context/CartContext";
 import {
   FLAVOR_OPTIONS,
   getFromPrice,
   getProductId,
   getProductImage,
   getProductName,
+  getProductSizes,
   useEventOrder,
-  type CartItem,
+  type DetailedItem,
   type Product,
 } from "@/app/context/EventOrdercontext";
 import styles from "./event.module.css";
-
-type DetailedItem = CartItem & { productName: string; unitPrice: number };
-
-// Same product + size + flavor => same id, so identical lines merge in the cart.
-// Negative so it never collides with real product IDs.
-const makeCartId = (key: string) => {
-  let hash = 0;
-  for (let i = 0; i < key.length; i++) {
-    hash = (hash * 31 + key.charCodeAt(i)) | 0;
-  }
-  return -Math.abs(hash) - 1;
-};
 
 /* ------------------------------------------------------------------ */
 /* "Choose item for slot #N" dialog                                   */
@@ -110,29 +97,29 @@ function ChooseItemDialog({ open, slotNumber, onClose, onSelect }: DialogProps) 
 interface SlotCardProps {
   item: DetailedItem;
   index: number;
-  showErrors: boolean;
   onChange: () => void;
 }
 
-function SlotCard({ item, index, showErrors, onChange }: SlotCardProps) {
-  const { updateItem, removeItem } = useEventOrder();
+function SlotCard({ item, index, onChange }: SlotCardProps) {
+  const { updateItem, removeItem, status } = useEventOrder();
 
-  const product = products.find((p) => "id" in p && Number(p.id) === item.productId);
+  const product = products.find((p) => getProductId(p) === item.productId);
   const image = product ? getProductImage(product) : null;
-  const sizes = (getSizes(item.productId) ?? []).map(String);
-  const flavorMissing = showErrors && !item.selectedFlavor;
+  const name = product ? getProductName(product) : item.productName;
+  const sizes = getProductSizes(item.productId); // unique string labels
+  const flavorMissing = status === "error" && !item.selectedFlavor;
 
   return (
     <li className={styles.slot}>
       <div className={styles.slotThumb}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        {image ? <img src={image} alt={item.productName} /> : null}
+        {image ? <img src={image} alt={name} /> : null}
       </div>
 
       <div>
         <div className={styles.slotHead}>
           <div>
-            <h3 className={styles.slotName}>{item.productName}</h3>
+            <h3 className={styles.slotName}>{name}</h3>
             <p className={styles.slotLabel}>Slot #{index + 1}</p>
             <p className={styles.slotPrice}>${item.unitPrice.toFixed(2)}</p>
           </div>
@@ -219,24 +206,19 @@ function SlotCard({ item, index, showErrors, onChange }: SlotCardProps) {
 }
 
 /* ------------------------------------------------------------------ */
-/* Page section: slot list + "+Add More" + "Add to bag"              */
+/* Page section: slot list + "+Add More" + running total             */
 /* ------------------------------------------------------------------ */
 
 type DialogTarget = null | "add" | { changeId: string };
 
 export default function Calculationpage() {
-  const { totals, addItem, replaceItem, removeItem } = useEventOrder();
-  const { addItem: addToCart } = useCart();
+  const { totals, addItem, replaceItem } = useEventOrder();
   const [target, setTarget] = useState<DialogTarget>(null);
-  const [showErrors, setShowErrors] = useState(false);
 
-  const slots = totals.detailedItems as DetailedItem[];
+  const slots = totals.detailedItems;
   const changeIndex =
     target && target !== "add" ? slots.findIndex((s) => s.id === target.changeId) : -1;
   const slotNumber = target === "add" ? slots.length + 1 : changeIndex + 1;
-
-  const hasSlots = slots.length > 0;
-  const missingFlavor = slots.some((s) => !s.selectedFlavor);
 
   const handleSelect = (product: Product) => {
     if (target === "add") addItem(product);
@@ -244,46 +226,15 @@ export default function Calculationpage() {
     setTarget(null);
   };
 
-  const handleAddToBag = () => {
-    if (!hasSlots) return;
-    if (missingFlavor) {
-      setShowErrors(true);
-      return;
-    }
-
-    // One cart line per slot; quantity is represented by repeating the same product in cart.
-    slots.forEach((slot) => {
-      const baseProduct = products.find((product) => product.productID === slot.productId);
-      const details = [slot.selectedSize, slot.selectedFlavor].filter(Boolean).join(", ");
-      const cartProduct: Product = {
-        productID: makeCartId(`${slot.productId}|${slot.selectedSize}|${slot.selectedFlavor}`),
-        name: details ? `${slot.productName} (${details})` : slot.productName,
-        price: slot.unitPrice,
-        tag: baseProduct?.tag ?? "",
-        description: baseProduct?.description ?? `${slot.productName} custom bundle item`,
-        imageUrl: baseProduct?.imageUrl ?? "",
-      };
-
-      for (let i = 0; i < slot.quantity; i += 1) {
-        addToCart(cartProduct);
-      }
-    });
-
-    // Clear the order now that it's in the cart
-    slots.forEach((slot) => removeItem(slot.id));
-    setShowErrors(false);
-  };
-
   return (
     <div>
-      {hasSlots && (
+      {slots.length > 0 && (
         <ul className={styles.slots} aria-label="Your bundle">
           {slots.map((item, index) => (
             <SlotCard
               key={item.id}
               item={item}
               index={index}
-              showErrors={showErrors}
               onChange={() => setTarget({ changeId: item.id })}
             />
           ))}
@@ -298,19 +249,8 @@ export default function Calculationpage() {
         </button>
       </div>
 
-      {hasSlots && (
-        <div className={styles.bagRow}>
-          <div className={styles.bagTotal}>Total: ${totals.subtotal.toFixed(2)}</div>
-          <button type="button" className={styles.addToBag} onClick={handleAddToBag}>
-            ADD TO BAG →
-          </button>
-        </div>
-      )}
-
-      {showErrors && missingFlavor && (
-        <p className={styles.error} role="alert">
-          Choose a flavor for every slot before adding to bag.
-        </p>
+      {slots.length > 0 && (
+        <div className={styles.bagTotal}>Total: ${totals.subtotal.toFixed(2)}</div>
       )}
 
       <ChooseItemDialog
