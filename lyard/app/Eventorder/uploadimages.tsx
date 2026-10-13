@@ -2,58 +2,41 @@
 
 import { ChangeEvent, useState } from "react";
 import { useEventOrder } from "@/app/context/EventOrdercontext";
+import styles from "./event.module.css";
+
+const MAX_BYTES = 10 * 1024 * 1024; // 10 MB
 
 export default function Uploadfile() {
   const { file, setFile } = useEventOrder();
-  const [status, setStatus] = useState<"idle" | "uploading" | "success" | "error">("idle");
-  const [errormessage, setErrormessage] = useState("");
-
-  const uploadFile = async (selectedFile: File) => {
-    const formData = new FormData();
-    formData.append("file", selectedFile);
-
-    setStatus("uploading");
-
-    try {
-      const response = await fetch("https://api.example.com/upload", {
-        method: "POST",
-        body: formData,
-        // Do NOT set 'Content-Type': 'multipart/form-data' manually.
-        // The browser sets it together with the required boundary string.
-      });
-
-      if (!response.ok) {
-        throw new Error("Upload failed.");
-      }
-
-      setStatus("success");
-    } catch (error) {
-      setStatus("error");
-      setErrormessage(error instanceof Error ? error.message : "Upload failed.");
-    }
-  };
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0] ?? null;
+    const selected = e.target.files?.[0] ?? null;
 
-    if (!selectedFile) {
+    if (!selected) {
       setFile(null);
-      setStatus("error");
-      setErrormessage("Please select a valid file.");
+      setErrorMessage("");
+      return;
+    }
+    if (selected.size > MAX_BYTES) {
+      setFile(null);
+      setErrorMessage("That file is over 10 MB. Choose a smaller one.");
+      e.target.value = "";
       return;
     }
 
-    setFile(selectedFile); // saved in the event order context
-    setErrormessage("");
-    void uploadFile(selectedFile);
+    setFile(selected);
+    setErrorMessage("");
   };
 
   return (
-    <div>
-      <input type="file" onChange={handleFileChange} />
-      {status === "uploading" && <p>Uploading...</p>}
-      {status === "success" && file && <p>Uploaded file: {file.name}</p>}
-      {status === "error" && <p>{errormessage}</p>}
+    <div className={styles.uploadRow}>
+      {file && <span className={styles.fileName}>{file.name}</span>}
+      {errorMessage && <span className={styles.error}>{errorMessage}</span>}
+      <label className={styles.upload}>
+        Upload custom labels
+        <input type="file" onChange={handleFileChange} />
+      </label>
     </div>
   );
 }

@@ -1,20 +1,36 @@
 "use client";
 
 import { useEventOrder } from "@/app/context/EventOrdercontext";
+import styles from "./event.module.css";
 
-// Shows what the context holds after the Submit button is pressed.
-export default function OrderSummary() {
-  const { order, resetOrder } = useEventOrder();
+export default function SubmitButton() {
+  const eventOrder = useEventOrder() as {
+    submitOrder?: () => void;
+    submit?: () => void;
+    status?: "idle" | "submitting" | "success" | "error";
+    submitError?: string | null;
+  };
 
-  if (!order) return null;
+  const submitOrder = eventOrder.submitOrder ?? eventOrder.submit ?? (() => {});
+  const status = eventOrder.status ?? "idle";
+  const submitError = eventOrder.submitError ?? "";
 
   return (
-    <section>
-      <h2>Order submitted</h2>
-      <pre>{JSON.stringify(order, null, 2)}</pre>
-      <button type="button" onClick={resetOrder}>
-        Start a new order
+    <div className={styles.submitWrap}>
+      <button
+        type="button"
+        className={styles.submit}
+        onClick={submitOrder}
+        disabled={status === "submitting"}
+      >
+        {status === "submitting" ? "Sending…" : "Submit"}
       </button>
-    </section>
+      {status === "error" && (
+        <p className={styles.error} role="alert">
+          {submitError}
+        </p>
+      )}
+      {status === "success" && <p role="status">Order sent. Well confirm by email.</p>}
+    </div>
   );
 }

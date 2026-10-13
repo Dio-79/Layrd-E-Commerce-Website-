@@ -6,36 +6,48 @@ import { useEventOrder } from "@/app/context/EventOrdercontext";
 import styles from "./event.module.css";
 
 type CommentForm = { comment: string };
+ 
+type EventOrderContextValue = {
+  comment: string;
+  setComment: (value: string) => void;
+  registerValidator?: (field: string, callback: () => void) => void;
+};
 
 export function Request() {
-  const { comment, setComment } = useEventOrder();
-
+  const eventOrder = useEventOrder() as EventOrderContextValue;
+  const { comment, setComment } = eventOrder;
+  const registerValidator = eventOrder.registerValidator ?? (() => undefined);
+ 
   const {
     register,
     watch,
+    trigger,
     formState: { errors },
-  } = useForm<CommentForm>({ defaultValues: { comment: comment ?? "" } });
-
-  // NOTE: your original had onChange={(e) => e.target.value} on the input.
-  // That replaces register()'s own onChange, so react-hook-form never sees
-  // the typed value. Syncing with watch() is the safe way to share it.
+  } = useForm<CommentForm>({ defaultValues: { comment } });
+ 
   useEffect(() => {
     const subscription = watch((values) => setComment(values.comment ?? ""));
     return () => subscription.unsubscribe();
   }, [watch, setComment]);
-
+ 
+  useEffect(() => {
+    if (typeof registerValidator === "function") {
+      registerValidator("comment", () => trigger());
+    }
+  }, [registerValidator, trigger]);
+ 
   return (
-    <form id="comment-form" className={styles.section} onSubmit={(e) => e.preventDefault()}>
-      <label className={styles.field}>
-        <span>Comment</span>
-        <input
-          {...register("comment")}
-          placeholder="Leave a comment"
-          aria-invalid={!!errors.comment}
-        />
-      </label>
+    <form id="comment-form" onSubmit={(e) => e.preventDefault()}>
+      <textarea
+        {...register("comment")}
+        className={styles.comment}
+        placeholder="Ask any question here..."
+        aria-label="Questions or comments"
+        aria-invalid={!!errors.comment}
+      />
     </form>
   );
 }
-
+ 
 export default Request;
+ 
