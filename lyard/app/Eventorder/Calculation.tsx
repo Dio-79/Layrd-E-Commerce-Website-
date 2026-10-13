@@ -33,7 +33,12 @@ function SizeByProduct({ productId, selected }: SizeByProductProps) {
 
 export default function Calculationpage() {
   const eventOrder = useEventOrder();
-  const { addItem, updateItem, taxRate } = eventOrder;
+  const addItem =
+    ((eventOrder as any).addItem as ((product: any) => void) | undefined) ?? (() => {});
+  const updateItem =
+    ((eventOrder as any).updateItem as ((itemId: number, field: string, value: any) => void) | undefined) ??
+    (() => {});
+  const taxRate = Number((eventOrder as any).taxRate ?? 0);
 
   const removeItem = (itemId: number) => {
     const removeItemFn = (eventOrder as any).removeItem as ((itemId: number) => void) | undefined;
