@@ -1,19 +1,19 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React from "react";
 import { products } from "@/lib/data";
-import { getSizes, getPrice } from "@/lib/dataSize";
+import { getSizes } from "@/lib/dataSize";
+import { useEventOrder } from "@/app/context/EventOrdercontext";
+import styles from "./event.module.css";
 
-type Product = (typeof products)[number];
-
-// Available flavor options
 const FLAVOR_OPTIONS = [
-  "Vanilla Layer Cake",
-  "Chocolate Espresso",
-  "Salted Caramel",
-  "Red Velvet",
-  "Hazelnut Crunch",
-];
+  "Vanilla",
+  "Chocolate",
+  "Strawberry",
+  "Cookies & Cream",
+  "Mint",
+  "Caramel",
+] as const;
 
 interface SizeByProductProps {
   productId: number;
@@ -31,87 +31,30 @@ function SizeByProduct({ productId, selected }: SizeByProductProps) {
   );
 }
 
-export interface CartItem {
-  id: string;
-  productId: number;
-  selectedSize: string;
-  selectedFlavor: string; 
-  quantity: number;
-}
+export default function Calculationpage() {
+  const eventOrder = useEventOrder();
+  const { addItem, updateItem, taxRate } = eventOrder;
 
-interface CalculationProps {
-  taxRate?: number;
-}
-
-export default function Calculationpage({ taxRate = 0.08 }: CalculationProps) {
-  const [items, setItems] = useState<CartItem[]>([]);
-
-  const handleAddItem = (product: Product) => {
-    const productId = "id" in product ? Number(product.id) : 0;
-    const availableSizes = getSizes(productId) ?? [];
-    const defaultSize = availableSizes.length > 0 ? String(availableSizes[0]) : "Standard";
-
-    const newItem: CartItem = {
-      id: crypto.randomUUID(),
-      productId,
-      selectedSize: defaultSize,
-      selectedFlavor: FLAVOR_OPTIONS[0], // Default flavor
-      quantity: 1,
-    };
-
-    setItems((prev) => [...prev, newItem]);
+  const removeItem = (itemId: number) => {
+    const removeItemFn = (eventOrder as any).removeItem as ((itemId: number) => void) | undefined;
+    removeItemFn?.(itemId);
   };
 
-  const handleUpdateItem = (
-    id: string,
-    field: "selectedSize" | "selectedFlavor" | "quantity",
-    value: string | number
-  ) => {
-    setItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, [field]: value } : item))
-    );
+  const clearItems = () => {
+    const clearItemsFn = (eventOrder as any).clearItems as (() => void) | undefined;
+    clearItemsFn?.();
   };
 
-  const handleRemoveItem = (id: string) => {
-    setItems((prev) => prev.filter((item) => item.id !== id));
+  const totals = eventOrder.totals ?? {
+    detailedItems: [],
+    totalItems: 0,
+    subtotal: 0,
+    taxAmount: 0,
+    grandTotal: 0,
   };
-
-  const handleClearAll = () => {
-    setItems([]);
-  };
-
-  const totals = useMemo(() => {
-    const detailedItems = items.map((item) => {
-      const product = products.find((p) => "id" in p && Number(p.id) === item.productId);
-      const basePrice = product && "price" in product ? Number(product.price) : 0;
-      const sizePrice = product ? getPrice(product, item.selectedSize) ?? basePrice : basePrice;
-      const unitPrice = sizePrice > 0 ? sizePrice : basePrice;
-      const itemTotal = unitPrice * item.quantity;
-
-      return {
-        ...item,
-        productName: product && "name" in product ? String(product.name) : `Product #${item.productId}`,
-        unitPrice,
-        itemTotal,
-      };
-    });
-
-    const totalItems = detailedItems.reduce((sum, item) => sum + item.quantity, 0);
-    const subtotal = detailedItems.reduce((sum, item) => sum + item.itemTotal, 0);
-    const taxAmount = subtotal * taxRate;
-    const grandTotal = subtotal + taxAmount;
-
-    return {
-      detailedItems,
-      totalItems,
-      subtotal,
-      taxAmount,
-      grandTotal,
-    };
-  }, [items, taxRate]);
 
   return (
-    <div>
+    <div className={styles.section}>
       <h2>Price Calculation Engine</h2>
 
       {/* Product Catalog Buttons */}
@@ -122,7 +65,7 @@ export default function Calculationpage({ taxRate = 0.08 }: CalculationProps) {
             const prodId = "id" in product ? Number(product.id) : 0;
             const prodName = "name" in product ? String(product.name) : `Product #${prodId}`;
             return (
-              <button key={prodId} type="button" onClick={() => handleAddItem(product)}>
+              <button key={prodId} type="button" onClick={() => addItem(product)}>
                 + Add {prodName}
               </button>
             );
@@ -130,9 +73,9 @@ export default function Calculationpage({ taxRate = 0.08 }: CalculationProps) {
         </div>
       </div>
 
-      {/* Selected Items Table / List */}
+      {/* Selected Items */}
       {totals.detailedItems.length > 0 ? (
-        <div>
+        <div className={styles.tableWrap}>
           <table>
             <thead>
               <tr>
@@ -155,7 +98,7 @@ export default function Calculationpage({ taxRate = 0.08 }: CalculationProps) {
                       {availableSizes.length > 0 ? (
                         <select
                           value={item.selectedSize}
-                          onChange={(e) => handleUpdateItem(item.id, "selectedSize", e.target.value)}
+                          onChange={(e) => updateItem(item.id, "selectedSize", e.target.value)}
                         >
                           {availableSizes.map((sz) => (
                             <option key={String(sz)} value={String(sz)}>
@@ -168,11 +111,10 @@ export default function Calculationpage({ taxRate = 0.08 }: CalculationProps) {
                       )}
                     </td>
 
-                    {/* Flavor Selector per Item */}
                     <td>
                       <select
                         value={item.selectedFlavor}
-                        onChange={(e) => handleUpdateItem(item.id, "selectedFlavor", e.target.value)}
+                        onChange={(e) => updateItem(item.id, "selectedFlavor", e.target.value)}
                       >
                         {FLAVOR_OPTIONS.map((flavor) => (
                           <option key={flavor} value={flavor}>
@@ -188,18 +130,14 @@ export default function Calculationpage({ taxRate = 0.08 }: CalculationProps) {
                         min="1"
                         value={item.quantity}
                         onChange={(e) =>
-                          handleUpdateItem(
-                            item.id,
-                            "quantity",
-                            Math.max(1, parseInt(e.target.value) || 1)
-                          )
+                          updateItem(item.id, "quantity", Math.max(1, parseInt(e.target.value) || 1))
                         }
                       />
                     </td>
                     <td>${item.unitPrice.toFixed(2)}</td>
                     <td>${item.itemTotal.toFixed(2)}</td>
                     <td>
-                      <button type="button" onClick={() => handleRemoveItem(item.id)}>
+                      <button type="button" onClick={() => removeItem(item.id)}>
                         Remove
                       </button>
                     </td>
@@ -210,7 +148,7 @@ export default function Calculationpage({ taxRate = 0.08 }: CalculationProps) {
           </table>
 
           <div>
-            <button type="button" onClick={handleClearAll}>
+            <button type="button" onClick={clearItems}>
               Clear All Slots
             </button>
           </div>
@@ -219,20 +157,17 @@ export default function Calculationpage({ taxRate = 0.08 }: CalculationProps) {
         <div>No items added yet. Click a product button above to begin automatic calculation.</div>
       )}
 
-      {/* Summary Section */}
-      <div>
+      {/* Summary */}
+      <div className={styles.summary}>
         <div>
           <span>Total Units ({totals.totalItems}): </span>
           <span>${totals.subtotal.toFixed(2)}</span>
         </div>
-
         <div>
           <span>Estimated Sales Tax ({(taxRate * 100).toFixed(1)}%): </span>
           <span>${totals.taxAmount.toFixed(2)}</span>
         </div>
-
         <hr />
-
         <div>
           <strong>Grand Total: </strong>
           <strong>${totals.grandTotal.toFixed(2)}</strong>

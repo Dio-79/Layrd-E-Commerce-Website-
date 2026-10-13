@@ -1,23 +1,20 @@
 "use client";
 
-import React from 'react';
-import styles from './event.module.css';
+import { useEventOrder } from "@/app/context/EventOrdercontext";
 
-// The Submit button sits outside both forms in the design,
-// so it submits the event form and the comment form together.
-export default function SubmitButton() {
-  const submitAll = () => {
-    (document.getElementById('selection-form') as HTMLFormElement | null)?.requestSubmit();
-    (document.getElementById('comment-form') as HTMLFormElement | null)?.requestSubmit();
-  };
+// Shows what the context holds after the Submit button is pressed.
+export default function OrderSummary() {
+  const { order, resetOrder } = useEventOrder();
 
-  return React.createElement(
-    'button',
-    {
-      type: 'button',
-      className: styles.submit,
-      onClick: submitAll,
-    },
-    'Submit'
+  if (!order) return null;
+
+  return (
+    <section>
+      <h2>Order submitted</h2>
+      <pre>{JSON.stringify(order, null, 2)}</pre>
+      <button type="button" onClick={resetOrder}>
+        Start a new order
+      </button>
+    </section>
   );
 }

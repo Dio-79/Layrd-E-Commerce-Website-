@@ -1,8 +1,10 @@
 "use client";
+
 import { ChangeEvent, useState } from "react";
+import { useEventOrder } from "@/app/context/EventOrdercontext";
 
 export default function Uploadfile() {
-  const [file, setFile] = useState<File | null>(null);
+  const { file, setFile } = useEventOrder();
   const [status, setStatus] = useState<"idle" | "uploading" | "success" | "error">("idle");
   const [errormessage, setErrormessage] = useState("");
 
@@ -16,8 +18,8 @@ export default function Uploadfile() {
       const response = await fetch("https://api.example.com/upload", {
         method: "POST",
         body: formData,
-        // Do NOT set 'Content-Type': 'multipart/form-data' header manually.
-        // The browser automatically sets it along with the required boundary string.
+        // Do NOT set 'Content-Type': 'multipart/form-data' manually.
+        // The browser sets it together with the required boundary string.
       });
 
       if (!response.ok) {
@@ -41,7 +43,7 @@ export default function Uploadfile() {
       return;
     }
 
-    setFile(selectedFile);
+    setFile(selectedFile); // saved in the event order context
     setErrormessage("");
     void uploadFile(selectedFile);
   };

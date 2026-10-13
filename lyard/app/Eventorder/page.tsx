@@ -6,20 +6,22 @@ import SubmitButton from './SubmitButton';
 import Uploadfile from './uploadimages';
 import Calculationpage from './Calculation';
 
-export default function ProductsPage() {
 
-    return (
-        <>
-    <Header/>
+
+  export default function EventOrderPage() {
+  return (
+    <EventOrderProvider>
+      <main className={styles.page}>
+        <h1>Event Order</h1>
  
-<Calculationpage/>
-<Request/>
-<Selections/>
-<Uploadfile/>
-<SubmitButton/>
-    <Footer/>
-    </>
-    
-    ) 
-
+        <Selections />
+        <Calculationpage />
+        <Request />
+        <Uploadfile />
+ 
+        <SubmitButton />
+        <OrderSummary />
+      </main>
+    </EventOrderProvider>
+  );
 }

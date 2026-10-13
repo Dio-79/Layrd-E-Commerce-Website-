@@ -4,7 +4,7 @@ import React from 'react';
 import { signup } from './SignupApi';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as yup from 'yup';
-import styles from './signup.module.css';
+import styles from './Signup.module.css';
 
 const schema = yup.object({
   username: yup.string().required('Full name is required'),
