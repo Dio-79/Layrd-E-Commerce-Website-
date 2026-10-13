@@ -15,6 +15,34 @@ const FLAVOR_OPTIONS = [
   "Caramel",
 ] as const;
 
+type ProductLike = (typeof products)[number];
+
+type DetailedOrderItem = {
+  id: number;
+  productId: number;
+  productName: string;
+  selectedSize: string;
+  selectedFlavor: string;
+  quantity: number;
+  unitPrice: number;
+  itemTotal: number;
+};
+
+type EventOrderLike = {
+  addItem?: (product: ProductLike) => void;
+  updateItem?: (itemId: number, field: string, value: number | string) => void;
+  removeItem?: (itemId: number) => void;
+  clearItems?: () => void;
+  taxRate?: number;
+  totals?: {
+    detailedItems: DetailedOrderItem[];
+    totalItems: number;
+    subtotal: number;
+    taxAmount: number;
+    grandTotal: number;
+  };
+};
+
 interface SizeByProductProps {
   productId: number;
   selected: string;
@@ -32,22 +60,17 @@ function SizeByProduct({ productId, selected }: SizeByProductProps) {
 }
 
 export default function Calculationpage() {
-  const eventOrder = useEventOrder();
-  const addItem =
-    ((eventOrder as any).addItem as ((product: any) => void) | undefined) ?? (() => {});
-  const updateItem =
-    ((eventOrder as any).updateItem as ((itemId: number, field: string, value: any) => void) | undefined) ??
-    (() => {});
-  const taxRate = Number((eventOrder as any).taxRate ?? 0);
+  const eventOrder = useEventOrder() as EventOrderLike;
+  const addItem = eventOrder.addItem ?? (() => {});
+  const updateItem = eventOrder.updateItem ?? (() => {});
+  const taxRate = Number(eventOrder.taxRate ?? 0);
 
   const removeItem = (itemId: number) => {
-    const removeItemFn = (eventOrder as any).removeItem as ((itemId: number) => void) | undefined;
-    removeItemFn?.(itemId);
+    eventOrder.removeItem?.(itemId);
   };
 
   const clearItems = () => {
-    const clearItemsFn = (eventOrder as any).clearItems as (() => void) | undefined;
-    clearItemsFn?.();
+    eventOrder.clearItems?.();
   };
 
   const totals = eventOrder.totals ?? {

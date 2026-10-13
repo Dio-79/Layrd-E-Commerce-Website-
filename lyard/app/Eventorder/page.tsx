@@ -1,24 +1,24 @@
-import Header  from '@/app/components/Footer';
-import Footer from '@/app/components/Header';
-import { Request } from './commentsection';
+import type { ReactNode } from 'react';
+import Request from './commentsection';
 import Selections from './formsection';
 import SubmitButton from './SubmitButton';
 import Uploadfile from './uploadimages';
 import Calculationpage from './Calculation';
 
+const EventOrderProvider = ({ children }: { children: ReactNode }) => <>{children}</>;
+const OrderSummary = () => null;
 
-
-  export default function EventOrderPage() {
+export default function EventOrderPage() {
   return (
     <EventOrderProvider>
-      <main className={styles.page}>
+      <main className="page">
         <h1>Event Order</h1>
- 
+
         <Selections />
         <Calculationpage />
         <Request />
         <Uploadfile />
- 
+
         <SubmitButton />
         <OrderSummary />
       </main>
