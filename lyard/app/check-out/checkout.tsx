@@ -15,7 +15,7 @@ import {
   useHydrated,
   type DeliveryInfo,
 } from "@/lib/checkoutStore";
-import { calculateTotals, findPromo, formatDate, formatMoney, type PromoCode } from "@/lib/checkoutPricing";
+import { calculateTotals, findPromo, formatDate, formatMoney, type PromoCode } from "@/lib/CheckoutPricing";
 import {
   createDelivery,
   getDeliveryQuote,
