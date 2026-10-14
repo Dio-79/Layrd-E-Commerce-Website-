@@ -1,5 +1,5 @@
 import { useMemo, useSyncExternalStore } from "react";
-import type { Totals } from "./checkoutPricing";
+import type { Totals } from "./CheckoutPricing";
 
 /* ------------------------------------------------------------------ */
 /* Types                                                              */
@@ -8,7 +8,7 @@ import type { Totals } from "./checkoutPricing";
 export interface OrderLine {
   /** Unique id of the line */
   id: string;
-  /** Where the line came from: the regular bag or an event order */
+  /** Where the line came from: the cart (bag) or an event order */
   source: "bag" | "event";
   /** Set for event lines: the event order they belong to */
   eventId?: string;
@@ -67,8 +67,11 @@ export interface PlacedOrder {
   totals: Totals;
 }
 
+/**
+ * The regular bag lives in CartContext (useCart). This store only keeps
+ * event orders and the last placed order, so they survive page changes.
+ */
 interface State {
-  bag: OrderLine[];
   events: EventOrderEntry[];
   lastOrder: PlacedOrder | null;
 }
@@ -77,8 +80,8 @@ interface State {
 /* Tiny localStorage-backed store (works across pages and tabs)       */
 /* ------------------------------------------------------------------ */
 
-const KEY = "layrd:checkout:v1";
-const EMPTY: State = { bag: [], events: [], lastOrder: null };
+const KEY = "layrd:checkout:v2";
+const EMPTY: State = { events: [], lastOrder: null };
 
 const listeners = new Set<() => void>();
 let cachedRaw: string | null | undefined = undefined;
@@ -135,11 +138,8 @@ function subscribe(callback: () => void) {
 
 export function useCheckout() {
   const state = useSyncExternalStore(subscribe, read, () => EMPTY);
-  const lines = useMemo(
-    () => [...state.bag, ...state.events.flatMap((e) => e.lines)],
-    [state]
-  );
-  return { ...state, lines };
+  const eventLines = useMemo(() => state.events.flatMap((e) => e.lines), [state.events]);
+  return { ...state, eventLines };
 }
 
 /** false on the server and during hydration, true afterwards */
@@ -154,14 +154,6 @@ export function useHydrated() {
 /* ------------------------------------------------------------------ */
 /* Actions (plain functions: call them from any client component)     */
 /* ------------------------------------------------------------------ */
-
-/** The cart page calls this whenever its items change. The bag is replaced, not appended. */
-export function setBagLines(lines: NewLine[]) {
-  const state = read();
-  const bag: OrderLine[] = lines.map((l) => ({ ...l, source: "bag" }));
-  if (JSON.stringify(bag) === JSON.stringify(state.bag)) return;
-  commit({ ...state, bag });
-}
 
 /** The event order page calls this when the Submit button is pressed. */
 export function addEventOrder(input: { id?: string; details: EventDetails; lines: NewLine[] }): string {
@@ -193,22 +185,27 @@ function makeOrderNumber() {
   return `LYD-${time}${rand}`;
 }
 
-/** Saves the finished order and empties the bag and event orders. */
+/**
+ * Saves the finished order and empties the event orders.
+ * Pass the cart lines in as bagLines, then call clearCart() from useCart().
+ */
 export function placeOrder(input: {
   customer: CustomerInfo;
   delivery: DeliveryInfo;
   promoCode: string | null;
   totals: Totals;
+  bagLines: OrderLine[];
 }): PlacedOrder {
   const state = read();
+  const { bagLines, ...rest } = input;
   const order: PlacedOrder = {
     orderNumber: makeOrderNumber(),
     placedAt: new Date().toISOString(),
-    ...input,
-    lines: [...state.bag, ...state.events.flatMap((e) => e.lines)],
+    ...rest,
+    lines: [...bagLines, ...state.events.flatMap((e) => e.lines)],
     events: state.events.map((e) => e.details),
   };
-  commit({ bag: [], events: [], lastOrder: order });
+  commit({ events: [], lastOrder: order });
   return order;
 }
 
