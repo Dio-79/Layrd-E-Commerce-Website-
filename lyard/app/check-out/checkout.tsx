@@ -521,7 +521,7 @@ export default function CheckoutPage() {
                   <div className={styles.group}>
                     <h3 className={styles.groupTitle}>Your Bag</h3>
                     <ul className={styles.lines}>
-                      {bag.map((line: (typeof bag)[number]) => (
+                      {bagLines.map((line) => (
                         <SummaryLine key={line.id} line={line} />
                       ))}
                     </ul>
