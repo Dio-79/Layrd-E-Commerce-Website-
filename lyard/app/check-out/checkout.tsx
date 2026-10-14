@@ -14,7 +14,9 @@ import {
   useCheckout,
   useHydrated,
   type DeliveryInfo,
+  type OrderLine,
 } from "@/lib/checkoutStore";
+import { useCart } from "@/app/context/CartContext";
 import { calculateTotals, findPromo, formatDate, formatMoney, type PromoCode } from "@/lib/CheckoutPricing";
 import {
   createDelivery,
@@ -69,7 +71,28 @@ function Field({
 export default function CheckoutPage() {
   const router = useRouter();
   const hydrated = useHydrated();
-  const { bag, events, lines } = useCheckout();
+
+  const cart = useCart();
+  const bag = useMemo(
+    () => (Array.isArray(cart?.items) ? cart.items : []),
+    [cart]
+  );
+  const bagLines = useMemo<OrderLine[]>(
+    () =>
+      bag.map((item) => ({
+        id: `bag:${item.product.productID}`,
+        source: "bag",
+        productId: item.product.productID,
+        name: item.product.name,
+        image: item.product.imageUrl ?? null,
+        quantity: item.quantity,
+        unitPrice: item.product.price,
+      })),
+    [bag]
+  );
+
+  const { events, eventLines } = useCheckout();
+  const lines = useMemo(() => [...bagLines, ...eventLines], [bagLines, eventLines]);
 
   const [deliveryMethod, setDeliveryMethod] = useState<"ship" | "pickup">("ship");
   const [payment, setPayment] = useState<PaymentMethod>("card");
@@ -155,7 +178,7 @@ export default function CheckoutPage() {
 
   const shipping = deliveryMethod === "pickup" ? 0 : quote ? quote.fee : null;
   const totals = useMemo(
-    () => calculateTotals(lines, shipping, appliedPromo),
+    () => calculateTotals(lines as OrderLine[], shipping, appliedPromo),
     [lines, shipping, appliedPromo]
   );
 
@@ -215,6 +238,7 @@ export default function CheckoutPage() {
         delivery,
         promoCode: appliedPromo?.code ?? null,
         totals,
+        bagLines,
       });
 
       router.push(CONFIRMATION_PATH);
@@ -497,7 +521,7 @@ export default function CheckoutPage() {
                   <div className={styles.group}>
                     <h3 className={styles.groupTitle}>Your Bag</h3>
                     <ul className={styles.lines}>
-                      {bag.map((line) => (
+                      {bag.map((line: (typeof bag)[number]) => (
                         <SummaryLine key={line.id} line={line} />
                       ))}
                     </ul>
@@ -517,7 +541,7 @@ export default function CheckoutPage() {
                     </div>
                     {event.details.eventType && <p className={styles.groupMeta}>{event.details.eventType}</p>}
                     <ul className={styles.lines}>
-                      {event.lines.map((line) => (
+                      {event.lines.map((line: (typeof event.lines)[number]) => (
                         <SummaryLine key={line.id} line={line} />
                       ))}
                     </ul>
