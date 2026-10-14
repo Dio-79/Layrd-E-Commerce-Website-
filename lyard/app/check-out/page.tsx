@@ -2,13 +2,15 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useForm } from "react-hook-form";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import styles from "./checkout.module.css";
 import { BagSummaryLine, SummaryLine, TotalsList, useOrderLines } from "./order";
 import { useCart } from "@/app/context/CartContext";
-import { placeOrder, removeEventOrder, type DeliveryInfo } from "@/lib/checkoutStore";
+import { CardIcon, MastercardMark, PinIcon, StoreIcon, VisaMark } from "./icon";
+import { placeOrder, removeEventOrder, setPromoCode, useCheckout, type DeliveryInfo } from "@/lib/checkoutStore";
 import { calculateTotals, findPromo, formatDate, formatMoney, type PromoCode } from "@/lib/CheckoutPricing";
 import {
   createDelivery,
@@ -17,9 +19,8 @@ import {
   type DoorDashQuote,
 } from "@/lib/doordashapi";
 
-/** Change these if your routes are named differently */
 const CART_PATH = "/cart";
-const CONFIRMATION_PATH = "/order-confirmation";
+const CONFIRMATION_PATH = "/confirmation";
 
 type FormValues = {
   email: string;
@@ -133,18 +134,25 @@ export default function CheckoutPage() {
 
   /* ---------------- Promo + totals ---------------- */
 
+  // The promo code is saved in the store, so a code applied in the cart carries over here.
+  const { promoCode: savedPromoCode } = useCheckout();
   const [promoInput, setPromoInput] = useState("");
-  const [appliedPromo, setAppliedPromo] = useState<PromoCode | null>(null);
-  const [promoMessage, setPromoMessage] = useState("");
+  const [promoError, setPromoError] = useState("");
+
+  const appliedPromo: PromoCode | null = useMemo(
+    () => (savedPromoCode ? findPromo(savedPromoCode) : null),
+    [savedPromoCode]
+  );
+  const promoMessage = appliedPromo ? `${appliedPromo.code} applied (${appliedPromo.label})` : promoError;
 
   const applyPromo = () => {
     const found = findPromo(promoInput);
     if (found) {
-      setAppliedPromo(found);
-      setPromoMessage(`${found.code} applied (${found.label})`);
+      setPromoCode(found.code);
+      setPromoError("");
     } else {
-      setAppliedPromo(null);
-      setPromoMessage(promoInput.trim() ? "That promo code isn't valid." : "Enter a promo code.");
+      setPromoCode(null);
+      setPromoError(promoInput.trim() ? "That promo code isn't valid." : "Enter a promo code.");
     }
   };
 
@@ -195,6 +203,7 @@ export default function CheckoutPage() {
           deliveryId: result.deliveryId,
           etaMinutes: result.etaMinutes,
           courierName: result.courier.name,
+          trackingUrl: result.trackingUrl,
         };
       } else {
         delivery = { method: "pickup", pickupLocation: PICKUP_LOCATION.address };
@@ -229,14 +238,13 @@ export default function CheckoutPage() {
       <Header />
 
       <main className={styles.page}>
-        <h1 className={styles.heading}>Checkout</h1>
-        <p className={styles.subheading}>Review your order and enter your details to finish.</p>
+        <h1 className={styles.srOnly}>Checkout</h1>
 
         <form className={styles.layout} onSubmit={handleSubmit(onSubmit)} noValidate>
           {/* ------------------------- Left column ------------------------- */}
           <div className={styles.left}>
             <button type="button" className={styles.returnCart} onClick={() => router.push(CART_PATH)}>
-              ← Return to Cart
+              &lt; Return to Cart
             </button>
 
             {/* Customer information */}
@@ -283,9 +291,11 @@ export default function CheckoutPage() {
                   aria-pressed={deliveryMethod === "ship"}
                   onClick={() => setDeliveryMethod("ship")}
                 >
-                  <span className={styles.deliveryIcon}>📍</span>
+                  <span className={styles.deliveryIcon}><PinIcon /></span>
                   <strong>Ship to Address</strong>
-                  <span>POWERED BY DoorDash</span>
+                  <span className={styles.deliverySub}>
+                    POWERED BY <b className={styles.doordash}>DoorDash</b>
+                  </span>
                 </button>
 
                 <button
@@ -294,9 +304,9 @@ export default function CheckoutPage() {
                   aria-pressed={deliveryMethod === "pickup"}
                   onClick={() => setDeliveryMethod("pickup")}
                 >
-                  <span className={styles.deliveryIcon}>▣</span>
+                  <span className={styles.deliveryIcon}><StoreIcon /></span>
                   <strong>Pickup</strong>
-                  <span>Pickup at {PICKUP_LOCATION.address}</span>
+                  <span className={styles.deliverySub}>Pickup at {PICKUP_LOCATION.address}</span>
                 </button>
               </div>
             </section>
@@ -383,14 +393,20 @@ export default function CheckoutPage() {
               <h2>Payment Details</h2>
 
               <div className={styles.paymentCard}>
-                <button
-                  type="button"
-                  className={styles.paymentTitle}
-                  aria-pressed={payment === "card"}
-                  onClick={() => setPayment("card")}
-                >
-                  💳 Credit / Debit Card
-                </button>
+                <div className={styles.paymentHead}>
+                  <button
+                    type="button"
+                    className={styles.paymentTitle}
+                    aria-pressed={payment === "card"}
+                    onClick={() => setPayment("card")}
+                  >
+                    <CardIcon /> Credit/ Debit Card
+                  </button>
+                  <div className={styles.paymentLogos} aria-hidden="true">
+                    <VisaMark />
+                    <MastercardMark />
+                  </div>
+                </div>
 
                 {payment === "card" && (
                   <div className={styles.cardInputs}>
@@ -444,11 +460,6 @@ export default function CheckoutPage() {
                     </Field>
                   </div>
                 )}
-
-                <div className={styles.paymentLogos}>
-                  <span>VISA</span>
-                  <span>●●</span>
-                </div>
               </div>
 
               {(
@@ -486,7 +497,7 @@ export default function CheckoutPage() {
             {!hydrated ? null : lines.length === 0 && !submitting ? (
               <p className={styles.empty}>
                 Your order is empty.{" "}
-                <a href={CART_PATH}>Go to your cart</a> or <a href="/Mainpage">continue shopping</a>.
+                <Link href={CART_PATH}>Go to your cart</Link> or <Link href="/">continue shopping</Link>.
               </p>
             ) : (
               <>
@@ -556,7 +567,7 @@ export default function CheckoutPage() {
             )}
 
             <button type="submit" className={styles.complete} disabled={submitting || lines.length === 0}>
-              {submitting ? "PLACING ORDER…" : "COMPLETE ORDER →"}
+              {submitting ? "PLACING ORDER…" : "COMPLETE ORDER"}
             </button>
           </aside>
         </form>

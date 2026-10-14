@@ -29,6 +29,8 @@ export interface DoorDashDelivery {
   fee: number;
   etaMinutes: number;
   courier: { name: string; vehicle: string };
+  /** Link to follow the delivery. Dummy value: use the real tracking URL from DoorDash. */
+  trackingUrl: string;
 }
 
 export const PICKUP_LOCATION = {
@@ -96,5 +98,6 @@ export async function createDelivery(
     fee: quote.fee,
     etaMinutes: quote.etaMinutes,
     courier: COURIERS[seed % COURIERS.length],
+    trackingUrl: "https://www.doordash.com/",
   };
 }

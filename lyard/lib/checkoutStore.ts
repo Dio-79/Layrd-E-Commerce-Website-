@@ -53,6 +53,7 @@ export interface DeliveryInfo {
   deliveryId?: string;
   etaMinutes?: number;
   courierName?: string;
+  trackingUrl?: string;
   pickupLocation?: string;
 }
 
@@ -73,6 +74,8 @@ export interface PlacedOrder {
  */
 interface State {
   events: EventOrderEntry[];
+  /** Promo code applied in the cart or checkout, kept so both pages agree */
+  promoCode: string | null;
   lastOrder: PlacedOrder | null;
 }
 
@@ -81,7 +84,7 @@ interface State {
 /* ------------------------------------------------------------------ */
 
 const KEY = "layrd:checkout:v2";
-const EMPTY: State = { events: [], lastOrder: null };
+const EMPTY: State = { events: [], promoCode: null, lastOrder: null };
 
 const listeners = new Set<() => void>();
 let cachedRaw: string | null | undefined = undefined;
@@ -174,6 +177,13 @@ export function addEventOrder(input: { id?: string; details: EventDetails; lines
   return id;
 }
 
+/** Saves (or clears, with null) the promo code so the cart and checkout show the same discount. */
+export function setPromoCode(code: string | null) {
+  const state = read();
+  if (state.promoCode === code) return;
+  commit({ ...state, promoCode: code });
+}
+
 export function removeEventOrder(eventId: string) {
   const state = read();
   commit({ ...state, events: state.events.filter((e) => e.id !== eventId) });
@@ -205,7 +215,7 @@ export function placeOrder(input: {
     lines: [...bagLines, ...state.events.flatMap((e) => e.lines)],
     events: state.events.map((e) => e.details),
   };
-  commit({ events: [], lastOrder: order });
+  commit({ events: [], promoCode: null, lastOrder: order });
   return order;
 }
 
