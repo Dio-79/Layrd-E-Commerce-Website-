@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import styles from "./cart.module.css";
-import shared from "../check-out/checkout.module.css";
+import shared from "../check-out/order.module.css";
 import { TotalsList, useOrderLines } from "../check-out/order";
 import { useCart } from "@/app/context/CartContext";
 import { removeEventOrder, setPromoCode, useCheckout, type OrderLine } from "@/lib/checkoutStore";
