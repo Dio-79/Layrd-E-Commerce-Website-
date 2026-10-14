@@ -24,9 +24,11 @@ const Header = () => {
         </button>
 
         {/* Logo */}
+        <Link href="/Mainpage">
         <div className="text-3xl font-extrabold tracking-widest font-serif text-black">
           LÄYRD
         </div>
+        </Link>
 
         {/* Action Icons */}
         <div className="flex items-center space-x-4 text-gray-700">

@@ -16,7 +16,7 @@ type ProductWithImage = ProductItem & {
 };
 
 function ProductCard({ product, onCustomize }: ProductCardProps) {
-  const productImage = (product as ProductWithImage).image || "";
+  const productImage = (product as ProductWithImage).image || product.imageUrl;
 
   return (
     <div className={styles.card}>
@@ -29,7 +29,7 @@ function ProductCard({ product, onCustomize }: ProductCardProps) {
         )}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={product.imageUrl}
+          src={productImage}
           alt={`${product.name} ${product.tag}`}
           className={styles.productImage}
         />

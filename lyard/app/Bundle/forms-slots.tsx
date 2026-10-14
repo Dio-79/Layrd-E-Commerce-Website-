@@ -15,14 +15,14 @@ interface SelectionFormsProps {
 }
 
 export default function SelectionForms({ onValid }: SelectionFormsProps) {
-  const { flavorOption, setFlavorOption } = useBundle();
+  useBundle();
 
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<FormValues>({
-    values: { flavorSlot: flavorOption }, // stays in sync with the context (e.g. after reset)
+    defaultValues: { flavorSlot: "" },
   });
 
   return (
@@ -35,7 +35,6 @@ export default function SelectionForms({ onValid }: SelectionFormsProps) {
         className={styles.styledSelect}
         {...register("flavorSlot", {
           required: "Please select a flavor",
-          onChange: (e) => setFlavorOption(e.target.value),
         })}
       >
         <option value="">Select</option>
