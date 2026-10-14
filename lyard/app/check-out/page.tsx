@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import styles from "../checkout/checkout.module.css";
+import styles from "./checkout.module.css";
 import { SummaryLine, TotalsList } from "./order";
 import { useCheckout, useHydrated } from "@/lib/checkoutStore";
 import { formatDate, formatMoney } from "@/lib/checkoutPricing";
