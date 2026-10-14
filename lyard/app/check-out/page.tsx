@@ -3,10 +3,10 @@
 import Link from "next/link";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import styles from "./checkout.module.css";
-import { SummaryLine, TotalsList } from "./order";
+  import styles from "../check-out/checkout.module.css";
+  import { SummaryLine, TotalsList } from "../check-out/order";
 import { useCheckout, useHydrated } from "@/lib/checkoutStore";
-import { formatDate, formatMoney } from "@/lib/checkoutPricing";
+import { formatDate, formatMoney } from "@/lib/CheckoutPricing";
 
 export default function OrderConfirmationPage() {
   const hydrated = useHydrated();

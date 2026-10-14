@@ -1,5 +1,5 @@
 import type { OrderLine } from "@/lib/checkoutStore";
-import { formatMoney, type Totals } from "@/lib/checkoutPricing";
+import { formatMoney, type Totals } from "../../lib/CheckoutPricing";
 import styles from "./checkout.module.css";
 
 export function SummaryLine({ line }: { line: OrderLine }) {
