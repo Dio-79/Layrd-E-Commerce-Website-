@@ -44,7 +44,7 @@ function Product({ line }: { line: OrderLine }) {
     <div className={styles.product}>
       <div className={styles.thumb}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        {line.image ? <img src={line.image} alt={line.name} /> : null}
+        {line.image ? <img src={line.image} alt="" /> : null}
       </div>
       <div>
         <h3 className={styles.name}>{line.name}</h3>

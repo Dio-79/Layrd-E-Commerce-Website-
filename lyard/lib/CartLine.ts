@@ -7,6 +7,13 @@ const num = (v: unknown): number | undefined =>
 const str = (v: unknown): string | undefined =>
   typeof v === "string" && v.trim() ? v.trim() : undefined;
 
+/** "images/a.png" only works on one page; "/images/a.png" works everywhere. */
+const toSrc = (v: unknown): string | null => {
+  const s = str(v);
+  if (!s) return null;
+  return /^(https?:|data:|blob:|\/)/.test(s) ? s : `/${s}`;
+};
+
 /**
  * Turns a cart item into a checkout line.
  * The product is read loosely so this works with whatever fields your Product has.
@@ -24,7 +31,7 @@ export function cartItemToLine(item: CartItem): OrderLine {
     source: "bag",
     productId: typeof id === "number" ? id : String(id),
     name: str(p.name) ?? str(p.productName) ?? str(p.title) ?? `Product #${String(id)}`,
-    image: str(p.image) ?? str(p.imageUrl) ?? str(p.img) ?? null,
+    image: toSrc(p.image) ?? toSrc(p.imageUrl) ?? toSrc(p.img),
     size: str(p.size) ?? str(p.selectedSize),
     flavor: str(p.flavor) ?? (sweetness ? `Sweetness: ${sweetness}` : undefined),
     quantity: item.quantity,
