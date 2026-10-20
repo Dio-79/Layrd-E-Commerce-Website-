@@ -6,10 +6,9 @@ import { useSearchParams } from "next/navigation";
 import { Montserrat } from "next/font/google";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
-import { loadLastOrder, type PreorderRecord } from "@/lib/eventCheckoutStore";
+import { loadLastOrder, type PreorderRecord } from "@/lib/event/eventCheckoutStore";
 import { CANCEL_HOURS, PICKUP_LOCATION, STATUS_STEPS, parseDate, timeLabel } from "@/lib/event/eventRules";
 import styles from "./confirmation.module.css";
-
 const montserrat = Montserrat({ subsets: ["latin"], variable: "--font-montserrat" });
 const money = (n: number) => `$${n.toFixed(2)}`;
 

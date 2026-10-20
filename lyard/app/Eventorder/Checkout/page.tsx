@@ -23,7 +23,6 @@ import {
   priceOrder,
 } from "@/lib/event/eventRules";
 import styles from "./checkout.module.css";
-
 const montserrat = Montserrat({ subsets: ["latin"], variable: "--font-montserrat" });
 
 type PayMethod = "card" | "apple" | "google" | "paypal";

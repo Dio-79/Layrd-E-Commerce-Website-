@@ -1,9 +1,9 @@
-import type { Permission, Role, RoleDefinition } from "./permissions";
-import { GUEST_ROLE } from "@/app/roles/guest";
-import { USER_ROLE } from "@/app/roles/user";
-import { CUSTOMER_ROLE } from "@/app/roles/Customer";
-import { WHOLESALE_ROLE } from "@/app/roles/Wholesales";
-import { ADMIN_ROLE } from "@/app/roles/Adminstartor";
+import type { Permission, Role, RoleDefinition } from "./Permission";
+import { GUEST_ROLE } from "@/app/User/guest";
+import { USER_ROLE } from "@/app/User/user";
+import { CUSTOMER_ROLE } from "@/app/User/Customer";
+import { WHOLESALE_ROLE } from "@/app/User/WholesSale/Wholesales";
+import { ADMIN_ROLE } from "@/app/User/Admin/Adminstartor";
 
 export const ROLES: Record<Role, RoleDefinition> = {
   guest: GUEST_ROLE,

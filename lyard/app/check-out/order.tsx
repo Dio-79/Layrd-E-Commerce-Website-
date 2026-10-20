@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { useCheckout, useHydrated, type OrderLine } from "@/lib/checkout/checkoutStore";
 import { cartItemToLine } from "@/lib/checkout/CartLine";
-import { formatMoney, type Totals } from "@/lib/CheckoutPricing";
+import { formatMoney, type Totals } from "@/lib/checkout/CheckoutPricing";
 import { useCart } from "@/app/context/CartContext";
 import styles from "./checkout.module.css";
 
