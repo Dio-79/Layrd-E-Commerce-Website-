@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { Product } from "@/app/types/models";
-import { products } from "@/lib/data";
+import { products } from "@/api/data";
 import { useCart } from "@/app/context/CartContext";
 import {
   useBundle,

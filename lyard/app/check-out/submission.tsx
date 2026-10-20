@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { products } from "@/lib/data";
+import { products } from "@/api/data";
 import { getProductId, getProductImage, useEventOrder } from "@/app/context/EventOrdercontext";
 import { addEventOrder } from "@/lib/checkoutStore";
 import styles from "./event.module.css";

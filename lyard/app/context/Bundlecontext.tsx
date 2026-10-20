@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, ReactNode } from "react";
-import { products } from "@/lib/data";
+import { products } from "@/api/data";
 import { getSizes, getPrice } from "@/lib/dataSize";
 
 export type Product = (typeof products)[number];

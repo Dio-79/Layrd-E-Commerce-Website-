@@ -9,7 +9,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { products } from "@/lib/data";
+import { products } from "@/api/data";
 import { getSizes, getPrice } from "@/lib/dataSize";
 
 /* ------------------------------------------------------------------ */

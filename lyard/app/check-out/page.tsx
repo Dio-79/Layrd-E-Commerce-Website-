@@ -17,7 +17,7 @@ import {
   getDeliveryQuote,
   PICKUP_LOCATION,
   type DoorDashQuote,
-} from "@/lib/doordashapi";
+} from "@/api/doordashapi";
 
 const CART_PATH = "/cart";
 const CONFIRMATION_PATH = "/confirmation";

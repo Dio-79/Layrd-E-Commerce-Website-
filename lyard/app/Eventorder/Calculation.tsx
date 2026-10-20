@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { products } from "@/lib/data";
+import { products } from "@/api/data";
 import {
   FLAVOR_OPTIONS,
   getFromPrice,

@@ -1,5 +1,5 @@
 import { Product, Customer } from "@/app/types/models";
-import db from '../lib/db';
+import db from './db';
 import { promises } from "dns";
 
 
