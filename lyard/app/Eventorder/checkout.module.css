@@ -1,0 +1,152 @@
+.page {
+  --gold: #e6c200;
+  font-family: var(--font-montserrat), Montserrat, system-ui, sans-serif;
+  color: #111;
+  border-top: 2px solid var(--gold);
+  padding: 2rem clamp(1rem, 5vw, 4rem) 4rem;
+  min-height: 70vh;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(16rem, 22rem);
+  gap: clamp(1.5rem, 5vw, 4rem);
+  align-items: start;
+}
+
+.main { display: grid; gap: 1rem; min-width: 0; }
+.back { font-size: 0.7rem; text-decoration: underline; color: #111; }
+
+.heading {
+  margin: 0.75rem 0 0;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid #e6e6e6;
+  font-size: 1.35rem;
+  font-weight: 500;
+}
+
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem 1.5rem; }
+.half { max-width: calc(50% - 0.75rem); }
+.field { display: grid; gap: 0.3rem; min-width: 0; }
+.label { font-size: 0.8rem; font-weight: 500; text-transform: uppercase; }
+.smallLabel { font-size: 0.6rem; font-weight: 600; text-transform: uppercase; }
+
+.field input,
+.field select {
+  width: 100%;
+  padding: 0.7rem 0.75rem;
+  border: 1px solid #cfcfcf;
+  background: #fff;
+  font: inherit;
+  font-size: 0.8rem;
+}
+.field input:focus-visible,
+.field select:focus-visible { outline: 2px solid #1e88e5; outline-offset: 1px; }
+.field input[aria-invalid="true"],
+.field select[aria-invalid="true"] { border-color: #a32020; }
+
+.error { color: #a32020; font-size: 0.7rem; }
+
+.pickupCard {
+  display: grid;
+  gap: 0.35rem;
+  justify-items: center;
+  padding: 1.25rem;
+  border: 1px solid var(--gold);
+  text-align: center;
+  font-size: 0.8rem;
+}
+.pickupCard span { color: #666; font-size: 0.7rem; }
+
+.preorderNote {
+  margin: 0;
+  padding: 0.75rem 1rem;
+  border-left: 3px solid var(--gold);
+  background: #fffbe6;
+  font-size: 0.8rem;
+}
+
+.card {
+  display: grid;
+  gap: 0.9rem;
+  margin: 0;
+  padding: 1rem;
+  border: 1px solid #cfcfcf;
+  cursor: pointer;
+}
+.cardActive { border-color: var(--gold); background: #fffdf2; }
+.cardTitle { padding: 0 0.4rem; font-size: 0.95rem; }
+
+.wallet {
+  display: flex;
+  align-items: center;
+  padding: 0.85rem 1rem;
+  border: 1px solid #111;
+  background: #fff;
+  font: inherit;
+  font-size: 1rem;
+  text-align: left;
+  cursor: pointer;
+}
+.walletActive { background: #111; color: #fff; }
+
+/* Summary */
+.summary {
+  display: grid;
+  gap: 0.9rem;
+  padding: 1.25rem;
+  border: 1px solid #e3d9a8;
+  border-top: 3px solid var(--gold);
+  background: #fffdf2;
+}
+.summaryTitle { margin: 0; font-size: 1.3rem; font-weight: 600; }
+
+.lines { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.75rem; }
+.lines li { display: grid; grid-template-columns: 2.75rem 1fr auto; gap: 0.75rem; align-items: center; }
+.lines img,
+.noImg { width: 2.75rem; height: 2.75rem; border-radius: 8px; border: 2px solid #d9a21b; object-fit: cover; background: #f1f3f5; }
+.lineName { font-size: 0.8rem; font-weight: 600; }
+.lineMeta { font-size: 0.65rem; color: #777; }
+.linePrice { font-size: 0.8rem; font-weight: 600; }
+
+.totals { margin: 0; display: grid; gap: 0.4rem; padding-top: 0.75rem; border-top: 1px solid #e6e0c0; font-size: 0.75rem; }
+.totals div { display: flex; justify-content: space-between; }
+.totals dt, .totals dd { margin: 0; }
+
+.total {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 0.75rem;
+  border-top: 1px solid #e6e0c0;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.promo { display: flex; border: 1px solid #cfcfcf; background: #fff; }
+.promo input { flex: 1; min-width: 0; padding: 0.6rem 0.75rem; border: 0; font: inherit; font-size: 0.75rem; }
+.promo button { padding: 0 1rem; border: 0; background: none; font: inherit; font-size: 0.7rem; cursor: pointer; }
+
+.complete {
+  display: block;
+  padding: 0.95rem 1rem;
+  border: 0;
+  background: #000;
+  color: #fff;
+  font: inherit;
+  font-size: 0.8rem;
+  letter-spacing: 0.18em;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+}
+.complete:disabled { opacity: 0.6; cursor: progress; }
+
+.empty, .confirm { max-width: 32rem; margin: 3rem auto; display: grid; gap: 1rem; text-align: center; }
+.confirm h1 { margin: 0; font-weight: 600; }
+
+@media (max-width: 800px) {
+  .layout { grid-template-columns: 1fr; }
+  .summary { order: -1; }
+  .grid2 { grid-template-columns: 1fr; }
+  .half { max-width: none; }
+}

@@ -11,7 +11,7 @@ interface CartContextType {
   hydrated: boolean;
   /** total number of units in the bag (used for the bag icon badge) */
   itemCount: number;
-  addItem: (product: Product) => void;
+  addItem: (product: Product, quantity?: number) => void;
   removeItem: (productID: number) => void;
   increaseQuantity: (productID: number) => void;
   decreaseQuantity: (productID: number) => void;
@@ -22,24 +22,33 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>(() => {
-    if (typeof window === "undefined") return [];
+  // Start empty so the server and the first browser render match
+  const [items, setItems] = useState<CartItem[]>([]);
+  const [hydrated, setHydrated] = useState(false);
 
-    try {
-      const raw = window.localStorage.getItem(STORAGE_KEY);
-      if (!raw) return [];
+  // Load the saved cart once, after the first render
+  useEffect(() => {
+    let cancelled = false;
+    const timeout = window.setTimeout(() => {
+      try {
+        const raw = window.localStorage.getItem(STORAGE_KEY);
+        const saved = raw ? JSON.parse(raw) : [];
+        if (!cancelled && Array.isArray(saved)) setItems(saved as CartItem[]);
+      } catch {
+        /* ignore unreadable or blocked storage */
+      } finally {
+        if (!cancelled) setHydrated(true);
+      }
+    }, 0);
 
-      const saved = JSON.parse(raw);
-      return Array.isArray(saved) ? (saved as CartItem[]) : [];
-    } catch {
-      /* ignore unreadable or blocked storage */
-      return [];
-    }
-  });
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeout);
+    };
+  }, []);
 
-  const hydrated = typeof window !== "undefined";
-
-  // Save the cart whenever it changes (after the first load)
+  // Save on every change, but only after the saved cart has loaded
+  // (otherwise the empty starting cart would overwrite it)
   useEffect(() => {
     if (!hydrated) return;
     try {
@@ -49,17 +58,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, [items, hydrated]);
 
-  function addItem(product: Product) {
+  function addItem(product: Product, quantity: number = 1) {
+    const qty = Math.max(1, Math.floor(quantity));
     setItems((prevItems) => {
       const existing = prevItems.find((i) => i.product.productID === product.productID);
 
       if (existing) {
         return prevItems.map((i) =>
-          i.product.productID === product.productID ? { ...i, quantity: i.quantity + 1 } : i
+          i.product.productID === product.productID ? { ...i, quantity: i.quantity + qty } : i
         );
       }
 
-      return [...prevItems, { product, quantity: 1 }];
+      return [...prevItems, { product, quantity: qty }];
     });
   }
 

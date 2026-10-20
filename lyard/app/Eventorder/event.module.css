@@ -1,8 +1,9 @@
 /* ------------------------------------------------------------------ */
-/* Tokens                                                             */
+/* Tokens & Root Layout                                               */
 /* ------------------------------------------------------------------ */
 .page {
   --gold: #e6c200;
+  --amber: #d9a21b;
   --blue: #1e88e5;
   --ink: #111;
   --field: #e4e4e4;
@@ -35,8 +36,28 @@
   gap: 2rem;
 }
 
+.main { 
+  display: grid; 
+  gap: 1rem; 
+  min-width: 0; 
+}
+
+.back { 
+  font-size: 0.7rem; 
+  text-decoration: underline; 
+  color: #111; 
+}
+
+.heading {
+  margin: 0.75rem 0 0;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid #e6e6e6;
+  font-size: 1.35rem;
+  font-weight: 500;
+}
+
 /* ------------------------------------------------------------------ */
-/* Comment box + upload                                               */
+/* Comment box + Upload                                                */
 /* ------------------------------------------------------------------ */
 .comment {
   display: block;
@@ -76,7 +97,6 @@
   cursor: pointer;
 }
 
-/* The native file input stays in the DOM (keyboard + screen readers) */
 .upload input {
   position: absolute;
   inset: 0;
@@ -89,7 +109,7 @@
 }
 
 /* ------------------------------------------------------------------ */
-/* Right column: event details                                        */
+/* Fields & Form Controls                                              */
 /* ------------------------------------------------------------------ */
 .fields {
   display: grid;
@@ -99,11 +119,18 @@
 .field {
   display: grid;
   gap: 0.25rem;
+  min-width: 0;
 }
 
 .label {
   font-size: 1rem;
   font-weight: 700;
+}
+
+.smallLabel { 
+  font-size: 0.6rem; 
+  font-weight: 600; 
+  text-transform: uppercase; 
 }
 
 .field input,
@@ -122,6 +149,11 @@
 .field select:focus-visible {
   outline: 2px solid var(--blue);
   outline-offset: 1px;
+}
+
+.field input[aria-invalid="true"],
+.field select[aria-invalid="true"] { 
+  border-color: #a32020; 
 }
 
 .select {
@@ -150,7 +182,7 @@
 }
 
 /* ------------------------------------------------------------------ */
-/* Submit                                                             */
+/* Submit & Checkout Action                                           */
 /* ------------------------------------------------------------------ */
 .submitWrap {
   margin-top: auto;
@@ -158,8 +190,11 @@
   gap: 0.5rem;
 }
 
-.submit {
+.submit,
+.submitButton,
+.complete {
   width: 100%;
+  display: block;
   padding: 0.75rem 1rem;
   border: 0;
   border-radius: 0;
@@ -168,16 +203,20 @@
   font: inherit;
   font-size: 0.95rem;
   letter-spacing: 0.18em;
+  text-align: center;
+  text-decoration: none;
   cursor: pointer;
 }
 
-.submit:disabled {
+.submit:disabled,
+.submitButton:disabled,
+.complete:disabled {
   opacity: 0.6;
   cursor: progress;
 }
 
 /* ------------------------------------------------------------------ */
-/* Still used by Calculationpage                                      */
+/* Calculation & Summary Section                                      */
 /* ------------------------------------------------------------------ */
 .section {
   display: grid;
@@ -190,36 +229,82 @@
 
 .summary {
   display: grid;
-  gap: 0.375rem;
-  max-width: 24rem;
-  margin-left: auto;
+  gap: 0.9rem;
+  padding: 1.25rem;
+  border: 1px solid #e3d9a8;
+  border-top: 3px solid var(--gold);
+  background: #fffdf2;
 }
 
-/* ------------------------------------------------------------------ */
-/* Narrow screens: stack, details first                               */
-/* ------------------------------------------------------------------ */
-@media (max-width: 760px) {
-  .page {
-    grid-template-columns: 1fr;
-    padding-top: 2rem;
-  }
-
-  .right {
-    order: -1;
-  }
-
-  .submitWrap {
-    margin-top: 0;
-  }
+.summaryTitle { 
+  margin: 0; 
+  font-size: 1.3rem; 
+  font-weight: 600; 
 }
+
+.lines { 
+  list-style: none; 
+  margin: 0; 
+  padding: 0; 
+  display: grid; 
+  gap: 0.75rem; 
+}
+
+.lines li { 
+  display: grid; 
+  grid-template-columns: 2.75rem 1fr auto; 
+  gap: 0.75rem; 
+  align-items: center; 
+}
+
+.lines img,
+.noImg { 
+  width: 2.75rem; 
+  height: 2.75rem; 
+  border-radius: 8px; 
+  border: 2px solid #d9a21b; 
+  object-fit: cover; 
+  background: #f1f3f5; 
+}
+
+.lineName { font-size: 0.8rem; font-weight: 600; }
+.lineMeta { font-size: 0.65rem; color: #777; }
+.linePrice { font-size: 0.8rem; font-weight: 600; }
+
+.totals { 
+  margin: 0; 
+  display: grid; 
+  gap: 0.4rem; 
+  padding-top: 0.75rem; 
+  border-top: 1px solid #e6e0c0; 
+  font-size: 0.75rem; 
+}
+
+.totals div { display: flex; justify-content: space-between; }
+.totals dt, .totals dd { margin: 0; }
+
+.total {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 0.75rem;
+  border-top: 1px solid #e6e0c0;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.bagTotal {
+  margin-top: 1rem;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.promo { display: flex; border: 1px solid #cfcfcf; background: #fff; }
+.promo input { flex: 1; min-width: 0; padding: 0.6rem 0.75rem; border: 0; font: inherit; font-size: 0.75rem; }
+.promo button { padding: 0 1rem; border: 0; background: none; font: inherit; font-size: 0.7rem; cursor: pointer; }
 
 /* ------------------------------------------------------------------ */
 /* Slots                                                              */
 /* ------------------------------------------------------------------ */
-.page {
-  --amber: #d9a21b;
-}
-
 .slots {
   list-style: none;
   margin: 0 0 1.5rem;
@@ -235,7 +320,6 @@
   align-items: start;
 }
 
-/* Lets the details column shrink instead of pushing content out of view */
 .slot > div {
   min-width: 0;
 }
@@ -340,7 +424,6 @@
   font-size: 0.85rem;
 }
 
-/* Sizes: wrap instead of clipping, never squash a button */
 .sizes {
   display: flex;
   flex-wrap: wrap;
@@ -357,7 +440,7 @@
   font: inherit;
   font-size: 0.8rem;
   font-weight: 600;
-  text-transform: capitalize; /* "small" displays as "Small" */
+  text-transform: capitalize;
   white-space: nowrap;
   cursor: pointer;
 }
@@ -413,7 +496,7 @@
 }
 
 /* ------------------------------------------------------------------ */
-/* "Choose item for slot" dialog                                      */
+/* Modal Dialog                                                       */
 /* ------------------------------------------------------------------ */
 .dialog {
   width: min(38rem, calc(100vw - 2rem));
@@ -515,9 +598,11 @@
   cursor: pointer;
 }
 
+/* Focus States */
 .addMore:focus-visible,
 .upload:focus-within,
 .submit:focus-visible,
+.submitButton:focus-visible,
 .change:focus-visible,
 .remove:focus-visible,
 .size:focus-visible,
@@ -527,6 +612,24 @@
 .dialogClose:focus-visible {
   outline: 2px solid var(--blue);
   outline-offset: 3px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Responsive Media Queries                                           */
+/* ------------------------------------------------------------------ */
+@media (max-width: 760px) {
+  .page {
+    grid-template-columns: 1fr;
+    padding-top: 2rem;
+  }
+
+  .right {
+    order: -1;
+  }
+
+  .submitWrap {
+    margin-top: 0;
+  }
 }
 
 @media (max-width: 520px) {
@@ -554,10 +657,4 @@
   .choices {
     grid-template-columns: 1fr;
   }
-
-  .bagTotal {
-  margin-top: 1rem;
-  font-size: 1rem;
-  font-weight: 700;
-}
 }

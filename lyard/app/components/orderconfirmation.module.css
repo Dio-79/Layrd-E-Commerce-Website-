@@ -1,0 +1,60 @@
+
+.wrap { max-width: 30rem; margin: 0 auto; display: grid; gap: 1.5rem; text-align: center; }
+
+.title { margin: 0; font-size: clamp(1.8rem, 5vw, 2.6rem); font-weight: 800; letter-spacing: 0.05em; }
+.message { margin: 0.5rem auto 0; max-width: 20rem; font-size: 0.75rem; color: #666; }
+
+.strip {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-top: 1px solid #e6dd9a;
+  border-bottom: 1px solid #e6dd9a;
+}
+.strip > div { display: grid; gap: 0.3rem; padding: 0.8rem 0.5rem; font-size: 0.75rem; }
+.strip > div + div { border-left: 1px solid #e6dd9a; }
+.stripLabel { font-size: 0.6rem; letter-spacing: 0.08em; color: #666; }
+.gold { color: #d9a21b; }
+
+.summary {
+  display: grid;
+  gap: 0.9rem;
+  padding: 1.25rem;
+  text-align: left;
+  border: 1px solid #e3d9a8;
+  border-top: 3px solid #e6c200;
+  background: #fffdf2;
+}
+.summary h2 { margin: 0; font-size: 1.1rem; font-weight: 600; }
+
+.lines { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.75rem; }
+.lines li { display: grid; grid-template-columns: 2.75rem 1fr auto; gap: 0.75rem; align-items: center; }
+.lines img, .noImg {
+  width: 2.75rem; height: 2.75rem; border-radius: 8px;
+  border: 2px solid #d9a21b; object-fit: cover; background: #f1f3f5;
+}
+.lineName { font-size: 0.8rem; font-weight: 600; }
+.lineMeta { font-size: 0.65rem; color: #777; }
+.linePrice { font-size: 0.8rem; font-weight: 600; }
+
+.rows { margin: 0; display: grid; gap: 0.4rem; padding-top: 0.75rem; border-top: 1px solid #e6e0c0; font-size: 0.75rem; }
+.rows div { display: flex; justify-content: space-between; }
+.rows dt, .rows dd { margin: 0; }
+.after { font-size: 0.8rem; }
+.strong { font-weight: 700; }
+
+.total {
+  display: flex; justify-content: space-between;
+  padding-top: 0.75rem; border-top: 1px solid #e6e0c0;
+  font-size: 1.3rem; font-weight: 700;
+}
+
+.actions { display: grid; gap: 0.6rem; justify-items: center; }
+.primary, .secondary {
+  width: min(100%, 20rem); padding: 0.85rem 1rem; border: 0;
+  font: inherit; font-size: 0.7rem; letter-spacing: 0.18em;
+  text-align: center; text-decoration: none; cursor: pointer;
+}
+.primary { background: #000; color: #fff; }
+.secondary { background: #e4e4e4; color: #111; }
+
+@media print { .actions { display: none; } }

@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { saveEventDraft } from "@/lib/eventCheckoutStore";
+import { earliestEventDate, leadDaysFor } from "@/lib/eventRules";
 import { products } from "@/lib/data";
 import { getProductId, getProductImage, useEventOrder } from "@/app/context/EventOrdercontext";
-import { addEventOrder } from "@/lib/checkoutStore";
-import { ROUTES } from "@/lib/Routes";
 import styles from "./event.module.css";
 
 /** Reads the current values of a form by id. Field names come from the register() calls. */
@@ -21,7 +21,7 @@ function readForm(id: string): Record<string, string> {
 
 export default function SubmitButton() {
   const router = useRouter();
-  const { totals } = useEventOrder();
+  const { totals, file } = useEventOrder();
   const [status, setStatus] = useState<"idle" | "submitting" | "error">("idle");
   const [submitError, setSubmitError] = useState("");
 
@@ -37,16 +37,26 @@ export default function SubmitButton() {
     const selection = readForm("selection-form");
     const comment = readForm("comment-form").comment ?? "";
     const items = totals.detailedItems;
-    const today = new Date().toISOString().split("T")[0];
+    const units = items.reduce((sum, item) => sum + item.quantity, 0);
+    const earliest = earliestEventDate(units);
 
-    // Let react-hook-form show its inline messages for the details form
-    if (!selection.Starttime || !selection.number || !selection.type) {
+    // 1. Event details. requestSubmit() makes react-hook-form show its inline
+    //    messages under each field (the form's onSubmit runs handleSubmit).
+    const detailsOk =
+      !!selection.Starttime &&
+      !!selection.type?.trim() &&
+      /^[1-9]\d*$/.test(selection.number ?? "") &&
+      selection.Starttime >= earliest;
+
+    if (!detailsOk) {
       (document.getElementById("selection-form") as HTMLFormElement | null)?.requestSubmit();
-      return fail("Please complete the event details.");
+      if (selection.Starttime && selection.Starttime < earliest) {
+        return fail(`Orders of ${units} items need at least ${leadDaysFor(units)} days notice.`);
+      }
+      return fail("Please complete the event details above.");
     }
-    if (selection.Starttime < today) {
-      return fail("Pick-up date cannot be in the past.");
-    }
+
+    // 2. The custom order itself
     if (items.length === 0) {
       return fail("Add at least one item to your event order.");
     }
@@ -57,16 +67,15 @@ export default function SubmitButton() {
 
     setStatus("submitting");
 
-    const fileInput = document.querySelector<HTMLInputElement>('input[type="file"]');
-
-    // Save the event order so the cart page, the bag badge and the checkout all see it
-    addEventOrder({
+    // Save the event order so the checkout page can pick it up. Only the file
+    // name is kept: a File can't be stored in sessionStorage.
+    saveEventDraft({
       details: {
         pickupDate: selection.Starttime,
         eventType: selection.type,
         headcount: selection.number,
         comment,
-        fileName: fileInput?.files?.[0]?.name ?? null,
+        fileName: file?.name ?? null,
       },
       lines: items.map((item) => {
         const product = products.find((p) => getProductId(p) === item.productId);
@@ -83,25 +92,23 @@ export default function SubmitButton() {
       }),
     });
 
-    // Go straight to the cart, where the event order shows up with the rest of the bag
-    router.push(ROUTES.cart);
-  };
+router.push("/Eventorder/Checkout");  };
 
   return (
-    <div className={styles.submitWrap}>
+    <>
       <button
         type="button"
-        className={styles.submit}
+        className={styles.submitButton}
         onClick={submitOrder}
         disabled={status === "submitting"}
       >
-        {status === "submitting" ? "Sending…" : "Submit"}
+        {status === "submitting" ? "Submitting…" : "Continue to checkout"}
       </button>
       {status === "error" && (
-        <p className={styles.error} role="alert">
+        <p role="alert" className={styles.error}>
           {submitError}
         </p>
       )}
-    </div>
+    </>
   );
 }
