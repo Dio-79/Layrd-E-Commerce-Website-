@@ -12,7 +12,7 @@ import {
   loadEventDraft,
   saveLastOrder,
   type EventOrderDraft,
-} from "@/lib/eventCheckoutStore";
+} from "@/lib/event/eventCheckoutStore";
 import {
   CANCEL_HOURS,
   DEPOSIT_RATE,

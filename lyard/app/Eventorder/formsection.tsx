@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { useEventOrder } from "@/app/context/EventOrdercontext";
-import { MIN_LEAD_DAYS, earliestEventDate } from "@/lib/eventDates";
+import { MIN_LEAD_DAYS, earliestEventDate } from "@/lib/event/eventDates";
 import styles from "./event.module.css";
 
 type EventDetails = {
