@@ -108,16 +108,3 @@ export const products: Product[] = [
 export async function getProduct(): Promise<Product[]> {
   return products;
 }
-
-export async function login(email: string, password: string) {
-  const response = await fetch('/api/login', {
-    method: 'POST', //fetch the results of the post request from 
-    body: JSON.stringify({
-      email,
-      password,
-    }),
-  });
-  const data = await response.json();
-
-  return data.user ?? null;
-}

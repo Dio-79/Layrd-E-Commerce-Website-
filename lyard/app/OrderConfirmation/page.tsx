@@ -10,7 +10,7 @@ import shared from "../check-out/checkout.module.css";
 import { TotalsList, useOrderLines } from "../check-out/order";
 import { useCart } from "@/app/context/CartContext";
 import { removeEventOrder, setPromoCode, useCheckout, type OrderLine } from "@/lib/checkout/checkoutStore";
-import { calculateTotals, findPromo, formatDate, formatMoney } from "@/lib/CheckoutPricing";
+import { calculateTotals, findPromo, formatDate, formatMoney } from "@/lib/checkout/CheckoutPricing";
 import { ROUTES } from "@/lib/Routes/Routes";
 
 function TrashIcon() {
