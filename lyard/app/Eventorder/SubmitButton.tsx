@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { saveEventDraft } from "@/lib/eventCheckoutStore";
-import { earliestEventDate, leadDaysFor } from "@/lib/eventRules";
-import { products } from "@/api/data";
+import { earliestEventDate, leadDaysFor } from "@/lib/event/eventRules";
+import { products } from "@/lib/catelog/data";
 import { getProductId, getProductImage, useEventOrder } from "@/app/context/EventOrdercontext";
 import styles from "./event.module.css";
 

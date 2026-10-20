@@ -9,9 +9,9 @@ import styles from "./order.module.css";
 import shared from "../check-out/checkout.module.css";
 import { TotalsList, useOrderLines } from "../check-out/order";
 import { useCart } from "@/app/context/CartContext";
-import { removeEventOrder, setPromoCode, useCheckout, type OrderLine } from "@/lib/checkoutStore";
+import { removeEventOrder, setPromoCode, useCheckout, type OrderLine } from "@/lib/checkout/checkoutStore";
 import { calculateTotals, findPromo, formatDate, formatMoney } from "@/lib/CheckoutPricing";
-import { ROUTES } from "@/lib/Routes";
+import { ROUTES } from "@/lib/Routes/Routes";
 
 function TrashIcon() {
   return (

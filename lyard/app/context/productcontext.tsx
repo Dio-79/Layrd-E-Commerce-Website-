@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useMemo } from "react";
 import { ProductItem, FilterState } from "@/app/types/models";
-import { products } from "@/api/data";
+import { products } from "@/lib/catelog/data";
 
 interface ProductContextType {
   filteredAndSortedProducts: ProductItem[];

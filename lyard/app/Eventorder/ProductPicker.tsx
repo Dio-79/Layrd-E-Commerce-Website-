@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { products } from "@/api/data";
-import { getSizes } from "@/lib/dataSize";
+import { products } from "@/lib/catelog/data";
+import { getSizes } from "@/lib/catelog/dataSize";
 import { useCart } from "@/app/context/CartContext";
 import type { Product as CartProduct } from "@/app/types/models";
 import {

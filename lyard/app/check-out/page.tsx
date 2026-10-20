@@ -10,14 +10,14 @@ import styles from "./checkout.module.css";
 import { BagSummaryLine, SummaryLine, TotalsList, useOrderLines } from "./order";
 import { useCart } from "@/app/context/CartContext";
 import { CardIcon, MastercardMark, PinIcon, StoreIcon, VisaMark } from "./icon";
-import { placeOrder, removeEventOrder, setPromoCode, useCheckout, type DeliveryInfo } from "@/lib/checkoutStore";
+import { placeOrder, removeEventOrder, setPromoCode, useCheckout, type DeliveryInfo } from "@/lib/checkout/checkoutStore";
 import { calculateTotals, findPromo, formatDate, formatMoney, type PromoCode } from "@/lib/CheckoutPricing";
 import {
   createDelivery,
   getDeliveryQuote,
   PICKUP_LOCATION,
   type DoorDashQuote,
-} from "@/api/doordashapi";
+} from "@/lib/Intergration/doordashapi";
 
 const CART_PATH = "/cart";
 const CONFIRMATION_PATH = "/confirmation";

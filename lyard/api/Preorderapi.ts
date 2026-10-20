@@ -9,7 +9,7 @@ import {
   priceOrder,
   PICKUP_TIMES,
   type OrderStatus,
-} from "@/lib/eventRules";
+} from "@/lib/event/eventRules";
 import type { PreorderRecord } from "@/lib/eventCheckoutStore";
 
 export const runtime = "nodejs";

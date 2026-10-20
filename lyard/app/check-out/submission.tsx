@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { products } from "@/api/data";
+import { products } from "@/lib/catelog/data";
 import { getProductId, getProductImage, useEventOrder } from "@/app/context/EventOrdercontext";
-import { addEventOrder } from "@/lib/checkoutStore";
+import { addEventOrder } from "@/lib/checkout/checkoutStore";
 import styles from "./event.module.css";
 
 /** Reads the current values of a form by id. Field names come from the register() calls. */

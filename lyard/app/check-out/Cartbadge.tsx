@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCart } from "@/app/context/CartContext";
-import { useCheckout, useHydrated } from "@/lib/checkoutStore";
+import { useCheckout, useHydrated } from "@/lib/checkout/checkoutStore";
 import styles from "./CartBadge.module.css";
 
 /** Number of units in the bag: cart items, plus pending event-order items by default. */

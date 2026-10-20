@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { ProductItem } from "@/app/types/models";
-import { products } from "@/api/data";
+import { products } from "@/lib/catelog/data";
 import styles from "./ProductGrid.module.css";
 
 

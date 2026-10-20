@@ -6,7 +6,7 @@ import {
   getProductName,
   useEventOrder,
 } from "@/app/context/EventOrdercontext";
-import { products } from "@/api/data";
+import { products } from "@/lib/catelog/data";
 import styles from "./event.module.css";
 
 export default function OrderSummary() {

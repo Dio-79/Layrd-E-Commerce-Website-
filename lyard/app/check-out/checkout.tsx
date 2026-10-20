@@ -15,7 +15,7 @@ import {
   useHydrated,
   type DeliveryInfo,
   type OrderLine,
-} from "@/lib/checkoutStore";
+} from "@/lib/checkout/checkoutStore";
 import { useCart } from "@/app/context/CartContext";
 import { calculateTotals, findPromo, formatDate, formatMoney, type PromoCode } from "@/lib/CheckoutPricing";
 import {
@@ -23,7 +23,7 @@ import {
   getDeliveryQuote,
   PICKUP_LOCATION,
   type DoorDashQuote,
-} from "@/api/doordashapi";
+} from "@/lib/Intergration/doordashapi";
 
 /** Change these if your routes are named differently */
 const CART_PATH = "/cart";
