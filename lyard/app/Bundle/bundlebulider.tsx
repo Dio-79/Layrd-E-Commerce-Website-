@@ -1,14 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import type { Product } from "@/app/types/models";
+import { useRouter } from "next/navigation";
 import { products } from "@/lib/catelog/data";
-import { useCart } from "@/app/context/CartContext";
 import {
   useBundle,
   findProduct,
   FLAVORS,
-  SLOT_COUNT,
   getProductId,
   getProductName,
   getProductImage,
@@ -16,25 +14,18 @@ import {
   getProductSizes,
   getUnitPrice,
 } from "@/app/context/Bundlecontext";
+import { saveBundleDraft } from "@/lib/Bundle/Bundlecheckoutstore";
+import type { BundleLine } from "@/lib/Bundle/bundleRules";
 import styles from "./bundlebuilder.module.css";
 
 const MIN_SLOTS = 3; // change this number to require more or fewer slots
 
-// Same slots/options => same id, so identical bundles merge into one cart line
-const makeBundleId = (key: string) => {
-  let hash = 0;
-  for (let i = 0; i < key.length; i++) {
-    hash = (hash * 31 + key.charCodeAt(i)) | 0;
-  }
-  return -Math.abs(hash) - 1; // negative, never collides with real product IDs
-};
-
 export default function BundleBuilder() {
+  const router = useRouter();
   const {
     slots,
     quantity,
     activeSlot,
-    unitPrice,
     total,
     openPicker,
     closePicker,
@@ -42,46 +33,41 @@ export default function BundleBuilder() {
     updateSlot,
     clearSlot,
     setQuantity,
-    reset,
   } = useBundle();
-  const { addItem } = useCart();
   const [showErrors, setShowErrors] = useState(false);
 
   const filledCount = slots.filter((s) => s !== null).length;
-  const canAdd = filledCount >= MIN_SLOTS;
+  const canPreorder = filledCount >= MIN_SLOTS;
   const missingFlavor = slots.some((s) => s && !s.flavor); // only checks filled slots
 
-  const handleAddToBag = () => {
-    if (!canAdd) return;
+  // Preorder: hand the bundle to its own checkout (pickup or DoorDash delivery)
+  const handlePreorder = () => {
+    if (!canPreorder) return;
     if (missingFlavor) {
       setShowErrors(true);
       return;
     }
 
-    // Empty slots are skipped
-    const summary = slots
-      .filter((s): s is NonNullable<typeof s> => s !== null)
-      .map((s) => {
-        const name = getProductName(findProduct(s.productId)!);
-        return `${name} x${s.quantity} (${s.size}, ${s.flavor})`;
-      })
-      .join(", ");
+    const lines: BundleLine[] = [];
+    slots.forEach((s, i) => {
+      if (!s) return;
+      const product = findProduct(s.productId);
+      if (!product) return;
+      lines.push({
+        id: `${i}-${String(getProductId(product))}-${s.size}-${s.flavor}`,
+        name: getProductName(product),
+        size: s.size,
+        flavor: s.flavor,
+        quantity: s.quantity * quantity, // drinks per slot x bundle quantity
+        unitPrice: getUnitPrice(product, s.size),
+        image: getProductImage(product),
+      });
+    });
 
-    const bundleProduct: Product & { quantity: number } = {
-      productID: makeBundleId(summary),
-      name: `Custom Bundle: ${summary}`,
-      price: unitPrice,
-      tag: "Bundles",
-      description: summary,
-      imageUrl: "",
-      quantity,
-    };
-
-    for (let i = 0; i < quantity; i++) {
-      addItem(bundleProduct as Product);
-    }
+    if (lines.length === 0) return;
+    saveBundleDraft({ lines });
     setShowErrors(false);
-    reset();
+    router.push("/Bundle/checkout");
   };
 
   return (
@@ -195,7 +181,7 @@ export default function BundleBuilder() {
 
       <hr className={styles.divider} />
 
-      {/* Footer: price, bundle qty, add to bag */}
+      {/* Footer: price, bundle qty, preorder */}
       <div className={styles.footer}>
         <div className={styles.priceBox}>Price:${total.toFixed(2)}</div>
 
@@ -216,23 +202,23 @@ export default function BundleBuilder() {
           <button
             type="button"
             className={styles.addToBag}
-            disabled={!canAdd}
-            onClick={handleAddToBag}
+            disabled={!canPreorder}
+            onClick={handlePreorder}
           >
-            ADD TO BAG →
+            PREORDER →
           </button>
         </div>
       </div>
 
-      {!canAdd && (
+      {!canPreorder && (
         <p className={styles.hint}>
-          Fill at least {MIN_SLOTS} slots to add to bag ({filledCount}/{MIN_SLOTS} selected)
+          Fill at least {MIN_SLOTS} slots to preorder ({filledCount}/{MIN_SLOTS} selected)
         </p>
       )}
 
       {showErrors && missingFlavor && (
         <p className={styles.hint} style={{ color: "#b91c1c" }}>
-          Choose a flavor for every filled slot before adding to bag.
+          Choose a flavor for every filled slot before continuing.
         </p>
       )}
 

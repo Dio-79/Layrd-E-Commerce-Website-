@@ -1,8 +1,8 @@
-// lib/bundle/bundleRules.ts
-// Business rules + shared types for custom bundle preorders.
+// lib/Bundle/bundleRules.ts
+// Business rules + shared types for custom bundle preorders (pickup or DoorDash delivery).
 
 export const TAX_RATE = 0.08;
-export const MAX_UNITS_PER_DAY = 150; // drinks per pickup day
+export const MAX_UNITS_PER_DAY = 150; // drinks per pickup/delivery day
 export const CANCEL_HOURS = 12;
 export const PICKUP_LOCATION = "Pickup at 123 St. NE";
 export const SMALL_ORDER_UNITS = 12; // up to this many drinks = short notice
@@ -32,6 +32,8 @@ export const STATUS_STEPS: { key: OrderStatus; label: string }[] = [
   { key: "picked_up", label: "Picked up" },
 ];
 
+export type Fulfillment = "pickup" | "delivery";
+
 export interface BundleLine {
   id: string;
   name: string;
@@ -46,11 +48,30 @@ export interface BundleDraft {
   lines: BundleLine[];
 }
 
+export interface BundleAddress {
+  street: string;
+  city: string;
+  province: string;
+  postal: string;
+}
+
+export interface BundleDelivery {
+  address: BundleAddress;
+  quoteId: string;
+  deliveryId: string;
+  status: string;
+  etaMinutes: number;
+  courierName: string;
+  courierVehicle: string;
+  trackingUrl: string;
+}
+
 export interface BundleRecord {
   reference: string;
   status: OrderStatus;
   createdAt: string;
-  pickupDate: string; // YYYY-MM-DD
+  fulfillment: Fulfillment;
+  pickupDate: string; // YYYY-MM-DD (pickup or delivery day)
   pickupTime: string; // HH:MM
   customer: { name: string; email: string; phone: string };
   pickupPerson: string;
@@ -59,7 +80,9 @@ export interface BundleRecord {
   units: number;
   subtotal: number;
   tax: number;
+  deliveryFee: number;
   total: number;
+  delivery: BundleDelivery | null;
   policyAcceptedAt: string;
 }
 
@@ -103,8 +126,10 @@ export function earliestBundleDate(units: number): string {
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
-export function priceOrder(subtotal: number) {
+// Tax applies to the drinks only; the delivery fee is added on top.
+export function priceOrder(subtotal: number, deliveryFee = 0) {
   const sub = round2(subtotal);
   const tax = round2(sub * TAX_RATE);
-  return { subtotal: sub, tax, total: round2(sub + tax) };
+  const fee = round2(deliveryFee);
+  return { subtotal: sub, tax, deliveryFee: fee, total: round2(sub + tax + fee) };
 }

@@ -1,0 +1,266 @@
+.page {
+  --gold: #e6c200;
+  font-family: var(--font-montserrat), Montserrat, system-ui, sans-serif;
+  color: #111;
+  border-top: 2px solid var(--gold);
+  padding: 2.5rem clamp(1rem, 5vw, 4rem) 4rem;
+  min-height: 70vh;
+  background: #fff;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(18rem, 24rem);
+  gap: clamp(1.5rem, 5vw, 4rem);
+  align-items: start;
+}
+
+.main { display: grid; gap: 1rem; min-width: 0; }
+.back { font-size: 0.7rem; text-decoration: underline; color: #111; }
+
+.heading {
+  margin: 0.75rem 0 0;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid #e6e6e6;
+  font-size: 1.35rem;
+  font-weight: 500;
+}
+
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem 1.5rem; }
+.half { max-width: calc(50% - 0.75rem); }
+.field { display: grid; gap: 0.3rem; min-width: 0; }
+.label { font-size: 0.8rem; font-weight: 500; text-transform: uppercase; }
+.smallLabel { font-size: 0.6rem; font-weight: 600; text-transform: uppercase; }
+
+.field input,
+.field select {
+  width: 100%;
+  padding: 0.7rem 0.75rem;
+  border: 1px solid #cfcfcf;
+  background: #fff;
+  font: inherit;
+  font-size: 0.8rem;
+}
+.field input:focus-visible,
+.field select:focus-visible { outline: 2px solid #1e88e5; outline-offset: 1px; }
+.field input[aria-invalid="true"],
+.field select[aria-invalid="true"] { border-color: #a32020; }
+
+.error { color: #a32020; font-size: 0.7rem; }
+
+.pickupCard {
+  display: grid;
+  gap: 0.35rem;
+  justify-items: center;
+  padding: 1.25rem;
+  border: 1px solid var(--gold);
+  text-align: center;
+  font-size: 0.8rem;
+  background: #fffdf2;
+}
+.pickupCard span { color: #666; font-size: 0.7rem; }
+
+.leadNote, .depositNote, .okNote, .warnNote {
+  margin: 0;
+  padding: 0.75rem 1rem;
+  border-left: 3px solid var(--gold);
+  background: #fffbe6;
+  font-size: 0.8rem;
+}
+.okNote { border-left-color: #2e7d32; background: #f1f8f1; }
+.warnNote { border-left-color: #a32020; background: #fdf1f1; color: #7a1818; }
+
+.checkRow { display: flex; gap: 0.6rem; align-items: flex-start; font-size: 0.75rem; line-height: 1.4; cursor: pointer; }
+.checkRow input { margin-top: 0.2rem; }
+
+.dueBox { display: grid; gap: 0.4rem; padding: 0.75rem; background: #fff; border: 1px solid #e3d9a8; }
+.dueToday { display: flex; justify-content: space-between; font-size: 1.15rem; font-weight: 700; }
+.dueLater { display: flex; justify-content: space-between; font-size: 0.8rem; color: #666; }
+
+.card {
+  display: grid;
+  gap: 0.9rem;
+  margin: 0;
+  padding: 1rem;
+  border: 1px solid #cfcfcf;
+  cursor: pointer;
+}
+.cardActive { border-color: var(--gold); background: #fffdf2; }
+.cardTitle { padding: 0 0.4rem; font-size: 0.95rem; }
+
+.wallet {
+  display: flex;
+  align-items: center;
+  padding: 0.85rem 1rem;
+  border: 1px solid #111;
+  background: #fff;
+  font: inherit;
+  font-size: 1rem;
+  text-align: left;
+  cursor: pointer;
+}
+.walletActive { background: #111; color: #fff; }
+
+/* Summary */
+.summary {
+  display: grid;
+  gap: 0.9rem;
+  padding: 1.25rem;
+  border: 1px solid #e3d9a8;
+  border-top: 3px solid var(--gold);
+  background: #fffdf2;
+}
+.summaryTitle { margin: 0; font-size: 1.3rem; font-weight: 600; }
+.eventMeta { font-size: 0.75rem; color: #555; display: grid; gap: 0.2rem; border-bottom: 1px solid #e6e0c0; padding-bottom: 0.5rem; }
+
+.lines { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.75rem; }
+.lines li { display: grid; grid-template-columns: 2.75rem 1fr auto; gap: 0.75rem; align-items: center; }
+.lines img,
+.noImg { width: 2.75rem; height: 2.75rem; border-radius: 8px; border: 2px solid #d9a21b; object-fit: cover; background: #f1f3f5; }
+.lineName { font-size: 0.8rem; font-weight: 600; }
+.lineMeta { font-size: 0.65rem; color: #777; }
+.linePrice { font-size: 0.8rem; font-weight: 600; }
+
+.totals { margin: 0; display: grid; gap: 0.4rem; padding-top: 0.75rem; border-top: 1px solid #e6e0c0; font-size: 0.75rem; }
+.totals div { display: flex; justify-content: space-between; }
+.totals dt, .totals dd { margin: 0; }
+
+.total {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 0.75rem;
+  border-top: 1px solid #e6e0c0;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.promo { display: flex; border: 1px solid #cfcfcf; background: #fff; }
+.promo input { flex: 1; min-width: 0; padding: 0.6rem 0.75rem; border: 0; font: inherit; font-size: 0.75rem; }
+.promo button { padding: 0 1rem; border: 0; background: none; font: inherit; font-size: 0.7rem; cursor: pointer; }
+
+.complete {
+  display: block;
+  padding: 0.95rem 1rem;
+  border: 0;
+  background: #000;
+  color: #fff;
+  font: inherit;
+  font-size: 0.8rem;
+  letter-spacing: 0.18em;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+}
+.complete:disabled { opacity: 0.6; cursor: progress; }
+
+.empty, .confirm { max-width: 32rem; margin: 3rem auto; display: grid; gap: 1rem; text-align: center; }
+.confirm h1 { margin: 0; font-weight: 600; }
+
+@media (max-width: 800px) {
+  .layout { grid-template-columns: 1fr; }
+  .summary { order: -1; }
+  .grid2 { grid-template-columns: 1fr; }
+  .half { max-width: none; }
+}
+.field textarea {
+  width: 100%;
+  min-height: 4.5rem;
+  padding: 0.7rem 0.75rem;
+  border: 1px solid #cfcfcf;
+  background: #fff;
+  font: inherit;
+  font-size: 0.8rem;
+  resize: vertical;
+}
+/* ---------- Delivery method cards ---------- */
+.methodGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.methodCard {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 0.45rem;
+  min-height: 6.5rem;
+  padding: 1.1rem 0.75rem;
+  border: 1px solid #cfcfcf;
+  background: #fff;
+  color: #111;
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+}
+.methodCard:hover { border-color: var(--gold); }
+.methodCardActive {
+  border-color: #111;
+  background: #fffdf2;
+  box-shadow: inset 0 0 0 1px #111;
+}
+.methodIcon { width: 1.3rem; height: 1.3rem; }
+.methodTitle { font-size: 0.72rem; font-weight: 500; }
+.methodSub { font-size: 0.65rem; color: #555; letter-spacing: 0.03em; }
+
+.poweredBy {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  font-size: 0.55rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #444;
+}
+.doordash {
+  color: #ff3008;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* City / Province / Zip row stays 3 columns, like the main checkout */
+.grid3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem 1.5rem;
+}
+@media (max-width: 800px) {
+  .grid3 { gap: 0.75rem; }
+}
+
+/* ---------- Card header with brand badges ---------- */
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.cardTitleRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+}
+.cardIcon { width: 1.15rem; height: 1.15rem; }
+.brands { display: inline-flex; align-items: center; gap: 0.6rem; }
+.visa {
+  color: #1a1f71;
+  font-size: 0.8rem;
+  font-weight: 800;
+  font-style: italic;
+  letter-spacing: 0.02em;
+}
+.mc { position: relative; width: 1.6rem; height: 1rem; }
+.mc::before,
+.mc::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+}
+.mc::before { left: 0; background: #eb001b; }
+.mc::after { right: 0; background: #f79e1b; opacity: 0.9; }

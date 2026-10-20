@@ -1,6 +1,6 @@
 // lib/bundle/bundleCheckoutStore.ts
 // Keeps the bundle draft and the last placed order in the browser between pages.
-import type { BundleDraft, BundleRecord } from "./bundlerules";
+import type { BundleDraft, BundleRecord } from "./bundleRules";
 
 export type { BundleDraft, BundleRecord };
 
