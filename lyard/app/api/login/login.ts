@@ -1,5 +1,5 @@
 // loginapi.ts
-import { login } from "@/lib/Auth";
+import { login } from "@/lib/Auth/Auth";
 
 export interface LoginValues {
   email: string;
