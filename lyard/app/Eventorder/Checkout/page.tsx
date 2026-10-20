@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { Montserrat } from "next/font/google";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
@@ -96,7 +96,7 @@ function CheckoutForm({ draft }: { draft: EventOrderDraft }) {
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     defaultValues: {
@@ -113,7 +113,7 @@ function CheckoutForm({ draft }: { draft: EventOrderDraft }) {
     },
   });
 
-  const pickupDate = watch("pickupDate");
+  const pickupDate = useWatch({ control, name: "pickupDate" });
   const dateTooSoon = !!draft.details.pickupDate && draft.details.pickupDate < earliest;
 
   useEffect(() => {
