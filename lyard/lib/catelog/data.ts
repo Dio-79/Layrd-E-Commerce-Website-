@@ -1,4 +1,4 @@
-import { Product, Customer } from "@/app/types/models";
+import { Product } from "@/app/types/models";
 import db from '../server/db';
 import { promises } from "dns";
 
@@ -57,8 +57,8 @@ export const products: Product[] = [
     },
     {
         productID: 7,
-        name: "Tiramisu",
-        price: 9,
+        name: "Classic Tiramisu",
+        price: 8,
         tag: "",
         description: "Infused with espresso and cocoa, capturing the rich indulgence of classic tiramisu.",
         imageUrl: "/images/tiramisu.jpg"  
@@ -96,8 +96,63 @@ export const products: Product[] = [
         tag: "",
         description: "Mixed espresso bundle for four. Or four for yourself.",
         imageUrl: "/images/classic bundle.jpg"  
-    }
-     
+    },
+    {
+        productID: 12,
+        name: "Biscoff Cheesecake",
+        price: 8,
+        tag: "",
+        description: "Creamy cheesecake layered with Biscoff cookie crumb and spread.",
+        imageUrl: "/images/Biscoff cheesecake.jpg"
+    },
+    {
+        productID: 13,
+        name: "Pumpkin Spice Cheesecake",
+        price: 9,
+        tag: "LIMITED",
+        description: "Limited edition cheesecake with warm pumpkin spice.",
+        imageUrl: "/images/Pumpkin spice cheesecake.jpg"
+    },
+    {
+        productID: 14,
+        name: "Blue Raspberry Lemonade",
+        price: 6,
+        tag: "",
+        description: "Bright, tangy lemonade with a bold blue raspberry twist.",
+        imageUrl: "/images/blue raspberry lemonade.jpg"
+    },
+    {
+        productID: 15,
+        name: "Red Raspberry Lemonade",
+        price: 6,
+        tag: "",
+        description: "Classic lemonade sweetened with real red raspberry flavor.",
+        imageUrl: "/images/red raspberry lemonade.jpg"
+    },
+    {
+        productID: 16,
+        name: "Strawberry Lemonade",
+        price: 6,
+        tag: "",
+        description: "Fresh lemonade blended with sweet strawberry flavor.",
+        imageUrl: "/images/strawberry lemonade.jpg"
+    },
+    {
+        productID: 17,
+        name: "Mango Lemonade",
+        price: 6,
+        tag: "",
+        description: "Tropical mango meets tart lemonade for a refreshing sip.",
+        imageUrl: "/images/mango lemonade.jpg"
+    },
+    {
+        productID: 18,
+        name: "Peach Lemonade",
+        price: 6,
+        tag: "",
+        description: "Smooth, juicy peach flavor layered into classic lemonade.",
+        imageUrl: "/images/peach lemonade.jpg"
+    },
  
     
     
