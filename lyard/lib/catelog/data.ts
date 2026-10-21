@@ -79,26 +79,9 @@ export const products: Product[] = [
         description: "Curated 4-pack including Tiramisu, Lotus, Oreo, and Fruit Salad cheesecakes.",
         imageUrl: "/images/classic bundle.jpg"  
     },
+   
     {
         productID: 10,
-        name: "Espresso Duo",
-        price: 6,
-        tag: "",
-        description: "Single and double duo offers a balanced caffeine pairing.",
-        imageUrl: "/images/expresso duo.jpg"  ,
-        
-    },
-    {
-        productID: 11,
-        name: "Espresso bundle",
-        price: 14,
-
-        tag: "",
-        description: "Mixed espresso bundle for four. Or four for yourself.",
-        imageUrl: "/images/classic bundle.jpg"  
-    },
-    {
-        productID: 12,
         name: "Biscoff Cheesecake",
         price: 8,
         tag: "",
@@ -106,7 +89,7 @@ export const products: Product[] = [
         imageUrl: "/images/Biscoff cheesecake.jpg"
     },
     {
-        productID: 13,
+        productID: 11,
         name: "Pumpkin Spice Cheesecake",
         price: 9,
         tag: "LIMITED",
@@ -114,7 +97,7 @@ export const products: Product[] = [
         imageUrl: "/images/Pumpkin spice cheesecake.jpg"
     },
     {
-        productID: 14,
+        productID: 12,
         name: "Blue Raspberry Lemonade",
         price: 6,
         tag: "",
@@ -122,7 +105,7 @@ export const products: Product[] = [
         imageUrl: "/images/blue raspberry lemonade.jpg"
     },
     {
-        productID: 15,
+        productID: 13,
         name: "Red Raspberry Lemonade",
         price: 6,
         tag: "",
@@ -130,7 +113,7 @@ export const products: Product[] = [
         imageUrl: "/images/red raspberry lemonade.jpg"
     },
     {
-        productID: 16,
+        productID: 14,
         name: "Strawberry Lemonade",
         price: 6,
         tag: "",
@@ -138,7 +121,7 @@ export const products: Product[] = [
         imageUrl: "/images/strawberry lemonade.jpg"
     },
     {
-        productID: 17,
+        productID: 15,
         name: "Mango Lemonade",
         price: 6,
         tag: "",
@@ -146,7 +129,7 @@ export const products: Product[] = [
         imageUrl: "/images/mango lemonade.jpg"
     },
     {
-        productID: 18,
+        productID: 16,
         name: "Peach Lemonade",
         price: 6,
         tag: "",
