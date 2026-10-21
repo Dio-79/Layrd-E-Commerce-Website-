@@ -5,7 +5,7 @@
  */
 export const ROUTES = {
   home: "/",
-  cart: "/cart", //                     app/cart/page.tsx
-  checkout: "/check-out", //            app/check-out/page.tsx
-  confirmation: "/OrderConfirmation", // app/OrderConfirmation/page.tsx
+  cart: "/cart", //                      app/cart/page.tsx
+  checkout: "/check-out", //             app/check-out/page.tsx
+  confirmation: "/order-confirmation", // app/order-confirmation/page.tsx
 } as const;

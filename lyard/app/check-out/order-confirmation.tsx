@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Montserrat } from "next/font/google";
-import Header from "../app/components/Header";
-import Footer from "../app/components/Footer";
-import OrderConfirmation from "../app/components/ordercomfirmation";
+import Header from "../components/Header";
+import Footer from "../components/Footer";
+import OrderConfirmation from "../components/ordercomfirmation";
 import { loadRegularOrder, type RegularOrder } from "@/lib/checkout/Orderstore";
 
 const montserrat = Montserrat({ subsets: ["latin"], variable: "--font-montserrat" });

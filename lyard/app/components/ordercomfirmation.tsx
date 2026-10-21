@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { ReactNode } from "react";
-import styles from "./OrderConfirmation.module.css";
+import styles from "./orderconfirmation.module.css";
 
 export interface ConfirmationLine {
   id: string;

@@ -3,15 +3,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import styles from "./checkout.module.css";
 import { BagSummaryLine, SummaryLine, TotalsList, useOrderLines } from "./order";
 import { useCart } from "@/app/context/CartContext";
+import { ROUTES } from "@/lib/Routes/Routes";
 import { CardIcon, MastercardMark, PinIcon, StoreIcon, VisaMark } from "./icon";
 import { placeOrder, removeEventOrder, setPromoCode, useCheckout, type DeliveryInfo } from "@/lib/checkout/checkoutStore";
-import { calculateTotals, findPromo, formatDate, formatMoney, type PromoCode } from "@/lib/CheckoutPricing";
+import { calculateTotals, findPromo, formatDate, formatMoney, type PromoCode } from "@/lib/checkout/CheckoutPricing";
 import {
   createDelivery,
   getDeliveryQuote,
@@ -19,8 +20,8 @@ import {
   type DoorDashQuote,
 } from "@/lib/Intergration/doordashapi";
 
-const CART_PATH = "/cart";
-const CONFIRMATION_PATH = "/confirmation";
+const CART_PATH = ROUTES.cart;
+const CONFIRMATION_PATH = ROUTES.confirmation;
 
 type FormValues = {
   email: string;
@@ -73,7 +74,7 @@ export default function CheckoutPage() {
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     formState: { errors },
   } = useForm<FormValues>({
     mode: "onBlur",
@@ -93,7 +94,10 @@ export default function CheckoutPage() {
 
   /* ---------------- DoorDash quote (dummy data) ---------------- */
 
-  const [street, city, province, postal] = watch(["street", "city", "province", "postal"]);
+  const [street, city, province, postal] = useWatch({
+    control,
+    name: ["street", "city", "province", "postal"],
+  });
   const addressComplete = [street, city, province, postal].every((v) => (v ?? "").trim().length >= 2);
   const addressKey = deliveryMethod === "ship" && addressComplete ? [street, city, province, postal].join("|") : null;
 

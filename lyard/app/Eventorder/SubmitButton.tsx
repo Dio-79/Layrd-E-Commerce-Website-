@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { saveEventDraft } from "@/lib/event/eventCheckoutStore";
-import { earliestEventDate, leadDaysFor } from "@/lib/event/eventRules";
 import { products } from "@/lib/catelog/data";
 import { getProductId, getProductImage, useEventOrder } from "@/app/context/EventOrdercontext";
+import { addEventOrder } from "@/lib/checkout/checkoutStore";
+import { ROUTES } from "@/lib/Routes/Routes";
 import styles from "./event.module.css";
 
 /** Reads the current values of a form by id. Field names come from the register() calls. */
@@ -19,63 +19,50 @@ function readForm(id: string): Record<string, string> {
   return out;
 }
 
+// The Submit button sits outside both forms in the design. It checks the event
+// details and slots, saves the event order, and sends the customer to checkout.
 export default function SubmitButton() {
   const router = useRouter();
-  const { totals, file } = useEventOrder();
-  const [status, setStatus] = useState<"idle" | "submitting" | "error">("idle");
-  const [submitError, setSubmitError] = useState("");
+  const { totals } = useEventOrder();
+  const [error, setError] = useState("");
 
-  const fail = (message: string) => {
-    setSubmitError(message);
-    setStatus("error");
-  };
-
-  const submitOrder = () => {
-    setSubmitError("");
-    setStatus("idle");
+  const handleSubmit = () => {
+    setError("");
 
     const selection = readForm("selection-form");
     const comment = readForm("comment-form").comment ?? "";
     const items = totals.detailedItems;
-    const units = items.reduce((sum, item) => sum + item.quantity, 0);
-    const earliest = earliestEventDate(units);
+    const today = new Date().toISOString().split("T")[0];
 
-    // 1. Event details. requestSubmit() makes react-hook-form show its inline
-    //    messages under each field (the form's onSubmit runs handleSubmit).
-    const detailsOk =
-      !!selection.Starttime &&
-      !!selection.type?.trim() &&
-      /^[1-9]\d*$/.test(selection.number ?? "") &&
-      selection.Starttime >= earliest;
-
-    if (!detailsOk) {
+    // Let react-hook-form show its inline messages for the details form
+    if (!selection.Starttime || !selection.number || !selection.type) {
       (document.getElementById("selection-form") as HTMLFormElement | null)?.requestSubmit();
-      if (selection.Starttime && selection.Starttime < earliest) {
-        return fail(`Orders of ${units} items need at least ${leadDaysFor(units)} days notice.`);
-      }
-      return fail("Please complete the event details above.");
+      setError("Please complete the event details.");
+      return;
     }
-
-    // 2. The custom order itself
+    if (selection.Starttime < today) {
+      setError("Pick-up date cannot be in the past.");
+      return;
+    }
     if (items.length === 0) {
-      return fail("Add at least one item to your event order.");
+      setError("Add at least one item to your event order.");
+      return;
     }
     const missingFlavor = items.findIndex((item) => !item.selectedFlavor);
     if (missingFlavor !== -1) {
-      return fail(`Choose a flavor for slot #${missingFlavor + 1}.`);
+      setError(`Choose a flavor for slot #${missingFlavor + 1}.`);
+      return;
     }
 
-    setStatus("submitting");
+    const fileInput = document.querySelector<HTMLInputElement>('input[type="file"]');
 
-    // Save the event order so the checkout page can pick it up. Only the file
-    // name is kept: a File can't be stored in sessionStorage.
-    saveEventDraft({
+    addEventOrder({
       details: {
         pickupDate: selection.Starttime,
         eventType: selection.type,
         headcount: selection.number,
         comment,
-        fileName: file?.name ?? null,
+        fileName: fileInput?.files?.[0]?.name ?? null,
       },
       lines: items.map((item) => {
         const product = products.find((p) => getProductId(p) === item.productId);
@@ -92,22 +79,18 @@ export default function SubmitButton() {
       }),
     });
 
-router.push("/Eventorder/Checkout");  };
+    router.push(ROUTES.checkout);
+  };
 
   return (
     <>
-      <button
-        type="button"
-        className={styles.submitButton}
-        onClick={submitOrder}
-        disabled={status === "submitting"}
-      >
-        {status === "submitting" ? "Submitting…" : "Continue to checkout"}
+      <button type="button" className={styles.submit} onClick={handleSubmit}>
+        Submit
       </button>
-      {status === "error" && (
-        <p role="alert" className={styles.error}>
-          {submitError}
-        </p>
+      {error && (
+        <span className={styles.error} role="alert">
+          {error}
+        </span>
       )}
     </>
   );

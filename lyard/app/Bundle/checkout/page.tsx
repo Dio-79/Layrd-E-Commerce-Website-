@@ -20,18 +20,20 @@ import {
   earliestBundleDate,
   leadDaysFor,
   priceOrder,
+  type Fulfillment,
 } from "@/lib/Bundle/bundleRules";
+// >>> ADJUST THIS PATH to wherever your doordashapi.ts file lives <<<
 import {
   createDelivery,
   getDeliveryQuote,
   type DoorDashQuote,
 } from "@/lib/Intergration/doordashapi";
+import { ALLERGY_DISCLAIMER } from "@/lib/catelog/dataAllergens";
 import styles from "./checkout.module.css";
 
 const montserrat = Montserrat({ subsets: ["latin"], variable: "--font-montserrat" });
 
 type PayMethod = "card" | "apple" | "google" | "paypal";
-type Fulfillment = "pickup" | "delivery";
 
 interface FormValues {
   email: string;
@@ -221,11 +223,10 @@ function CheckoutForm({ draft }: { draft: BundleDraft }) {
   const quoteError = quoteCurrent ? quoteState.error : "";
   const quoteLoading = wantsQuote && !quoteCurrent;
 
-  const price = useMemo(() => {
-    const deliveryFee = isDelivery && quote ? quote.fee : 0;
-    const orderPrice = priceOrder(lineSubtotal);
-    return { ...orderPrice, deliveryFee, total: orderPrice.total + deliveryFee };
-  }, [lineSubtotal, isDelivery, quote]);
+  const price = useMemo(
+    () => priceOrder(lineSubtotal, isDelivery && quote ? quote.fee : 0),
+    [lineSubtotal, isDelivery, quote]
+  );
 
   /* ---------- capacity for the chosen day ---------- */
   useEffect(() => {
@@ -616,6 +617,8 @@ function CheckoutForm({ draft }: { draft: BundleDraft }) {
             <span>{label}</span>
           </button>
         ))}
+
+        <p className={styles.leadNote}>{ALLERGY_DISCLAIMER}</p>
 
         <label className={styles.checkRow}>
           <input
