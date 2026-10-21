@@ -32,7 +32,7 @@ export default function OrderConfirmationPage() {
         {!hydrated ? null : !order ? (
           <div style={{ textAlign: "center", display: "grid", gap: "1rem", marginTop: "3rem" }}>
             <p>There is no recent order to show.</p>
-            <Link href={ROUTES.home}>← Back to the shop</Link>
+            <Link href={ROUTES.mainpage}>← Back to the shop</Link>
           </div>
         ) : (
           <OrderConfirmation
