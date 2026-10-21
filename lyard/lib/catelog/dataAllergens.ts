@@ -1,4 +1,4 @@
-import type { Product } from '@/app/types/models';
+import { createElement } from "react";
 
 export interface AllergenInfo {
   containsGluten: boolean;
@@ -28,6 +28,17 @@ export function getAllergenInfo(productID: number): AllergenInfo {
   return AllergensByProduct[productID] ?? DEFAULT_ALLERGEN_INFO;
 }
 
+export function AllergenInfo({ productID }: { productID: number }) {
+  const info = getAllergenInfo(productID);
+  if (info.allergens.length === 0) return null;
+ 
+  return createElement(
+    "p",
+    { style: { fontSize: 11, color: "#6b7280", margin: "6px 0 0", lineHeight: 1.4 } },
+    createElement("strong", null, "Contains:"),
+    ` ${info.allergens.join(", ")}`,
+  );
+}
 export const ALLERGY_DISCLAIMER =
   "Products are prepared in a kitchen that handles milk, eggs, wheat/gluten and soy. Cross-contact with other allergens may occur. None of our products are gluten-free. Please speak with a team member before purchasing if you have food allergies or dietary concerns.";
 

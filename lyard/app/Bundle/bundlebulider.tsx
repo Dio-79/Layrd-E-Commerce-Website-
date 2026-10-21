@@ -14,6 +14,7 @@ import {
   getProductSizes,
   getUnitPrice,
 } from "@/app/context/Bundlecontext";
+import allergenData from "@/lib/catelog/dataAllergens";
 import { saveBundleDraft } from "@/lib/Bundle/Bundlecheckoutstore";
 import type { BundleLine } from "@/lib/Bundle/bundleRules";
 import styles from "./bundlebuilder.module.css";
@@ -107,6 +108,9 @@ export default function BundleBuilder() {
                   <div className={styles.slotName}>{getProductName(product)}</div>
                   <div className={styles.slotLabel}>Slot #{i + 1}</div>
                   <div className={styles.slotPrice}>${slotPrice.toFixed(2)}</div>
+                  {allergenData[Number(getProductId(product))] && (
+                    <div>{JSON.stringify(allergenData[Number(getProductId(product))])}</div>
+                  )}
                 </div>
                 <div className={styles.slotActions}>
                   <button type="button" className={styles.changeBtn} onClick={() => openPicker(i)}>
