@@ -1,5 +1,4 @@
 "use client";
-
 import Link from "next/link";
 import { Montserrat } from "next/font/google";
 import Header from "../components/Header";

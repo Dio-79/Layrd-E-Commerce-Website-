@@ -42,6 +42,7 @@ export default function SelectionForms({ onValid }: SelectionFormsProps) {
         <option value="Sugar">Sugar</option>
         <option value="Stevia">Stevia</option>
         <option value="Brown-Sugar">Brown-Sugar</option>
+        <option value="none">none</option>
       </select>
       {errors.flavorSlot && (
         <span className={styles.errorMessage}>{String(errors.flavorSlot.message)}</span>

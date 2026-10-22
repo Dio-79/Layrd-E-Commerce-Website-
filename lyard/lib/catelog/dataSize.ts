@@ -48,24 +48,14 @@ const SizeByProduct: Record<number, Size[]> = {
     { label: 'Medium', price: 9 },
     { label: 'Large', price: 14 },
   ],
-  10: [
-    { label: 'small', price: 4.50 },
-    { label: 'Medium', price: 6 },
-    { label: 'Large', price: 14 },
-  ],
-  11: [
-    { label: 'small', price: 4.50 },
-    { label: 'Medium', price: 14 },
-    { label: 'Large', price: 14 },
-  ],
   // Biscoff Cheesecake: menu bundles 1 / 4 / 6 cans
-  12: [
+  10: [
     { label: '1 can', price: 8 },
     { label: '4 cans', price: 30 },
     { label: '6 cans', price: 44 },
   ],
   // Pumpkin Spice Cheesecake (limited edition, +$1): menu bundles 1 / 4 / 6 cans
-  13: [
+  11: [
     { label: '1 can', price: 9 },
     { label: '4 cans', price: 31 },
     { label: '6 cans', price: 45 },
@@ -80,4 +70,5 @@ export function getPrice(product: Product, sizeLabel?: string): number {
   const size = getSizes(product.productID)?.find((s) => s.label === sizeLabel);
   return size ? size.price : product.price;
 }
+
 export default SizeByProduct;

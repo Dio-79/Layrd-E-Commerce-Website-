@@ -52,7 +52,7 @@ const Header = () => {
 
       {/* Navigation Sub-menu */}
       <nav className="flex justify-center space-x-8 py-3 text-xs font-bold uppercase tracking-wider text-black">
-        <Link href="/products" className="hover:underline">Drinks</Link>
+        <Link href="/DrinksPage" className="hover:underline">Drinks</Link>
         <Link href="/products" className="hover:underline">Cake-in-a-Can</Link>
         <Link href="/Bundle" className="hover:underline">Bundles</Link>      
         <Link href="/Eventorder" className="hover:underline">Event Ordering</Link>
