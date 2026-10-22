@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import styles from "./checkout.module.css";
@@ -17,7 +17,7 @@ import {
   type OrderLine,
 } from "@/lib/checkout/checkoutStore";
 import { useCart } from "@/app/context/CartContext";
-import { calculateTotals, findPromo, formatDate, formatMoney, type PromoCode } from "@/lib/CheckoutPricing";
+import { calculateTotals, findPromo, formatDate, formatMoney, type PromoCode } from "@/lib/checkout/CheckoutPricing";
 import {
   createDelivery,
   getDeliveryQuote,
@@ -100,7 +100,7 @@ export default function CheckoutPage() {
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     formState: { errors },
   } = useForm<FormValues>({
     mode: "onBlur",
@@ -120,7 +120,10 @@ export default function CheckoutPage() {
 
   /* ---------------- DoorDash quote (dummy data) ---------------- */
 
-  const [street, city, province, postal] = watch(["street", "city", "province", "postal"]);
+  const [street, city, province, postal] = useWatch({
+    control,
+    name: ["street", "city", "province", "postal"],
+  });
   const addressComplete = [street, city, province, postal].every((v) => (v ?? "").trim().length >= 2);
   const addressKey = deliveryMethod === "ship" && addressComplete ? [street, city, province, postal].join("|") : null;
 
