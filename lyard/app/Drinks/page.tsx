@@ -6,7 +6,7 @@ import { useCart } from "@/app/context/CartContext";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 // Reuses the Cake in a Can page's styles so both pages look identical.
-import styles from "../Mainpage/mainpage.module.css";
+import styles from "./drinks.module.css";
 import {
   availableOptions,
   EMPTY_FILTERS,

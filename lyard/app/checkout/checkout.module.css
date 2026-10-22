@@ -729,4 +729,277 @@
     border-left: 0;
     border-top: 1px solid var(--rule);
   }
+
+
+  .page {
+  --gold: #e6c200;
+  --amber: #d9a21b;
+  --rule: #e6d9a6;
+  --line: #e3e3e3;
+  --muted: #777;
+  --blue: #1e88e5;
+
+  font-family: var(--font-montserrat), Montserrat, system-ui, sans-serif;
+  color: #111;
+  background: #fff;
+  max-width: 76rem;
+  margin: 0 auto;
+  padding: 2rem clamp(1rem, 5vw, 4rem) 4rem;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(2rem, 6vw, 3.2rem);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+}
+
+.sub {
+  margin: 0.35rem 0 2rem;
+  color: var(--muted);
+  font-size: 0.7rem;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(16rem, 22rem);
+  gap: clamp(1.5rem, 5vw, 4rem);
+  align-items: start;
+}
+
+/* ------------------------------------------------------------------ */
+/* Table                                                              */
+/* ------------------------------------------------------------------ */
+.head,
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 7.5rem 2rem 6.5rem;
+  align-items: center;
+  column-gap: 1rem;
+}
+
+.head {
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--rule);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.head span:nth-child(2) {
+  text-align: center;
+}
+
+.head span:last-child {
+  text-align: right;
+}
+
+.table {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.row {
+  grid-template-areas: "product qty trash total";
+  padding: 1.25rem 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.product {
+  grid-area: product;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.thumb {
+  flex: none;
+  width: 4.5rem;
+  height: 4.5rem;
+  overflow: hidden;
+  border: 2px solid var(--amber);
+  border-radius: 12px;
+  background: #f1f3f5;
+}
+
+.thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  font-size: 0; /* a broken image never spills its alt text over the row */
+}
+
+.name {
+  margin: 0;
+  font-size: clamp(1.1rem, 2.4vw, 1.45rem);
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.meta {
+  margin: 0.5rem 0 0;
+  color: var(--muted);
+  font-size: 0.65rem;
+}
+
+.qtyCol {
+  grid-area: qty;
+  display: grid;
+  justify-items: center;
+}
+
+.qtyText {
+  font-size: 0.8rem;
+  color: #555;
+}
+
+.stepper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 6.25rem;
+  border: 1px solid #ddd;
+  background: #fff;
+}
+
+.stepper button {
+  width: 2rem;
+  height: 2.1rem;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.stepper output {
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.trashCol {
+  grid-area: trash;
+  display: grid;
+  justify-items: center;
+}
+
+.trash {
+  display: inline-flex;
+  padding: 0.25rem;
+  border: 0;
+  background: none;
+  color: #444;
+  cursor: pointer;
+}
+
+.totalCol {
+  grid-area: total;
+  display: grid;
+  justify-items: end;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.struck {
+  text-decoration: line-through;
+}
+
+/* Event / bundle orders */
+.eventBlock {
+  margin-top: 1.5rem;
+}
+
+.eventHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--rule);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.eventRemove {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #999;
+  font: inherit;
+  font-size: 0.68rem;
+  letter-spacing: 0;
+  text-decoration: underline;
+  text-transform: none;
+  cursor: pointer;
+}
+
+.empty {
+  margin: 0 0 1rem;
+  padding: 1.5rem 0;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.continue {
+  display: inline-block;
+  margin-top: 1.25rem;
+  color: #111;
+  font-size: 1.15rem;
+  letter-spacing: 0.06em;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.summaryCol {
+  position: sticky;
+  top: 1rem;
+}
+
+.stepper button:focus-visible,
+.trash:focus-visible,
+.eventRemove:focus-visible,
+.continue:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Narrow screens                                                     */
+/* ------------------------------------------------------------------ */
+@media (max-width: 860px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .summaryCol {
+    position: static;
+  }
+}
+
+@media (max-width: 640px) {
+  .head {
+    display: none;
+  }
+
+  .row {
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "product trash"
+      "qty total";
+    row-gap: 0.9rem;
+  }
+
+  .qtyCol {
+    justify-items: start;
+  }
+}
 }

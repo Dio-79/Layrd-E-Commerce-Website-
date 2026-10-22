@@ -6,6 +6,8 @@ import { products } from "@/lib/catelog/data";
 import { getProductId, getProductImage, useEventOrder } from "@/app/context/EventOrdercontext";
 import { addEventOrder } from "@/lib/checkout/checkoutStore";
 import styles from "./event.module.css";
+import { ROUTES } from "@/lib/Routes/Routes";
+
 
 /** Reads the current values of a form by id. Field names come from the register() calls. */
 function readForm(id: string): Record<string, string> {
@@ -78,8 +80,9 @@ export default function SubmitButton() {
       }),
     });
 
-    router.push("/checkout");
-  };
+router.push(ROUTES.checkout);
+
+};
 
   return (
     <>
