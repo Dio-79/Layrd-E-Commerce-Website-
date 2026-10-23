@@ -1,16 +1,24 @@
 'use client';
 
 import Image from "next/image";
-import React, { useState } from "react";
+import Link from "next/link";
+import { useRef } from "react";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import { Product } from "../types/models";
 import styles from "./cart.module.css";
 import ProductRow from "./featuredcollection";
-const FEATURED_PRODUCTS: Product[] = [];
+
+/** Where "View all products" goes. Use the same path your header's CAKE-IN-A-CAN link uses. */
+const CAKE_IN_A_CAN_PATH = "/products";
 
 export default function LandingPageBody() {
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const featuredRef = useRef<HTMLElement>(null);
+
+  // Smooth-scrolls down to the featured collection (instant if the visitor prefers reduced motion)
+  const scrollToFeatured = () => {
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    featuredRef.current?.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+  };
 
   return (
     <>
@@ -30,20 +38,21 @@ export default function LandingPageBody() {
             <br />
             Delivered in our signature packaging.
           </p>
-          <button type="button" className={styles.heroCtaBtn}>
+          <button type="button" className={styles.heroCtaBtn} onClick={scrollToFeatured}>
             EXPLORE OUR COLLECTION
           </button>
         </section>
 
         {/* 2. Featured Collection Section */}
-        <section className={styles.featuredSection}>
+        <section ref={featuredRef} id="featured" className={styles.featuredSection}>
           <div className={styles.sectionHeader}>
             <h3 className={styles.sectionTitle}>
               OUR <span className={styles.highlightText}>FEATURED</span> COLLECTION
             </h3>
-            <span className={styles.viewAllLink}>VIEW ALL PRODUCTS ↗</span>
+            <Link href={CAKE_IN_A_CAN_PATH} className={styles.viewAllLink}>
+              VIEW ALL PRODUCTS ↗
+            </Link>
           </div>
-              
 
           <div className={styles.productGrid}>
             <ProductRow />
@@ -156,31 +165,6 @@ export default function LandingPageBody() {
             <span>📸</span> Follow us on our Instagram for more announcements !
           </a>
         </section>
-
-        {/* Details Modal */}
-        {selectedProduct && (
-          <div className={styles.modalOverlay}>
-            <div className={styles.modalBox}>
-              <h3 style={{ margin: "0 0 8px 0" }}>{selectedProduct.name}</h3>
-              <p style={{ fontSize: "12px", color: "#666" }}>{selectedProduct.description}</p>
-              <div style={{ fontWeight: "bold", margin: "12px 0" }}>{selectedProduct.price}</div>
-              <button
-                type="button"
-                style={{
-                  backgroundColor: "#000",
-                  color: "#fff",
-                  border: "none",
-                  padding: "8px 16px",
-                  cursor: "pointer",
-                  fontSize: "12px",
-                }}
-                onClick={() => setSelectedProduct(null)}
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        )}
       </div>
       <Footer />
     </>

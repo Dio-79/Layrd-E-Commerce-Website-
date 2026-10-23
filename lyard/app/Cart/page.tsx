@@ -1,23 +1,47 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import styles from "./cart.module.css";
+import styles from "./Cart.module.css";
 import summaryStyles from "../checkout/checkout.module.css";
 import { TotalsList, useOrderLines } from "../checkout/order";
 import { useCart } from "@/app/context/CartContext";
 import { ROUTES } from "@/lib/Routes/Routes";
 import { removeEventOrder, useCheckout } from "@/lib/checkout/checkoutStore";
-import { calculateTotals, findPromo, formatDate, formatMoney } from "@/lib/checkout/CheckoutPricing";
+import {
+  calculateTotals,
+  findPromo,
+  formatDate,
+  formatMoney,
+  type PromoCode,
+} from "@/lib/checkout/CheckoutPricing";
 
 export default function CartPage() {
   const { increaseQuantity, decreaseQuantity, removeItem } = useCart();
   const { bag, events, lines, ready } = useOrderLines();
   const { promoCode } = useCheckout();
 
-  const promo = useMemo(() => (promoCode ? findPromo(promoCode) : null), [promoCode]);
+  /* ---------------- Promo ---------------- */
+  const [promoInput, setPromoInput] = useState("");
+  const [appliedPromo, setAppliedPromo] = useState<PromoCode | null>(null);
+  const [promoMessage, setPromoMessage] = useState("");
+
+  const storedPromo = useMemo(() => (promoCode ? findPromo(promoCode) : null), [promoCode]);
+  const promo = appliedPromo ?? storedPromo;
+
+  const applyPromo = () => {
+    const found = findPromo(promoInput);
+    if (found) {
+      setAppliedPromo(found);
+      setPromoMessage(`${found.code} applied (${found.label})`);
+    } else {
+      setAppliedPromo(null);
+      setPromoMessage(promoInput.trim() ? "That promo code isn't valid." : "Enter a promo code.");
+    }
+  };
+
   const totals = useMemo(() => calculateTotals(lines, null, promo), [lines, promo]);
 
   return (
@@ -25,16 +49,16 @@ export default function CartPage() {
       <Header />
 
       <main className={styles.page}>
-        <h1 className={styles.title}>YOUR BAG</h1>
-        <p className={styles.sub}>Review your items before checking out.</p>
+        <h1 className={styles.title}>Your Cart</h1>
+        <p className={styles.sub}>Review your selections before completing your order.</p>
 
         <div className={styles.layout}>
           <section>
             {!ready ? null : lines.length === 0 ? (
               <>
-                <p className={styles.empty}>Your bag is empty.</p>
+                <p className={styles.empty}>Your cart is empty.</p>
                 <Link href={ROUTES.main} className={styles.continue}>
-                  Continue shopping
+                  ← Continue Shopping
                 </Link>
               </>
             ) : (
@@ -160,7 +184,7 @@ export default function CartPage() {
                 ))}
 
                 <Link href={ROUTES.main} className={styles.continue}>
-                  Continue shopping
+                  ← Continue Shopping
                 </Link>
               </>
             )}
@@ -168,14 +192,40 @@ export default function CartPage() {
 
           <aside className={`${styles.summaryCol} ${summaryStyles.summary}`}>
             <h2 className={summaryStyles.summaryTitle}>Order Summary</h2>
+
             <TotalsList totals={totals} shippingLabel="Calculated at Checkout" promoCode={promo?.code} />
+
+            <div className={summaryStyles.promo}>
+              <input
+                type="text"
+                placeholder="Promo Code"
+                aria-label="Promo code"
+                value={promoInput}
+                onChange={(e) => setPromoInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    applyPromo();
+                  }
+                }}
+              />
+              <button type="button" onClick={applyPromo}>
+                APPLY
+              </button>
+            </div>
+            {promoMessage && (
+              <p className={appliedPromo ? summaryStyles.success : summaryStyles.error} role="status">
+                {promoMessage}
+              </p>
+            )}
+
             {lines.length > 0 ? (
               <Link href={ROUTES.checkout} className={summaryStyles.complete}>
-                CHECKOUT
+                PROCEED TO CHECKOUT →
               </Link>
             ) : (
-              <span className={summaryStyles.complete} style={{ opacity: 0.55 }}>
-                CHECKOUT
+              <span className={`${summaryStyles.complete} ${styles.disabled}`} aria-disabled="true">
+                PROCEED TO CHECKOUT →
               </span>
             )}
           </aside>

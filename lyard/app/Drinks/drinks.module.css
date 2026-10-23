@@ -1,182 +1,612 @@
-/* =========================================
-   DRINKS CATALOG & FILTER PAGE
-========================================= */
+/* ------------------------------------------------------------------ */
+/* Drinks catalog page                                                */
+/* Every colour, size and spacing value is a variable defined once in */
+/* .container below. Change the look there; nothing further down is  */
+/* hard-coded. (Media-query widths are the only literals, because CSS */
+/* does not allow variables inside @media conditions.)                */
+/* ------------------------------------------------------------------ */
+.container {
+  /* colours */
+  --amber: #d9a21b;
+  --gold: #e6c200;
+  --rule: #e6d9a6;
+  --ink: #111;
+  --dark: #000;
+  --dark-hover: #222;
+  --on-dark: #fff;
+  --on-gold: #111;
+  --muted: #777;
+  --subtle: #555;
+  --faint: #999;
+  --line: #e3e3e3;
+  --control-line: #ddd;
+  --surface: #fff;
+  --image-bg: #f1f3f5;
+  --blue: #1e88e5;
+  --overlay: rgb(0 0 0 / 0.55);
+  --shadow-card: 0 0.25rem 1rem rgb(0 0 0 / 0.08);
+  --shadow-modal: 0 1rem 3rem rgb(0 0 0 / 0.25);
 
-.sectionHead {
+  /* typography */
+  --font-body: var(--font-montserrat), Montserrat, system-ui, sans-serif;
+  --text-title: clamp(1.8rem, 4.5vw, 2.6rem);
+  --text-group: 1.05rem;
+  --text-option: 0.8rem;
+  --text-count: 0.75rem;
+  --text-label: 0.7rem;
+  --text-name: 0.85rem;
+  --text-desc: 0.65rem;
+  --text-price: 0.75rem;
+  --text-btn: 0.65rem;
+  --text-tag: 0.55rem;
+  --text-modal-title: clamp(1.4rem, 3vw, 2rem);
+  --text-modal-price: 1.25rem;
+  --text-modal-body: 0.85rem;
+  --text-modal-note: 0.72rem;
+  --weight-title: 700;
+  --weight-strong: 600;
+  --weight-medium: 500;
+  --track-title: 0.18em;
+  --track-label: 0.08em;
+  --track-btn: 0.06em;
+  --line-height-body: 1.5;
+  --desc-lines: 3;
+
+  /* layout */
+  --page-max: 76rem;
+  --page-pad-x: clamp(1rem, 5vw, 4rem);
+  --page-pad-top: 2rem;
+  --page-pad-bottom: 4rem;
+  --sidebar-w: 12rem;
+  --layout-gap: clamp(1.5rem, 4vw, 3rem);
+  --block-gap: 1.5rem;
+  --group-gap: 1.5rem;
+  --option-gap: 0.5rem;
+  --card-gap: 1.25rem;
+  --card-min: 15rem;
+  --card-pad: 0.75rem;
+  --sticky-top: 1rem;
+  --modal-max: 56rem;
+  --modal-pad: 2rem;
+  --modal-gap: 1rem;
+  --z-modal: 1000;
+
+  /* shapes + motion */
+  --hairline: 1px;
+  --card-radius: 0.5rem;
+  --control-radius: 0.25rem;
+  --checkbox-size: 1rem;
+  --btn-pad-y: 0.45rem;
+  --btn-pad-x: 0.9rem;
+  --ctrl-size: 2.25rem;
+  --focus-width: 2px;
+  --focus-offset: 2px;
+  --lift: -0.125rem;
+  --transition: 0.2s ease;
+
+  font-family: var(--font-body);
+  color: var(--ink);
+  background: var(--surface);
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: var(--page-pad-top) var(--page-pad-x) var(--page-pad-bottom);
+
+  display: grid;
+  grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
+  grid-template-areas:
+    "sidebar header"
+    "sidebar grid";
+  column-gap: var(--layout-gap);
+  row-gap: var(--block-gap);
+  align-items: start;
+}
+
+/* ------------------------------------------------------------------ */
+/* Title bar                                                          */
+/* ------------------------------------------------------------------ */
+.headerBar {
+  grid-area: header;
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  gap: var(--modal-gap);
 }
 
-.count {
-  font-size: 0.9em;
-  font-weight: normal;
-  color: #777;
-  margin-left: 6px;
+.mainTitle {
+  margin: 0;
+  font-size: var(--text-title);
+  font-weight: var(--weight-title);
+  letter-spacing: var(--track-title);
 }
 
-/* Filter Groups */
+.headerMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--modal-gap);
+}
+
+.resultCount {
+  color: var(--muted);
+  font-size: var(--text-count);
+}
+
+.sortLabel {
+  font-size: var(--text-label);
+  font-weight: var(--weight-strong);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+}
+
+.sortSelect {
+  padding: var(--btn-pad-y) var(--btn-pad-x);
+  border: var(--hairline) solid var(--control-line);
+  border-radius: var(--control-radius);
+  background: var(--surface);
+  color: inherit;
+  font: inherit;
+  font-size: var(--text-count);
+  cursor: pointer;
+}
+
+/* ------------------------------------------------------------------ */
+/* Filter sidebar                                                     */
+/* ------------------------------------------------------------------ */
+.sidebarSection {
+  grid-area: sidebar;
+  position: sticky;
+  top: var(--sticky-top);
+}
+
+.filters {
+  display: grid;
+  gap: var(--group-gap);
+}
 
 .filterGroup {
-  margin-bottom: 20px;
+  display: grid;
+  gap: var(--option-gap);
+  align-content: start;
 }
 
 .filterTitle {
-  display: block;
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: #555;
-  margin-bottom: 8px;
-}
-
-.typeOptions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.typeOption {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 36px;
-  padding: 0 16px;
-  background-color: #fff;
-  border: 1px solid #e2e2e2;
-  border-radius: 4px;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.typeOption:hover {
-  border-color: #c9a82e;
-  background-color: #fcfbfa;
-}
-
-/* Product Grid */
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 24px;
-  list-style: none;
-  padding: 0;
   margin: 0;
+  font-size: var(--text-group);
+  font-weight: var(--weight-strong);
 }
 
-/* Product Cards */
+.filterOptions {
+  display: grid;
+  gap: var(--option-gap);
+}
+
+.filterOption {
+  display: flex;
+  align-items: center;
+  gap: var(--option-gap);
+  font-size: var(--text-option);
+  cursor: pointer;
+}
+
+.filterOption input {
+  flex: none;
+  width: var(--checkbox-size);
+  height: var(--checkbox-size);
+  margin: 0;
+  accent-color: var(--dark);
+  cursor: pointer;
+}
+
+.priceRange {
+  display: flex;
+  align-items: center;
+  gap: var(--option-gap);
+}
+
+.priceInput {
+  width: 100%;
+  min-width: 0;
+  padding: var(--btn-pad-y) var(--option-gap);
+  border: var(--hairline) solid var(--control-line);
+  border-radius: var(--control-radius);
+  background: var(--surface);
+  color: inherit;
+  font: inherit;
+  font-size: var(--text-count);
+}
+
+/* ------------------------------------------------------------------ */
+/* Product grid + cards                                               */
+/* ------------------------------------------------------------------ */
+.grid {
+  grid-area: grid;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--card-min), 1fr));
+  gap: var(--card-gap);
+  min-width: 0;
+}
+
+.emptyMsg {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--subtle);
+  font-size: var(--text-modal-body);
+}
 
 .card {
   display: flex;
   flex-direction: column;
-  background: #ffffff;
-  border: 1px solid #eaeaea;
-  border-radius: 8px;
   overflow: hidden;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: var(--hairline) solid var(--amber);
+  border-radius: var(--card-radius);
+  background: var(--surface);
+  transition: transform var(--transition), box-shadow var(--transition);
 }
 
 .card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  transform: translateY(var(--lift));
+  box-shadow: var(--shadow-card);
 }
 
-.imageWrap {
+.imageWrapper {
+  position: relative;
   width: 100%;
   aspect-ratio: 1 / 1;
-  background-color: #f7f7f7;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   overflow: hidden;
+  background: var(--image-bg);
 }
 
-.imageWrap img {
+.productImage {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  font-size: 0; /* a broken image never spills its alt text over the card */
 }
 
-.cardBody {
-  display: flex;
-  flex-direction: column;
+.tagBadge {
+  position: absolute;
+  top: var(--option-gap);
+  right: var(--option-gap);
+  padding: 0.15rem var(--option-gap);
+  border-radius: var(--control-radius);
+  background: var(--gold);
+  color: var(--on-gold);
+  font-size: var(--text-tag);
+  font-weight: var(--weight-strong);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+}
+
+.content {
   flex: 1;
-  padding: 16px;
+  display: grid;
+  gap: 0.25rem;
+  align-content: start;
+  padding: var(--card-pad) var(--card-pad) 0;
 }
 
-.cardBody h3 {
-  font-size: 16px;
-  font-weight: 600;
-  margin: 0 0 6px 0;
-  color: #171717;
+.productName {
+  margin: 0;
+  font-size: var(--text-name);
+  font-weight: var(--weight-strong);
 }
 
-.cardFoot {
+.description {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: var(--text-desc);
+  line-height: var(--line-height-body);
+  -webkit-line-clamp: var(--desc-lines);
+  -webkit-box-orient: vertical;
+}
+
+.footerRow {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  margin-top: auto;
-  padding-top: 14px;
+  align-items: center;
+  gap: var(--option-gap);
+  padding: var(--card-pad);
 }
 
-.price {
-  font-size: 15px;
-  font-weight: 600;
-  color: #171717;
+.priceBlock {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  color: var(--amber);
 }
 
-/* Add Button State */
+.fromLabel {
+  font-size: var(--text-btn);
+  letter-spacing: var(--track-label);
+}
 
-.addBtn {
-  background: #000;
-  color: #fff;
-  border: 1px solid #000;
-  padding: 8px 16px;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  border-radius: 4px;
+.priceValue {
+  font-size: var(--text-price);
+  font-weight: var(--weight-strong);
+}
+
+.customizeBtn {
+  padding: var(--btn-pad-y) var(--btn-pad-x);
+  border: var(--hairline) solid var(--dark);
+  background: var(--dark);
+  color: var(--on-dark);
+  font: inherit;
+  font-size: var(--text-btn);
+  font-weight: var(--weight-medium);
+  letter-spacing: var(--track-btn);
   cursor: pointer;
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  transition: background-color var(--transition);
 }
 
-.addBtn:hover {
-  background: #222;
+.customizeBtn:hover {
+  background: var(--dark-hover);
 }
 
-.added {
-  background: #2e7d32;
-  border-color: #2e7d32;
-  color: #ffffff;
+/* ------------------------------------------------------------------ */
+/* Customize modal                                                    */
+/* ------------------------------------------------------------------ */
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: grid;
+  place-items: center;
+  padding: var(--modal-gap);
+  background: var(--overlay);
 }
 
-/* Responsive Styles */
+.modalContent {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: 100%;
+  max-width: var(--modal-max);
+  max-height: 100%;
+  overflow: auto;
+  border-radius: var(--card-radius);
+  background: var(--surface);
+  box-shadow: var(--shadow-modal);
+}
 
-@media (max-width: 600px) {
-  .grid {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 14px;
+.closeModalX {
+  position: absolute;
+  top: var(--option-gap);
+  right: var(--option-gap);
+  z-index: 1;
+  width: var(--ctrl-size);
+  height: var(--ctrl-size);
+  border: 0;
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+
+.modalGallery {
+  min-width: 0;
+}
+
+.modalMainImageWrapper {
+  width: 100%;
+  height: 100%;
+  min-height: 16rem;
+  overflow: hidden;
+  background: var(--image-bg);
+}
+
+.modalMainImage {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  font-size: 0;
+}
+
+.modalDetails {
+  display: grid;
+  gap: var(--modal-gap);
+  align-content: start;
+  padding: var(--modal-pad);
+  min-width: 0;
+}
+
+.breadcrumb {
+  color: var(--muted);
+  font-size: var(--text-label);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+}
+
+.modalHeading {
+  margin: 0;
+  font-size: var(--text-modal-title);
+  font-weight: var(--weight-strong);
+}
+
+.modalSubtitle {
+  margin: 0;
+  color: var(--subtle);
+  font-size: var(--text-modal-body);
+  line-height: var(--line-height-body);
+}
+
+.modalPrice {
+  font-size: var(--text-modal-price);
+  font-weight: var(--weight-title);
+}
+
+.modalDivider {
+  width: 100%;
+  margin: 0;
+  border: 0;
+  border-top: var(--hairline) solid var(--rule);
+}
+
+.optionGroup {
+  display: grid;
+  gap: var(--option-gap);
+}
+
+.optionLabel,
+.qtyLabel {
+  font-size: var(--text-label);
+  font-weight: var(--weight-strong);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+}
+
+.sizeButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--option-gap);
+}
+
+.sizeBtn {
+  padding: var(--btn-pad-y) var(--btn-pad-x);
+  border: var(--hairline) solid var(--control-line);
+  border-radius: var(--control-radius);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--text-label);
+  letter-spacing: var(--track-btn);
+  cursor: pointer;
+  transition: background-color var(--transition), color var(--transition), border-color var(--transition);
+}
+
+.sizeBtn:hover {
+  border-color: var(--amber);
+}
+
+.selectedSize,
+.selectedSize:hover {
+  border-color: var(--dark);
+  background: var(--dark);
+  color: var(--on-dark);
+}
+
+.actionRow {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--modal-gap);
+}
+
+.qtyContainer {
+  display: grid;
+  gap: var(--option-gap);
+}
+
+.qtyControls {
+  display: inline-flex;
+  align-items: center;
+  border: var(--hairline) solid var(--control-line);
+  border-radius: var(--control-radius);
+}
+
+.qtyControls button {
+  width: var(--ctrl-size);
+  height: var(--ctrl-size);
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.qtyControls span {
+  min-width: var(--ctrl-size);
+  text-align: center;
+  font-size: var(--text-option);
+  font-weight: var(--weight-strong);
+}
+
+.addToBagBtn {
+  flex: 1;
+  height: var(--ctrl-size);
+  padding: 0 var(--btn-pad-x);
+  border: var(--hairline) solid var(--dark);
+  background: var(--dark);
+  color: var(--on-dark);
+  font: inherit;
+  font-size: var(--text-label);
+  letter-spacing: var(--track-btn);
+  cursor: pointer;
+  transition: background-color var(--transition);
+}
+
+.addToBagBtn:hover {
+  background: var(--dark-hover);
+}
+
+.productMetaNotes {
+  display: grid;
+  gap: var(--option-gap);
+}
+
+.noteItem {
+  display: flex;
+  gap: var(--option-gap);
+  color: var(--subtle);
+  font-size: var(--text-modal-note);
+  line-height: var(--line-height-body);
+}
+
+/* ------------------------------------------------------------------ */
+/* Keyboard focus                                                     */
+/* ------------------------------------------------------------------ */
+.customizeBtn:focus-visible,
+.sizeBtn:focus-visible,
+.addToBagBtn:focus-visible,
+.closeModalX:focus-visible,
+.qtyControls button:focus-visible,
+.sortSelect:focus-visible,
+.priceInput:focus-visible,
+.filterOption input:focus-visible {
+  outline: var(--focus-width) solid var(--blue);
+  outline-offset: var(--focus-offset);
+}
+
+/* ------------------------------------------------------------------ */
+/* Narrow screens                                                     */
+/* ------------------------------------------------------------------ */
+@media (max-width: 860px) {
+  .container {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto;
+    grid-template-areas:
+      "header"
+      "sidebar"
+      "grid";
   }
 
-  .cardBody {
-    padding: 12px;
+  .sidebarSection {
+    position: static;
   }
 
-  .cardBody h3 {
-    font-size: 14px;
+  .filters {
+    grid-template-columns: repeat(auto-fit, minmax(var(--sidebar-w), 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .container {
+    --card-min: 9rem;
+    --card-gap: 0.75rem;
+    --modal-pad: 1.25rem;
   }
 
-  .typeOptions {
-    gap: 6px;
+  .modalContent {
+    grid-template-columns: minmax(0, 1fr);
   }
 
-  .typeOption {
-    height: 32px;
-    padding: 0 12px;
-    font-size: 12px;
+  .modalMainImageWrapper {
+    min-height: 0;
+    aspect-ratio: 1 / 1;
   }
 }

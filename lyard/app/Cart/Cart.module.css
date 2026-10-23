@@ -1,53 +1,132 @@
+/* ------------------------------------------------------------------ */
+/* Cart page                                                          */
+/* Every colour, size and spacing value is a variable defined once in */
+/* .page below. Change the look there; nothing further down is        */
+/* hard-coded. (Media-query widths are the only literals, because CSS */
+/* does not allow variables inside @media conditions.)                */
+/* ------------------------------------------------------------------ */
 .page {
-  max-width: 1100px;
+  /* colours (also used by the order-summary card from checkout.module.css) */
+  --gold: #e6c200;
+  --amber: #d9a21b;
+  --rule: #e6d9a6;
+  --ink: #111;
+  --muted: #777;
+  --subtle: #555;
+  --faint: #999;
+  --line: #e3e3e3;
+  --control-line: #ddd;
+  --surface: #fff;
+  --thumb-bg: #f1f3f5;
+  --blue: #1e88e5;
+  --danger: #a32020;
+  --success: #1b6e3a;
+
+  /* typography */
+  --font-body: var(--font-montserrat), Montserrat, system-ui, sans-serif;
+  --text-title: clamp(2rem, 6vw, 3.2rem);
+  --text-name: clamp(1.1rem, 2.4vw, 1.45rem);
+  --text-total: 1.25rem;
+  --text-link: 1.15rem;
+  --text-body: 0.9rem;
+  --text-qty: 0.8rem;
+  --text-head: 0.75rem;
+  --text-sub: 0.7rem;
+  --text-small: 0.68rem;
+  --text-meta: 0.65rem;
+  --weight-title: 700;
+  --weight-name: 500;
+  --weight-strong: 600;
+  --weight-total: 700;
+  --track-title: 0.18em;
+  --track-head: 0.2em;
+  --track-event: 0.1em;
+  --track-link: 0.06em;
+  --track-total: 0.02em;
+
+  /* layout */
+  --page-max: 76rem;
+  --page-pad-x: clamp(1rem, 5vw, 4rem);
+  --page-pad-top: 2rem;
+  --page-pad-bottom: 4rem;
+  --layout-gap: clamp(1.5rem, 5vw, 4rem);
+  --summary-min: 16rem;
+  --summary-max: 22rem;
+  --sticky-top: 1rem;
+  --col-qty: 7.5rem;
+  --col-trash: 2rem;
+  --col-total: 6.5rem;
+  --col-gap: 1rem;
+  --row-pad: 1.25rem;
+  --block-gap: 1.5rem;
+
+  /* shapes */
+  --hairline: 1px;
+  --accent-line: 2px;
+  --thumb-size: 4.5rem;
+  --thumb-radius: 0.75rem;
+  --stepper-width: 6.25rem;
+  --stepper-btn-w: 2rem;
+  --stepper-btn-h: 2.1rem;
+  --focus-width: 2px;
+  --focus-offset: 2px;
+  --underline-offset: 4px;
+  --disabled-opacity: 0.55;
+
+  font-family: var(--font-body);
+  color: var(--ink);
+  background: var(--surface);
+  max-width: var(--page-max);
   margin: 0 auto;
-  padding: 2.5rem 1.5rem 4rem;
-  color: #171717;
-  border-top: 2px solid #e6c200;
+  padding: var(--page-pad-top) var(--page-pad-x) var(--page-pad-bottom);
 }
 
 .title {
-  font-size: 28px;
-  font-weight: 600;
-  letter-spacing: 2px;
-  margin: 0 0 6px;
+  margin: 0;
+  font-size: var(--text-title);
+  font-weight: var(--weight-title);
+  letter-spacing: var(--track-title);
 }
 
 .sub {
-  color: #777;
-  font-size: 13px;
-  margin: 0 0 2rem;
+  margin: 0.35rem 0 2rem;
+  color: var(--muted);
+  font-size: var(--text-sub);
 }
 
 .layout {
   display: grid;
-  grid-template-columns: 1fr 350px;
-  gap: 50px;
+  grid-template-columns: minmax(0, 1fr) minmax(var(--summary-min), var(--summary-max));
+  gap: var(--layout-gap);
   align-items: start;
 }
 
-.empty {
-  font-size: 15px;
-  margin: 0 0 1rem;
-}
-
-/* Table */
-
+/* ------------------------------------------------------------------ */
+/* Table                                                              */
+/* ------------------------------------------------------------------ */
 .head,
 .row {
   display: grid;
-  grid-template-columns: 1fr 130px 40px 100px;
-  gap: 16px;
+  grid-template-columns: minmax(0, 1fr) var(--col-qty) var(--col-trash) var(--col-total);
   align-items: center;
+  column-gap: var(--col-gap);
 }
 
 .head {
-  font-size: 11px;
+  padding-bottom: 0.6rem;
+  border-bottom: var(--hairline) solid var(--rule);
+  font-size: var(--text-head);
+  font-weight: var(--weight-name);
+  letter-spacing: var(--track-head);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: #555;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #e5d89c;
+}
+
+.head span:nth-child(2) {
+  text-align: center;
+}
+
+.head span:last-child {
+  text-align: right;
 }
 
 .table {
@@ -57,180 +136,225 @@
 }
 
 .row {
-  padding: 16px 0;
-  border-bottom: 1px solid #eee;
+  grid-template-areas: "product qty trash total";
+  padding: var(--row-pad) 0;
+  border-bottom: var(--hairline) solid var(--rule);
 }
 
 .product {
+  grid-area: product;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: var(--col-gap);
   min-width: 0;
 }
 
 .thumb {
-  width: 64px;
-  height: 64px;
-  flex-shrink: 0;
-  border-radius: 6px;
-  background: #eee;
+  flex: none;
+  width: var(--thumb-size);
+  height: var(--thumb-size);
   overflow: hidden;
+  border: var(--accent-line) solid var(--amber);
+  border-radius: var(--thumb-radius);
+  background: var(--thumb-bg);
 }
 
 .thumb img {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  display: block;
+  font-size: 0; /* a broken image never spills its alt text over the row */
 }
 
 .name {
-  margin: 0 0 4px;
-  font-size: 14px;
-  font-weight: 600;
+  margin: 0;
+  font-size: var(--text-name);
+  font-weight: var(--weight-name);
+  line-height: 1.2;
 }
 
 .meta {
-  margin: 0;
-  font-size: 12px;
-  color: #777;
+  margin: 0.5rem 0 0;
+  color: var(--muted);
+  font-size: var(--text-meta);
 }
 
 /* Quantity */
-
 .qtyCol {
-  display: flex;
-  justify-content: center;
+  grid-area: qty;
+  display: grid;
+  justify-items: center;
+}
+
+.qtyText {
+  font-size: var(--text-qty);
+  color: var(--subtle);
 }
 
 .stepper {
   display: inline-flex;
   align-items: center;
-  border: 1px solid #d7d7d7;
+  justify-content: space-between;
+  width: var(--stepper-width);
+  border: var(--hairline) solid var(--control-line);
+  background: var(--surface);
 }
 
 .stepper button {
-  width: 32px;
-  height: 32px;
-  border: none;
-  background: #fff;
-  font-size: 16px;
+  width: var(--stepper-btn-w);
+  height: var(--stepper-btn-h);
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 1rem;
   cursor: pointer;
-}
-
-.stepper button:hover {
-  background: #f5f5f5;
 }
 
 .stepper output {
-  min-width: 32px;
-  text-align: center;
-  font-size: 13px;
+  font-size: var(--text-sub);
+  font-weight: var(--weight-strong);
 }
 
-.qtyText {
-  font-size: 13px;
-  color: #555;
-}
-
-/* Remove + totals */
-
+/* Remove + line total */
 .trashCol {
-  display: flex;
-  justify-content: center;
+  grid-area: trash;
+  display: grid;
+  justify-items: center;
 }
 
 .trash {
-  border: none;
+  display: inline-flex;
+  padding: 0.25rem;
+  border: 0;
   background: none;
-  color: #777;
+  color: var(--subtle);
   cursor: pointer;
-  padding: 4px;
-}
-
-.trash:hover {
-  color: #000;
 }
 
 .totalCol {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  font-size: 14px;
-  font-weight: 600;
+  grid-area: total;
+  display: grid;
+  justify-items: end;
+  font-size: var(--text-total);
+  font-weight: var(--weight-total);
+  letter-spacing: var(--track-total);
 }
 
 .struck {
-  font-weight: 400;
-  font-size: 12px;
-  color: #999;
   text-decoration: line-through;
 }
 
-/* Event orders */
-
+/* ------------------------------------------------------------------ */
+/* Event / bundle orders                                              */
+/* ------------------------------------------------------------------ */
 .eventBlock {
-  margin-top: 28px;
+  margin-top: var(--block-gap);
 }
 
 .eventHead {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  font-size: 13px;
-  letter-spacing: 0.4px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #d6b334;
+  align-items: baseline;
+  gap: var(--col-gap);
+  padding-bottom: 0.5rem;
+  border-bottom: var(--hairline) solid var(--rule);
+  font-size: var(--text-small);
+  font-weight: var(--weight-strong);
+  letter-spacing: var(--track-event);
+  text-transform: uppercase;
 }
 
 .eventRemove {
-  border: none;
+  padding: 0;
+  border: 0;
   background: none;
-  font-size: 12px;
+  color: var(--faint);
+  font: inherit;
+  font-size: var(--text-small);
+  letter-spacing: 0;
   text-decoration: underline;
+  text-transform: none;
   cursor: pointer;
 }
 
-/* Links + summary */
+/* ------------------------------------------------------------------ */
+/* Empty state, links, summary                                        */
+/* ------------------------------------------------------------------ */
+.empty {
+  margin: 0 0 1rem;
+  padding: var(--block-gap) 0;
+  border-top: var(--hairline) solid var(--rule);
+  border-bottom: var(--hairline) solid var(--rule);
+  font-size: var(--text-body);
+  color: var(--subtle);
+}
 
 .continue {
   display: inline-block;
-  margin-top: 24px;
-  font-size: 13px;
-  color: #171717;
+  margin-top: var(--row-pad);
+  color: var(--ink);
+  font-size: var(--text-link);
+  letter-spacing: var(--track-link);
   text-decoration: underline;
+  text-underline-offset: var(--underline-offset);
 }
 
 .summaryCol {
   position: sticky;
-  top: 20px;
+  top: var(--sticky-top);
 }
 
-/* Mobile */
+.disabled {
+  opacity: var(--disabled-opacity);
+  pointer-events: none;
+}
 
-@media (max-width: 800px) {
+/* ------------------------------------------------------------------ */
+/* Keyboard focus                                                     */
+/* ------------------------------------------------------------------ */
+.stepper button:focus-visible,
+.trash:focus-visible,
+.eventRemove:focus-visible,
+.continue:focus-visible {
+  outline: var(--focus-width) solid var(--blue);
+  outline-offset: var(--focus-offset);
+}
+
+/* ------------------------------------------------------------------ */
+/* Narrow screens                                                     */
+/* ------------------------------------------------------------------ */
+@media (max-width: 860px) {
   .layout {
     grid-template-columns: 1fr;
-    gap: 30px;
   }
 
+  .summaryCol {
+    position: static;
+  }
+
+  /* checkout.module.css moves its summary to the top on small screens;
+     keep the cart summary below the items instead */
+  .layout > .summaryCol {
+    order: 0;
+  }
+}
+
+@media (max-width: 640px) {
   .head {
     display: none;
   }
 
   .row {
     grid-template-columns: 1fr auto;
-  }
-
-  .product {
-    grid-column: 1 / -1;
+    grid-template-areas:
+      "product trash"
+      "qty total";
+    row-gap: 0.9rem;
   }
 
   .qtyCol {
-    justify-content: flex-start;
-  }
-
-  .trashCol {
-    display: none;
+    justify-items: start;
   }
 }

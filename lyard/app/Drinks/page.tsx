@@ -5,7 +5,6 @@ import type { Product } from "@/app/types/models";
 import { useCart } from "@/app/context/CartContext";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-// Reuses the Cake in a Can page's styles so both pages look identical.
 import styles from "./drinks.module.css";
 import {
   availableOptions,
@@ -161,15 +160,15 @@ export default function DrinksPage() {
         <header className={styles.headerBar}>
           <h1 className={styles.mainTitle}>DRINKS</h1>
           <div className={styles.headerMeta}>
-            <span style={{ fontSize: "0.85rem", color: "#666" }}>Showing {visible.length} items</span>
-            <label htmlFor="drink-sort" style={{ fontSize: "0.8rem", fontWeight: 600, letterSpacing: "0.5px" }}>
-              SORT BY:{" "}
+            <span className={styles.resultCount}>Showing {visible.length} items</span>
+            <label htmlFor="drink-sort" className={styles.sortLabel}>
+              SORT BY:
             </label>
             <select
               id="drink-sort"
+              className={styles.sortSelect}
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as SortOption)}
-              style={{ padding: "0.4rem 0.8rem", border: "1px solid #ccc", borderRadius: 4, background: "#fff" }}
             >
               {SORTS.map((s) => (
                 <option key={s} value={s}>
@@ -180,17 +179,17 @@ export default function DrinksPage() {
           </div>
         </header>
 
-        {/* Filter sidebar (same markup as the main page sidebar, drinks options only) */}
-        <aside className={styles.sidebarSection}>
-          <aside>
+        {/* Filter sidebar (drinks options only) */}
+        <aside className={styles.sidebarSection} aria-label="Filters">
+          <div className={styles.filters}>
             {groups.map(
               (g) =>
                 g.items.length > 0 && (
-                  <div key={g.key}>
-                    <h3>{g.title}</h3>
-                    <div>
+                  <div key={g.key} className={styles.filterGroup}>
+                    <h3 className={styles.filterTitle}>{g.title}</h3>
+                    <div className={styles.filterOptions}>
                       {g.items.map((item) => (
-                        <label key={item.value}>
+                        <label key={item.value} className={styles.filterOption}>
                           <input
                             type="checkbox"
                             checked={(filters[g.key] as string[]).includes(item.value)}
@@ -201,23 +200,25 @@ export default function DrinksPage() {
                       ))}
 
                       {g.key === "prices" && (
-                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                        <div className={styles.priceRange}>
                           <input
                             type="number"
+                            className={styles.priceInput}
                             placeholder="Min"
+                            aria-label="Minimum price"
                             min={0}
                             value={minPrice}
                             onChange={(e) => setMinPrice(e.target.value)}
-                            style={{ width: "100%", padding: "0.4rem 0.6rem", border: "1px solid #ccc", borderRadius: 4 }}
                           />
                           <span>-</span>
                           <input
                             type="number"
+                            className={styles.priceInput}
                             placeholder="Max"
+                            aria-label="Maximum price"
                             min={0}
                             value={maxPrice}
                             onChange={(e) => setMaxPrice(e.target.value)}
-                            style={{ width: "100%", padding: "0.4rem 0.6rem", border: "1px solid #ccc", borderRadius: 4 }}
                           />
                         </div>
                       )}
@@ -225,13 +226,13 @@ export default function DrinksPage() {
                   </div>
                 )
             )}
-          </aside>
+          </div>
         </aside>
 
         {/* Product grid */}
         <div className={styles.grid}>
           {visible.length === 0 ? (
-            <p>No drinks match those filters.</p>
+            <p className={styles.emptyMsg}>No drinks match those filters.</p>
           ) : (
             visible.map((item) => <ProductCard key={item.productID} product={item} onCustomize={openModal} />)
           )}
@@ -240,7 +241,13 @@ export default function DrinksPage() {
         {/* Customize modal */}
         {selected && (
           <div className={styles.modalBackdrop} onClick={closeModal}>
-            <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <div
+              className={styles.modalContent}
+              role="dialog"
+              aria-modal="true"
+              aria-label={`Customize ${selected.name}`}
+              onClick={(e) => e.stopPropagation()}
+            >
               <button type="button" className={styles.closeModalX} onClick={closeModal} aria-label="Close">
                 ✕
               </button>
@@ -268,6 +275,7 @@ export default function DrinksPage() {
                         key={size.label}
                         type="button"
                         className={`${styles.sizeBtn} ${selectedSize === size.label ? styles.selectedSize : ""}`}
+                        aria-pressed={selectedSize === size.label}
                         onClick={() => setSelectedSize(size.label)}
                       >
                         {size.label.toUpperCase()} · ${size.price}
@@ -280,11 +288,11 @@ export default function DrinksPage() {
                   <div className={styles.qtyContainer}>
                     <span className={styles.qtyLabel}>QTY</span>
                     <div className={styles.qtyControls}>
-                      <button type="button" onClick={() => setQuantity(Math.max(1, quantity - 1))}>
+                      <button type="button" aria-label="Decrease quantity" onClick={() => setQuantity(Math.max(1, quantity - 1))}>
                         -
                       </button>
                       <span>{quantity}</span>
-                      <button type="button" onClick={() => setQuantity(quantity + 1)}>
+                      <button type="button" aria-label="Increase quantity" onClick={() => setQuantity(quantity + 1)}>
                         +
                       </button>
                     </div>
