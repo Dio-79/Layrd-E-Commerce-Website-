@@ -1,3 +1,8 @@
+/* ------------------------------------------------------------------ */
+/* "Showing N items" + sort dropdown                                  */
+/* Reads its variables from .container in mainpage.module.css, which  */
+/* wraps this component. Nothing here is hard-coded.                  */
+/* ------------------------------------------------------------------ */
 .container {
   display: flex;
   flex-direction: column;
@@ -6,41 +11,43 @@
 
 .headerBar {
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-end;
   align-items: center;
   width: 100%;
-  gap: 1.5rem;
+  gap: var(--header-gap);
 }
 
 .itemCount {
-  font-size: 0.85rem;
-  color: #666;
+  color: var(--muted);
+  font-size: var(--text-count);
 }
 
 .sortGroup {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--option-gap);
 }
 
 .sortLabel {
-  font-size: 0.8rem;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  color: #111;
+  font-size: var(--text-label);
+  font-weight: var(--weight-strong);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
 }
 
 .sortSelect {
-  padding: 0.4rem 0.8rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 0.85rem;
-  background: white;
+  padding: var(--btn-pad-y) var(--btn-pad-x);
+  border: var(--hairline) solid var(--control-line);
+  border-radius: var(--control-radius);
+  background: var(--surface);
+  color: inherit;
+  font: inherit;
+  font-size: var(--text-count);
   cursor: pointer;
-  color: #111;
 }
 
-.sortSelect:focus {
-  outline: none;
-  border-color: #111;
+.sortSelect:focus-visible {
+  outline: var(--focus-width) solid var(--blue);
+  outline-offset: var(--focus-offset);
 }

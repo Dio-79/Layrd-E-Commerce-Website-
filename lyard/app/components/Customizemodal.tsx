@@ -19,18 +19,20 @@ export type CustomizableProduct = {
   description: string;
   price: number;
   imageUrl: string;
+  /** Extra photos. With two or more, thumbnails appear under the main image. */
+  images?: string[];
   sizes: string[];
 };
 
 type Props = {
   product: CustomizableProduct;
-  /** Small trail shown above the name, e.g. "Featured" or "Drinks" */
+  /** Small trail shown above the name, e.g. "Featured" or "Cakes" */
   breadcrumb?: string;
   onClose: () => void;
 };
 
 /**
- * Same customize popup as the Drinks page: pick a size, pick a quantity,
+ * Customize popup shared by every page: pick a size, pick a quantity,
  * add to the real cart. Render it only while a product is selected:
  *   {selected && <CustomizeModal product={selected} onClose={() => setSelected(null)} />}
  */
@@ -49,6 +51,12 @@ export default function CustomizeModal({ product, breadcrumb = "Shop", onClose }
     return fallback?.label ?? product.sizes[0] ?? "";
   });
   const [quantity, setQuantity] = useState(1);
+
+  const gallery = useMemo(
+    () => (product.images && product.images.length > 0 ? product.images : [product.imageUrl]),
+    [product]
+  );
+  const [activeImage, setActiveImage] = useState(gallery[0]);
 
   // Esc closes the popup
   useEffect(() => {
@@ -88,9 +96,29 @@ export default function CustomizeModal({ product, breadcrumb = "Shop", onClose }
           ✕
         </button>
 
-        <div className={styles.imageWrap}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={product.imageUrl} alt={product.name} className={styles.image} />
+        <div className={styles.gallery}>
+          <div className={styles.imageWrap}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={activeImage || product.imageUrl} alt={product.name} className={styles.image} />
+          </div>
+
+          {gallery.length > 1 && (
+            <div className={styles.thumbs}>
+              {gallery.map((url, i) => (
+                <button
+                  key={`${url}-${i}`}
+                  type="button"
+                  className={`${styles.thumb} ${activeImage === url ? styles.activeThumb : ""}`}
+                  aria-label={`Show photo ${i + 1} of ${product.name}`}
+                  aria-pressed={activeImage === url}
+                  onClick={() => setActiveImage(url)}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={url} alt="" />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className={styles.details}>

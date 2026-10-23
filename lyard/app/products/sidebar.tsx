@@ -2,7 +2,7 @@
 
 import { useProducts } from "@/app/context/productcontext";
 import { FilterState } from "@/app/types/models";
-import React from "react";
+import styles from "./sidebar.module.css";
 
 export default function Sidebar() {
   // Grab filters and setFilters directly from context
@@ -38,13 +38,13 @@ export default function Sidebar() {
   };
 
   return (
-    <aside>
+    <div className={styles.sidebar}>
       {/* Category Section */}
-      <div>
-        <h3>Categories</h3>
-        <div>
+      <div className={styles.section}>
+        <h3 className={styles.sectionTitle}>Categories</h3>
+        <div className={styles.optionsGroup}>
           {categoryOptions.map((cat) => (
-            <label key={cat}>
+            <label key={cat} className={styles.checkboxLabel}>
               <input
                 type="checkbox"
                 checked={filters.categories.includes(cat)}
@@ -57,11 +57,11 @@ export default function Sidebar() {
       </div>
 
       {/* Price Section */}
-      <div>
-        <h3>Price</h3>
-        <div>
+      <div className={styles.section}>
+        <h3 className={styles.sectionTitle}>Price</h3>
+        <div className={styles.optionsGroup}>
           {priceOptions.map((opt) => (
-            <label key={opt.id}>
+            <label key={opt.id} className={styles.checkboxLabel}>
               <input
                 type="checkbox"
                 checked={filters.priceRanges.includes(opt.id)}
@@ -72,17 +72,21 @@ export default function Sidebar() {
           ))}
 
           {/* Custom Min / Max Price Inputs */}
-          <div>
+          <div className={styles.priceInputs}>
             <input
               type="number"
+              className={styles.priceInput}
               placeholder="Min"
+              aria-label="Minimum price"
               value={filters.minPrice}
               onChange={(e) => handlePriceInputChange("minPrice", e.target.value)}
             />
-            <span>-</span>
+            <span className={styles.priceDivider}>-</span>
             <input
               type="number"
+              className={styles.priceInput}
               placeholder="Max"
+              aria-label="Maximum price"
               value={filters.maxPrice}
               onChange={(e) => handlePriceInputChange("maxPrice", e.target.value)}
             />
@@ -91,11 +95,11 @@ export default function Sidebar() {
       </div>
 
       {/* Size Section */}
-      <div>
-        <h3>Size</h3>
-        <div>
+      <div className={styles.section}>
+        <h3 className={styles.sectionTitle}>Size</h3>
+        <div className={styles.optionsGroup}>
           {sizeOptions.map((sz) => (
-            <label key={sz}>
+            <label key={sz} className={styles.checkboxLabel}>
               <input
                 type="checkbox"
                 checked={filters.sizes.includes(sz)}
@@ -108,11 +112,11 @@ export default function Sidebar() {
       </div>
 
       {/* Flavor Profile Section */}
-      <div>
-        <h3>Flavor Profile</h3>
-        <div>
+      <div className={styles.section}>
+        <h3 className={styles.sectionTitle}>Flavor Profile</h3>
+        <div className={styles.optionsGroup}>
           {flavorOptions.map((flavor) => (
-            <label key={flavor}>
+            <label key={flavor} className={styles.checkboxLabel}>
               <input
                 type="checkbox"
                 checked={filters.flavorProfiles.includes(flavor)}
@@ -123,6 +127,6 @@ export default function Sidebar() {
           ))}
         </div>
       </div>
-    </aside>
+    </div>
   );
 }

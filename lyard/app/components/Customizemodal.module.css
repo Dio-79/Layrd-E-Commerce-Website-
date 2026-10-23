@@ -40,6 +40,8 @@
   --gap: 1rem;
   --gap-sm: 0.5rem;
   --image-min: 16rem;
+  --thumb-size: 4.4rem;
+  --thumb-dim: 0.7;
   --ctrl-size: 2.25rem;
   --btn-pad-y: 0.45rem;
   --btn-pad-x: 0.9rem;
@@ -90,14 +92,25 @@
   cursor: pointer;
 }
 
-.imageWrap {
+/* Photos */
+.gallery {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
   min-width: 0;
+}
+
+.imageWrap {
+  position: relative;
+  flex: 1;
   min-height: var(--image-min);
   overflow: hidden;
   background: var(--image-bg);
 }
 
 .image {
+  position: absolute;
+  inset: 0;
   display: block;
   width: 100%;
   height: 100%;
@@ -105,6 +118,39 @@
   font-size: 0; /* a broken image never spills its alt text over the dialog */
 }
 
+.thumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-sm);
+  padding: 0 var(--gap-sm) var(--gap-sm);
+}
+
+.thumb {
+  width: var(--thumb-size);
+  height: var(--thumb-size);
+  padding: 0;
+  overflow: hidden;
+  border: var(--hairline) solid var(--control-line);
+  border-radius: var(--radius-sm);
+  background: var(--image-bg);
+  opacity: var(--thumb-dim);
+  cursor: pointer;
+  transition: opacity var(--transition), border-color var(--transition);
+}
+
+.thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.activeThumb {
+  border-color: var(--amber);
+  opacity: 1;
+}
+
+/* Details */
 .details {
   display: grid;
   gap: var(--gap);
@@ -255,6 +301,7 @@
 
 /* Keyboard focus */
 .close:focus-visible,
+.thumb:focus-visible,
 .sizeBtn:focus-visible,
 .qtyControls button:focus-visible,
 .addBtn:focus-visible {
@@ -274,6 +321,7 @@
   }
 
   .imageWrap {
+    flex: none;
     aspect-ratio: 1 / 1;
   }
 }

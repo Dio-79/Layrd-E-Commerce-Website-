@@ -1,68 +1,73 @@
+/* ------------------------------------------------------------------ */
+/* Filter sidebar                                                     */
+/* Reads its variables (colours, sizes, spacing) from .container in   */
+/* mainpage.module.css, which wraps this component. Nothing here is   */
+/* hard-coded.                                                        */
+/* ------------------------------------------------------------------ */
 .sidebar {
-  display: flex;
-  flex-direction: column;
-  gap: 1.75rem;
-  padding-right: 1.5rem;
-  border-right: 1px solid #eaeaea;
+  display: grid;
+  gap: var(--group-gap);
 }
 
 .section {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+  display: grid;
+  gap: var(--option-gap);
+  align-content: start;
 }
 
 .sectionTitle {
-  font-size: 0.95rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: #111;
   margin: 0;
+  font-size: var(--text-group);
+  font-weight: var(--weight-strong);
 }
 
 .optionsGroup {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  display: grid;
+  gap: var(--option-gap);
 }
 
 .checkboxLabel {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  font-size: 0.9rem;
-  color: #333;
+  gap: var(--option-gap);
+  font-size: var(--text-option);
   cursor: pointer;
 }
 
 .checkboxLabel input[type="checkbox"] {
-  accent-color: #111;
-  width: 16px;
-  height: 16px;
+  flex: none;
+  width: var(--checkbox-size);
+  height: var(--checkbox-size);
+  margin: 0;
+  accent-color: var(--dark);
   cursor: pointer;
 }
 
 .priceInputs {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
+  gap: var(--option-gap);
 }
 
 .priceInput {
   width: 100%;
-  padding: 0.4rem 0.6rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 0.85rem;
-}
-
-.priceInput:focus {
-  outline: none;
-  border-color: #111;
+  min-width: 0;
+  padding: var(--btn-pad-y) var(--option-gap);
+  border: var(--hairline) solid var(--control-line);
+  border-radius: var(--control-radius);
+  background: var(--surface);
+  color: inherit;
+  font: inherit;
+  font-size: var(--text-count);
 }
 
 .priceDivider {
-  color: #666;
+  color: var(--muted);
+}
+
+/* Keyboard focus */
+.checkboxLabel input[type="checkbox"]:focus-visible,
+.priceInput:focus-visible {
+  outline: var(--focus-width) solid var(--blue);
+  outline-offset: var(--focus-offset);
 }
