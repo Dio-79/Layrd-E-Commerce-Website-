@@ -5,7 +5,7 @@ import type { Product } from "@/app/types/models";
 import { useCart } from "@/app/context/CartContext";
 import { getSizes, getPrice } from "@/lib/catelog/dataSize";
 import { getAllergenInfo, ALLERGY_DISCLAIMER } from "@/lib/catelog/dataAllergens";
-import styles from "./CustomizeModal.module.css";
+import styles from "./Customizemodal.module.css";
 
 /* These two types are taken from the helpers themselves, so the modal always
    agrees with whatever id / product shape dataSize.ts expects. */
