@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { products } from "@/lib/catelog/data";
 import { getProductId, getProductImage, useEventOrder } from "@/app/context/EventOrdercontext";
-import { addEventOrder } from "@/lib/checkout/checkoutStore";
+import { addEventOrder } from "@/lib/check-out/checkoutStore";
 import styles from "./event.module.css";
 import { ROUTES } from "@/lib/Routes/Routes";
 

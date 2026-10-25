@@ -6,7 +6,7 @@ import { Montserrat } from "next/font/google";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import OrderConfirmation from "../components/ordercomfirmation";
-import { loadRegularOrder, type RegularOrder } from "@/lib/checkout/Orderstore";
+import { loadRegularOrder, type RegularOrder } from "@/lib/check-out/Orderstore";
 
 const montserrat = Montserrat({ subsets: ["latin"], variable: "--font-montserrat" });
 const money = (n: number) => `$${n.toFixed(2)}`;

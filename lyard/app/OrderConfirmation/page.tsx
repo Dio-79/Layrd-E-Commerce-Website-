@@ -4,8 +4,8 @@ import { Montserrat } from "next/font/google";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import OrderConfirmation from "../components/ordercomfirmation";
-import { useCheckout, useHydrated } from "@/lib/checkout/checkoutStore";
-import { formatDate, formatMoney } from "@/lib/checkout/CheckoutPricing";
+import { useCheckout, useHydrated } from "@/lib/check-out/checkoutStore";
+import { formatDate, formatMoney } from "@/lib/check-out/CheckoutPricing";
 import { ROUTES } from "@/lib/Routes/Routes";
 
 const montserrat = Montserrat({ subsets: ["latin"], variable: "--font-montserrat" });

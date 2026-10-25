@@ -9,14 +9,14 @@ import summaryStyles from "../checkout/checkout.module.css";
 import { TotalsList, useOrderLines } from "../checkout/order";
 import { useCart } from "@/app/context/CartContext";
 import { ROUTES } from "@/lib/Routes/Routes";
-import { removeEventOrder, useCheckout } from "@/lib/checkout/checkoutStore";
+import { removeEventOrder, useCheckout } from "@/lib/check-out/checkoutStore";
 import {
   calculateTotals,
   findPromo,
   formatDate,
   formatMoney,
   type PromoCode,
-} from "@/lib/checkout/CheckoutPricing";
+} from "@/lib/check-out/CheckoutPricing";
 
 export default function CartPage() {
   const { increaseQuantity, decreaseQuantity, removeItem } = useCart();

@@ -9,8 +9,8 @@ import summaryStyles from "../check-out/checkout.module.css";
 import { TotalsList, useOrderLines } from "./order";
 import { useCart } from "@/app/context/CartContext";
 import { ROUTES } from "@/lib/Routes/Routes";
-import { removeEventOrder, useCheckout } from "@/lib/checkout/checkoutStore";
-import { calculateTotals, findPromo, formatDate, formatMoney } from "@/lib/checkout/CheckoutPricing";
+import { removeEventOrder, useCheckout } from "@/lib/check-out/checkoutStore";
+import { calculateTotals, findPromo, formatDate, formatMoney } from "@/lib/check-out/CheckoutPricing";
 
 export default function CartPage() {
   const { increaseQuantity, decreaseQuantity, removeItem } = useCart();
