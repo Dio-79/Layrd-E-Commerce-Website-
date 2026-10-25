@@ -11,6 +11,6 @@ export const ROUTES = {
   bundles: "/Bundle", //                app/Bundle/page.tsx
   eventOrder: "/Eventorder", //         app/Eventorder/page.tsx
   cart: "/cart",
-  checkout: "/check-out", //            app/check-out/page.tsx
+  checkout: "/checkout", //            app/check-out/page.tsx
   confirmation: "/OrderConfirmation", // app/OrderConfirmation/page.tsx
 } as const;

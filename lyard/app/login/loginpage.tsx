@@ -7,6 +7,7 @@ import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as yup from 'yup';
 import styles from './login.module.css';
 import { LoginForms as submitLoginForm } from './loginapi';
+import { homeForRole } from '@/lib/Auth/store';
 
 const schema = yup.object({
   email: yup.string().trim().email('Invalid email format').required('Email is required'),
@@ -71,9 +72,7 @@ export default function LoginForm() {
                 setServerError('');
                 try {
                   const response = await submitLoginForm(values);
-                  const token = (response as { token?: string } | null)?.token;
-                  console.log('Logged in, token:', token); // store the token however your app needs
-                  router.push('/'); // or '/varificationpage' (check the folder spelling)
+                  router.push(homeForRole(response.role)); // customer -> "/", admin -> "/admin", etc.
                 } catch (error) {
                   setServerError(error instanceof Error ? error.message : 'Login failed.');
                 }
