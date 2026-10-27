@@ -4,7 +4,7 @@ import { useId, useState, type FormEvent } from "react";
 import { useAuth } from "@/app/context/AuthContext";
 import type { CustomerProfile } from "@/lib/Account/profile";
 import { Field } from "./Field";
-import styles from "./account.module.css";
+import styles from "./Account.module.css";
 
 type ChangePassword = (current: string, next: string) => Promise<void>;
 

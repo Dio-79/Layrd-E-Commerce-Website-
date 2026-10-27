@@ -4,7 +4,7 @@ import { useState, type KeyboardEvent } from "react";
 import Link from "next/link";
 import Header from "@/app/components/Header";
 import Footer from "../components/Footer";
-import styles from "./account.module.css";
+import styles from "./Account.module.css";
 import { useCustomerProfile } from "./Usecustomerprofile";
 import ProfilePanel from "./Profilepanel";
 import PaymentPanel from "./Paymentpanel";

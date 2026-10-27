@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import styles from "./account.module.css";
+import styles from "./Account.module.css";
 
 export function Field({
   label,

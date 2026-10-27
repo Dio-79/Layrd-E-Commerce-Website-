@@ -9,7 +9,7 @@ import {
   type CustomerProfile,
 } from "@/lib/Account/profile";
 import { Field } from "./Field";
-import styles from "./account.module.css";
+import styles from "./Account.module.css";
 
 const pad = (n: number) => String(n).padStart(2, "0");
 

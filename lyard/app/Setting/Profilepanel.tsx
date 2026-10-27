@@ -9,7 +9,7 @@ import {
   type ProfileErrors,
 } from "@/lib/Account/profile";
 import { Field } from "./Field";
-import styles from "./account.module.css";
+import styles from "./Account.module.css";
 
 type Draft = Pick<CustomerProfile, "name" | "email" | "phone" | "address" | "notifications">;
 

@@ -13,4 +13,5 @@ export const ROUTES = {
   cart: "/cart",
   checkout: "/checkout", //            app/check-out/page.tsx
   confirmation: "/OrderConfirmation", // app/OrderConfirmation/page.tsx
+  settings:"/Setting"
 } as const;
