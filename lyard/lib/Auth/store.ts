@@ -109,3 +109,49 @@ export function getSession(): Session | null {
 export function clearSession() {
   localStorage.removeItem(SESSION_KEY);
 }
+
+// ---------------------------------------------------------------------------
+// Two-step verification
+// After signup or login the user is "pending": credentials are fine, but they are not
+// signed in until the verification page accepts their code. The pending account lives in
+// sessionStorage, so it disappears when the tab closes.
+// ---------------------------------------------------------------------------
+
+/** Route of the verification page. Change this to match your folder name. */
+export const VERIFY_ROUTE = '/verification';
+
+const PENDING_KEY = 'layrd_pending';
+
+export function setPending(session: Session) {
+  sessionStorage.setItem(PENDING_KEY, JSON.stringify(session));
+}
+
+/** Raw stored value. Components use this with useSyncExternalStore (it must be a stable string). */
+export function getPendingRaw(): string | null {
+  try {
+    return sessionStorage.getItem(PENDING_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function getPendingSession(): Session | null {
+  try {
+    const raw = getPendingRaw();
+    return raw ? (JSON.parse(raw) as Session) : null;
+  } catch {
+    return null;
+  }
+}
+
+export function clearPending() {
+  sessionStorage.removeItem(PENDING_KEY);
+}
+
+/**
+ * Mock check: any 6-digit code is accepted. Replace this with a real call to your backend
+ * that validates the authenticator (TOTP) code for the pending user.
+ */
+export async function verifyTwoStepCode(code: string): Promise<boolean> {
+  return /^\d{6}$/.test(code);
+}

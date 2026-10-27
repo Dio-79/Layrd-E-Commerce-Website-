@@ -7,7 +7,10 @@ import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as yup from 'yup';
 import styles from './login.module.css';
 import { LoginForms as submitLoginForm } from './loginapi';
-import { homeForRole } from '@/lib/Auth/store';
+import { setPending } from '@/lib/Auth/store';
+
+// Folder of the two-step verification page.
+const VERIFY_ROUTE = '/varifcationpage';
 
 const schema = yup.object({
   email: yup.string().trim().email('Invalid email format').required('Email is required'),
@@ -72,7 +75,9 @@ export default function LoginForm() {
                 setServerError('');
                 try {
                   const response = await submitLoginForm(values);
-                  router.push(homeForRole(response.role)); // customer -> "/", admin -> "/admin", etc.
+                  // Password is correct; the user is signed in after two-step verification.
+                  setPending(response);
+                  router.push(VERIFY_ROUTE);
                 } catch (error) {
                   setServerError(error instanceof Error ? error.message : 'Login failed.');
                 }

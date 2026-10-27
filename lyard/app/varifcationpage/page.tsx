@@ -1,8 +1,17 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
 import Link from 'next/link';
-import styles from './verification.module.css';
+import { useRouter } from 'next/navigation';
+import styles from './page.module.css';
+import { useAuth } from '@/app/context/AuthContext';
+import {
+  clearPending,
+  getPendingRaw,
+  homeForRole,
+  verifyTwoStepCode,
+  type Session,
+} from '@/lib/Auth/store';
 
 // Swirl Logo Icon SVG
 const SwirlIcon = () => (
@@ -15,10 +24,39 @@ const SwirlIcon = () => (
   </svg>
 );
 
+// sessionStorage only exists in the browser. useSyncExternalStore reads it safely
+// (null on the server, the real value in the browser) without setState inside an effect.
+const subscribe = () => () => {};
+
 export default function VerificationPage() {
+  const router = useRouter();
+  const { signIn } = useAuth();
+
+  const hydrated = useSyncExternalStore(subscribe, () => true, () => false);
+  const pendingRaw = useSyncExternalStore(subscribe, getPendingRaw, () => null);
+  const pending = useMemo<Session | null>(() => {
+    try {
+      return pendingRaw ? (JSON.parse(pendingRaw) as Session) : null;
+    } catch {
+      return null;
+    }
+  }, [pendingRaw]);
+
   const [code, setCode] = useState<string[]>(Array(6).fill(''));
   const [timer, setTimer] = useState<number>(42);
+  const [error, setError] = useState('');
+  const [verifying, setVerifying] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  // Only people who just logged in or signed up belong here.
+  useEffect(() => {
+    if (hydrated && !pending) router.replace('/login');
+  }, [hydrated, pending, router]);
+
+  // Focus the first box once the form is on screen.
+  useEffect(() => {
+    if (pending) inputRefs.current[0]?.focus();
+  }, [pending]);
 
   // Countdown Timer
   useEffect(() => {
@@ -32,6 +70,7 @@ export default function VerificationPage() {
   // Handle OTP digit input
   const handleChange = (index: number, value: string) => {
     if (!/^\d*$/.test(value)) return;
+    setError('');
 
     const newCode = [...code];
     newCode[index] = value.slice(-1);
@@ -50,14 +89,55 @@ export default function VerificationPage() {
     }
   };
 
-  const handleVerify = (e: React.FormEvent) => {
+  // Paste a full 6-digit code into any box
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    const digits = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+    if (!digits) return;
     e.preventDefault();
+    const next = Array(6).fill('');
+    digits.split('').forEach((d, i) => (next[i] = d));
+    setCode(next);
+    setError('');
+    inputRefs.current[Math.min(digits.length, 5)]?.focus();
+  };
+
+  const handleVerify = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!pending || verifying) return;
+
+    if (timer <= 0) {
+      setError('This code has expired. Please request a new one.');
+      return;
+    }
+
     const fullCode = code.join('');
-    alert(`Verifying Code: ${fullCode}`);
+    if (fullCode.length < 6) {
+      setError('Enter all 6 digits.');
+      return;
+    }
+
+    setVerifying(true);
+    try {
+      const ok = await verifyTwoStepCode(fullCode);
+      if (!ok) {
+        setError('That code is not valid. Try again.');
+        setCode(Array(6).fill(''));
+        inputRefs.current[0]?.focus();
+        return;
+      }
+
+      // Code accepted: now they are really signed in with their role (customer, admin, ...).
+      signIn(pending);
+      clearPending();
+      router.push(homeForRole(pending.role));
+    } finally {
+      setVerifying(false);
+    }
   };
 
   const handleResendCode = () => {
     setTimer(60);
+    setError('');
     setCode(Array(6).fill(''));
     inputRefs.current[0]?.focus();
   };
@@ -68,6 +148,9 @@ export default function VerificationPage() {
     const secs = seconds % 60;
     return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   };
+
+  // Nothing to show on the server, or while redirecting someone with no pending login.
+  if (!pending) return null;
 
   return (
     <div className={styles.pageContainer}>
@@ -93,14 +176,23 @@ export default function VerificationPage() {
                 }}
                 type="text"
                 inputMode="numeric"
+                autoComplete="one-time-code"
                 maxLength={1}
                 value={digit}
                 onChange={(e) => handleChange(idx, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(idx, e)}
+                onPaste={handlePaste}
+                aria-label={`Digit ${idx + 1} of 6`}
                 className={styles.codeInput}
               />
             ))}
           </div>
+
+          {error && (
+            <div role="alert" style={{ color: '#ff8a80', fontSize: 11, marginBottom: 12 }}>
+              {error}
+            </div>
+          )}
 
           {/* Expiration Timer & Resend Button */}
           <div className={styles.timerText}>
@@ -119,12 +211,12 @@ export default function VerificationPage() {
           </div>
 
           {/* Action Buttons */}
-          <button type="submit" className={styles.verifyBtn}>
-            Verify & continue
+          <button type="submit" className={styles.verifyBtn} disabled={verifying}>
+            {verifying ? 'Verifying…' : 'Verify & continue'}
           </button>
 
           <div>
-            <Link href="/login" className={styles.backLink}>
+            <Link href="/login" onClick={clearPending} className={styles.backLink}>
               Back to log in
             </Link>
           </div>
