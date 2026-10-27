@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState, type ComponentType } from "react";
+import { useMemo, useState } from "react";
+import { Montserrat } from "next/font/google";
 import {
   availableOptions,
   EMPTY_FILTERS,
@@ -16,7 +17,11 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import styles from "./mainpage.module.css";
 import Sidebar from "./sidebar";
+import CatalogHeader from "./sorting";
 import { sortProducts, type SortOption } from "./sortProducts";
+
+// Loads the Montserrat font and exposes it as --font-montserrat (the CSS reads that variable)
+const montserrat = Montserrat({ subsets: ["latin"], variable: "--font-montserrat" });
 
 /* ------------------------------------------------------------------ */
 /* Product card                                                        */
@@ -84,18 +89,9 @@ export default function ProductsPage() {
 
   const modalProduct = useMemo(() => (selected ? toCustomizable(selected) : null), [selected]);
   const breadcrumb = selected ? (SECTIONS.find((s) => s.id === selected.section)?.label ?? "Shop") : "Shop";
-  const FilterSidebar = Sidebar as unknown as ComponentType<{
-    options: typeof options;
-    filters: Filters;
-    minPrice: string;
-    maxPrice: string;
-    onToggle: (key: keyof Filters, value: string) => void;
-    onMinPriceChange: (value: string) => void;
-    onMaxPriceChange: (value: string) => void;
-  }>;
 
   return (
-    <>
+    <div className={montserrat.variable}>
       <Header />
 
       <div className={styles.container}>
@@ -103,21 +99,13 @@ export default function ProductsPage() {
         <header className={styles.headerBar}>
           <h1 className={styles.mainTitle}>OUR COLLECTION</h1>
           <div className={styles.headerMeta}>
-            <span>{visible.length} products</span>
-            <label>
-              Sort by{" "}
-              <select value={sortBy} onChange={(event) => setSortBy(event.target.value as SortOption)}>
-                <option value="Newest">Newest</option>
-                <option value="Price: Low to High">Price: Low to High</option>
-                <option value="Price: High to Low">Price: High to Low</option>
-              </select>
-            </label>
+            <CatalogHeader count={visible.length} sortBy={sortBy} onSortChange={setSortBy} />
           </div>
         </header>
 
         {/* Filters */}
         <aside className={styles.sidebarSection} aria-label="Filters">
-          <FilterSidebar
+          <Sidebar
             options={options}
             filters={filters}
             minPrice={minPrice}
@@ -133,7 +121,7 @@ export default function ProductsPage() {
           {visible.length === 0 ? (
             <p className={styles.emptyMsg}>No products match those filters.</p>
           ) : (
-            visible.map((item: CatalogProduct) => <ProductCard key={item.productID} product={item} onCustomize={setSelected} />)
+            visible.map((item) => <ProductCard key={item.productID} product={item} onCustomize={setSelected} />)
           )}
         </div>
 
@@ -144,6 +132,6 @@ export default function ProductsPage() {
       </div>
 
       <Footer />
-    </>
+    </div>
   );
 }

@@ -25,7 +25,7 @@
   --shadow-card: 0 0.25rem 1rem rgb(0 0 0 / 0.08);
 
   /* typography */
-  --font-body: var(--font-montserrat), Montserrat, system-ui, sans-serif;
+  --font-body: var(--font-montserrat, Montserrat), system-ui, sans-serif;
   --text-title: clamp(1.8rem, 4.5vw, 2.6rem);
   --text-group: 1.05rem;
   --text-option: 0.8rem;
@@ -60,6 +60,7 @@
   --card-min: 15rem;
   --card-pad: 0.75rem;
   --header-gap: 1rem;
+  --meta-gap: 2rem;
   --sticky-top: 1rem;
 
   /* shapes + motion */

@@ -15,7 +15,7 @@
   justify-content: flex-end;
   align-items: center;
   width: 100%;
-  gap: var(--header-gap);
+  gap: var(--meta-gap);
 }
 
 .itemCount {
@@ -37,10 +37,9 @@
 }
 
 .sortSelect {
-  padding: var(--btn-pad-y) var(--btn-pad-x);
-  border: var(--hairline) solid var(--control-line);
-  border-radius: var(--control-radius);
-  background: var(--surface);
+  padding: 0;
+  border: 0;
+  background: transparent;
   color: inherit;
   font: inherit;
   font-size: var(--text-count);

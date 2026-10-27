@@ -27,7 +27,7 @@ export default function CatalogHeader({ count, sortBy, onSortChange }: Props) {
             value={sortBy}
             onChange={(e) => onSortChange(e.target.value as SortOption)}
           >
-            {SORT_OPTIONS.map((option: SortOption) => (
+            {SORT_OPTIONS.map((option) => (
               <option key={option} value={option}>
                 {option}
               </option>
