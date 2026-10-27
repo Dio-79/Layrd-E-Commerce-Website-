@@ -1,0 +1,170 @@
+.page {
+  --gold: #e6c200;
+  --amber: #d9a21b;
+  --rule: #e6d9a6;
+  --muted: #777;
+
+  font-family: var(--font-montserrat), Montserrat, system-ui, sans-serif;
+  color: #111;
+  background: #fff;
+  max-width: 76rem;
+  margin: 0 auto;
+  padding: 2rem clamp(1rem, 5vw, 4rem) 4rem;
+}
+
+.title {
+  margin: 0 0 1.25rem;
+  font-size: clamp(1.6rem, 4vw, 2.2rem);
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.form {
+  display: flex;
+  gap: 0.5rem;
+  max-width: 32rem;
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid #cfcfcf;
+  border-radius: 4px;
+  background: #fff;
+  font: inherit;
+  font-size: 0.9rem;
+}
+
+.input:focus-visible,
+.go:focus-visible {
+  outline: 2px solid #1e88e5;
+  outline-offset: 2px;
+}
+
+.go {
+  padding: 0 1.4rem;
+  border: 0;
+  background: #000;
+  color: #fff;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.count,
+.note {
+  margin: 1.5rem 0 1rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.empty {
+  margin-top: 1rem;
+  padding: 1.25rem;
+  border: 1px solid var(--rule);
+  background: #fdfbf4;
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
+.empty p {
+  margin: 0 0 0.5rem;
+}
+
+.empty a,
+.name a {
+  color: inherit;
+}
+
+.grid {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  gap: 1.5rem;
+  margin: 0;
+  padding: 0;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #eaeaea;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.image {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  background: #f7f7f7;
+}
+
+.image img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  font-size: 0;
+}
+
+.tag {
+  position: absolute;
+  top: 0.6rem;
+  left: 0.6rem;
+  padding: 0.2rem 0.5rem;
+  background: var(--gold);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.body {
+  display: grid;
+  gap: 0.3rem;
+  padding: 1rem;
+}
+
+.category {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.name {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.desc {
+  margin: 0;
+  color: #555;
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.price {
+  margin: 0.4rem 0 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
