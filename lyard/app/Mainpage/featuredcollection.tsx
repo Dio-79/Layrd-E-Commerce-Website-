@@ -1,43 +1,20 @@
 'use client';
 
 import { useState } from 'react';
-import type { ProductItem } from "@/app/types/models";
-import { products } from "@/lib/catelog/data";
-import { getProductId, getProductImage } from "@/app/context/EventOrdercontext";
-import CustomizeModal, { type CustomizableProduct } from "@/app/components/Customizemodal";
+import { products, type CatalogProduct } from "@/lib/catelog/data";
+import CustomizeModal from "@/app/components/Customizemodal";
+import { toCustomizable } from "@/app/components/toCustomizable";
 import styles from "./ProductGrid.module.css";
-
-/** One entry of the catalog data, exactly as it is stored. */
-type RawProduct = (typeof products)[number];
-
-type ProductWithImage = ProductItem & {
-  image?: string;
-};
 
 /** How many products the home screen shows. */
 const FEATURED_COUNT = 3;
 
-/** Turns a catalog entry into what the customize modal needs (same ids/images as the other pages use). */
-function toCustomizable(raw: RawProduct): CustomizableProduct {
-  const item = raw as unknown as ProductWithImage;
-  return {
-    productID: getProductId(raw) as unknown as CustomizableProduct["productID"],
-    name: item.name,
-    description: item.description,
-    price: Number(item.price),
-    imageUrl: getProductImage(raw) ?? item.image ?? item.imageUrl,
-    sizes: (item as { sizes?: string[] }).sizes ?? [],
-  };
-}
-
 interface ProductCardProps {
-  product: ProductItem;
-  onCustomize: () => void;
+  product: CatalogProduct;
+  onCustomize: (product: CatalogProduct) => void;
 }
 
 function ProductCard({ product, onCustomize }: ProductCardProps) {
-  const productImage = (product as ProductWithImage).image || product.imageUrl;
-
   return (
     <div className={styles.card}>
       {/* Image & Badge Wrapper */}
@@ -48,11 +25,7 @@ function ProductCard({ product, onCustomize }: ProductCardProps) {
           </div>
         )}
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={productImage}
-          alt={`${product.name} ${product.tag}`}
-          className={styles.productImage}
-        />
+        <img src={product.imageUrl} alt={product.name} className={styles.productImage} />
       </div>
 
       {/* Text Content */}
@@ -68,7 +41,7 @@ function ProductCard({ product, onCustomize }: ProductCardProps) {
           <span className={styles.priceValue}>${product.price}</span>
         </div>
 
-        <button type="button" className={styles.customizeBtn} onClick={onCustomize}>
+        <button type="button" className={styles.customizeBtn} onClick={() => onCustomize(product)}>
           Customize
         </button>
       </div>
@@ -77,27 +50,20 @@ function ProductCard({ product, onCustomize }: ProductCardProps) {
 }
 
 export default function ProductRow() {
-  const [selected, setSelected] = useState<CustomizableProduct | null>(null);
+  const [selected, setSelected] = useState<CatalogProduct | null>(null);
 
   return (
     <div className={styles.container}>
       {/* Product Grid */}
       <div className={styles.grid}>
-        {products.slice(0, FEATURED_COUNT).map((raw) => {
-          const product = raw as unknown as ProductItem;
-          return (
-            <ProductCard
-              key={`${product.name}-${product.category}`}
-              product={product}
-              onCustomize={() => setSelected(toCustomizable(raw))}
-            />
-          );
-        })}
+        {products.slice(0, FEATURED_COUNT).map((product) => (
+          <ProductCard key={product.productID} product={product} onCustomize={setSelected} />
+        ))}
       </div>
 
       {/* Same customize popup as the other pages: size, quantity, add to bag */}
       {selected && (
-        <CustomizeModal product={selected} breadcrumb="Featured" onClose={() => setSelected(null)} />
+        <CustomizeModal product={toCustomizable(selected)} breadcrumb="Featured" onClose={() => setSelected(null)} />
       )}
     </div>
   );

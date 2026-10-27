@@ -1,15 +1,21 @@
 "use client";
 
-import { useProducts } from "@/app/context/productcontext";
 import styles from "./sorting.module.css";
+import { SORT_OPTIONS, type SortOption } from "./sortProducts";
 
-export default function CatalogHeader() {
-  const { sortBy, setSortBy, filteredAndSortedProducts } = useProducts();
+type Props = {
+  count: number;
+  sortBy: SortOption;
+  onSortChange: (sortBy: SortOption) => void;
+};
 
+export default function CatalogHeader({ count, sortBy, onSortChange }: Props) {
   return (
     <div className={styles.container}>
       <div className={styles.headerBar}>
-        <span className={styles.itemCount}>Showing {filteredAndSortedProducts.length} items</span>
+        <span className={styles.itemCount}>
+          Showing {count} {count === 1 ? "item" : "items"}
+        </span>
 
         <div className={styles.sortGroup}>
           <label htmlFor="sort-select" className={styles.sortLabel}>
@@ -19,13 +25,13 @@ export default function CatalogHeader() {
             id="sort-select"
             className={styles.sortSelect}
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
+            onChange={(e) => onSortChange(e.target.value as SortOption)}
           >
-            <option value="Newest">Newest</option>
-            <option value="Price: Low to High">Price: Low to High</option>
-            <option value="Price: High to Low">Price: High to Low</option>
-            <option value="Name: A to Z">Name: A to Z</option>
-            <option value="Popular">Popular</option>
+            {SORT_OPTIONS.map((option: SortOption) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
           </select>
         </div>
       </div>
