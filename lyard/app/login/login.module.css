@@ -15,7 +15,7 @@
   padding: clamp(20px, 5vw, 56px) 16px;
   box-sizing: border-box;
   /* Photo from the public folder. Change the file name here if yours is different. */
-  background: #d9bf94 url('/images/login-bg.jpg') center / cover no-repeat;
+  background: #d9bf94 url('/public/Login-bg.jpg') center / cover no-repeat;
   color: var(--ink);
   font-family: Montserrat, "Helvetica Neue", Arial, sans-serif;
 }
