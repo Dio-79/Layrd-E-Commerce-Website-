@@ -131,3 +131,16 @@
 .forgot { align-self: flex-end; font-size: 12px; font-weight: 600; color: var(--ink); text-decoration: underline; }
 .forgot:hover { color: #000; }
 .notice { margin: 0 0 10px; padding: 8px 12px; border-radius: 10px; background: rgba(255, 248, 225, .85); border: 1px solid var(--gold); color: var(--ink); font-size: 12px; font-weight: 600; line-height: 1.4; }
+
+/* "or" divider and the Google button under the login form */
+.divider { display: flex; align-items: center; gap: 8px; margin: 10px 0 8px; color: var(--ink-soft); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; }
+.divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: rgba(43, 33, 24, .25); }
+.googleBtn {
+  display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;
+  padding: 9px 14px; border: 1px solid rgba(255, 255, 255, .7); border-radius: 999px;
+  background: rgba(255, 255, 255, .85); color: var(--ink); font: inherit; font-size: 12px; font-weight: 600;
+  cursor: pointer; transition: background .15s;
+}
+.googleBtn:hover { background: #fff; }
+.googleBtn:disabled { opacity: .7; cursor: wait; }
+.googleBtn:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }

@@ -15,6 +15,7 @@ import {
   startSiteSession,
 } from '@/lib/Auth/firebaseAuth';
 import { LOGIN_REASONS, ROUTES, safeNext } from '@/lib/Routes/Routes';
+import GoogleButton from '@/app/components/GoogleButton';
 
 // ?next=/Setting&reason=account:manage (set by pages that need a login)
 const noSubscribe = () => () => {};
@@ -179,6 +180,9 @@ export default function LoginForm() {
                 </Form>
               )}
             </Formik>
+
+            <div className={styles.divider}><span>or</span></div>
+            <GoogleButton className={styles.googleBtn} next={next} onError={setServerError} />
           </section>
 
           {/* Wholesale card */}

@@ -1,12 +1,13 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { setPendingVerification, signUpWithEmail } from '@/lib/Auth/firebaseAuth';
 import { ROUTES } from '@/lib/Routes/Routes';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as yup from 'yup';
 import styles from './Signup.module.css';
+import GoogleButton from '@/app/components/GoogleButton';
 
 const schema = yup.object({
   username: yup.string().required('Full name is required'),
@@ -23,6 +24,7 @@ const schema = yup.object({
 
 export default function SignupForm() {
   const router = useRouter();
+  const [googleError, setGoogleError] = useState('');
 
   return (
     <div className={styles.pageContainer}>
@@ -127,12 +129,12 @@ export default function SignupForm() {
 
                 {/* Social Login Options */}
                 <div className={styles.socialButtons}>
-                  <button type="button" className={styles.socialBtn}>
-                     Sign up with Apple
-                  </button>
-                  <button type="button" className={styles.socialBtn}>
-                    G Sign up with Google
-                  </button>
+                  <GoogleButton className={styles.socialBtn} label="Sign up with Google" onError={setGoogleError} />
+                  {googleError && (
+                    <div className={styles.errorText} role="alert">
+                      {googleError}
+                    </div>
+                  )}
                 </div>
 
                 {/* Main Submit CTA */}

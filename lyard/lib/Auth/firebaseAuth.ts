@@ -29,8 +29,11 @@ const MESSAGES: Record<string, string> = {
   TOKEN_EXPIRED: "Your sign-in expired. Log in again.",
 };
 
+const UNAUTHORIZED_DOMAIN = "This site isn't in Firebase's authorized domains.";
+
 function friendly(code: string | undefined): string {
   if (!code) return "Something went wrong. Please try again.";
+  if (/UNAUTHORIZED_DOMAIN|INVALID_CONTINUE_URI/.test(code)) return UNAUTHORIZED_DOMAIN;
   if (code.startsWith("WEAK_PASSWORD")) return "Choose a stronger password (at least 6 characters).";
   return MESSAGES[code.split(" ")[0]] ?? "Something went wrong. Please try again.";
 }
@@ -102,14 +105,28 @@ export async function isEmailVerified(idToken: string): Promise<boolean> {
   return Boolean(users?.[0]?.emailVerified);
 }
 
+/**
+ * Asks Firebase to send one of its emails. The link in it comes back to this site
+ * (continueUrl) when the site's domain is in Firebase's authorized domains; if it
+ * isn't, the email is sent without that link instead of failing.
+ */
+async function sendEmail(body: Record<string, unknown>, backTo: string) {
+  try {
+    await call("accounts:sendOobCode", { ...body, continueUrl: continueUrl(backTo) });
+  } catch (err) {
+    if (!(err instanceof Error && err.message === UNAUTHORIZED_DOMAIN)) throw err;
+    await call("accounts:sendOobCode", body);
+  }
+}
+
 /** Firebase emails a "verify your email" link. */
 export async function sendVerificationEmail(idToken: string) {
-  await call("accounts:sendOobCode", { requestType: "VERIFY_EMAIL", idToken, continueUrl: continueUrl("/varifcationpage") });
+  await sendEmail({ requestType: "VERIFY_EMAIL", idToken }, "/varifcationpage");
 }
 
 /** Firebase emails a password reset link (silently does nothing for unknown emails on new projects). */
 export async function sendPasswordResetEmail(email: string) {
-  await call("accounts:sendOobCode", { requestType: "PASSWORD_RESET", email, continueUrl: continueUrl("/login") });
+  await sendEmail({ requestType: "PASSWORD_RESET", email }, "/login");
 }
 
 /** For /reset-password: checks the code from the email link and returns its email. */
