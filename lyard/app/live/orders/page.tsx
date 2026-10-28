@@ -6,6 +6,7 @@
 // Firebase sign-in that starts a real session (/api/auth/session).
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import styles from "../live.module.css";
+import { LiveShell } from "../LiveShell";
 import { LiveStatus } from "../LiveStatus";
 import { useLiveStream } from "../useLiveStream";
 
@@ -21,7 +22,6 @@ interface LiveOrder {
   placedAt?: string;
   status?: string;
   customer?: { fullName?: string; email?: string };
-  delivery?: { method?: string };
   lines?: { name: string; quantity: number }[];
   totals?: { total?: number };
 }
@@ -66,10 +66,10 @@ function SignIn({ onSignedIn }: { onSignedIn: () => void }) {
 
   return (
     <form className={styles.form} onSubmit={submit}>
-      <p className={styles.note}>Sign in with your Layrd account to see orders.</p>
+      <h2 className={styles.formTitle}>SIGN IN TO SEE ORDERS</h2>
       <input name="email" type="email" placeholder="Email" autoComplete="email" required />
       <input name="password" type="password" placeholder="Password" autoComplete="current-password" required />
-      <button type="submit" disabled={busy}>
+      <button className={styles.button} type="submit" disabled={busy}>
         {busy ? "Signing in…" : "Sign in"}
       </button>
       {error && <p className={styles.error}>{error}</p>}
@@ -83,13 +83,13 @@ function OrdersTable({ admin }: { admin: boolean }) {
 
   return (
     <>
-      <div className={styles.header}>
-        <h2 className={styles.title}>{admin ? "All orders" : "Your orders"}</h2>
+      <p className={styles.message} style={{ marginBottom: "1rem" }}>
         <LiveStatus state={state} updatedAt={updatedAt} />
-      </div>
-      {docs && orders.length === 0 && <p>No orders yet.</p>}
+      </p>
+      {!docs && <p className={styles.message}>Connecting to Firebase…</p>}
+      {docs && orders.length === 0 && <p className={styles.message}>No orders yet. New ones appear here as they&apos;re placed.</p>}
       {orders.length > 0 && (
-        <div className={styles.scroll}>
+        <div className={styles.tableWrap}>
           <table className={styles.table}>
             <thead>
               <tr>
@@ -104,7 +104,7 @@ function OrdersTable({ admin }: { admin: boolean }) {
             <tbody>
               {orders.map((o) => (
                 <tr key={o.id}>
-                  <td>{o.orderNumber}</td>
+                  <td className={styles.orderNumber}>{o.orderNumber}</td>
                   <td>{o.placedAt ? new Date(o.placedAt).toLocaleString() : "-"}</td>
                   {admin && <td>{o.customer?.fullName ?? o.customer?.email ?? "-"}</td>}
                   <td>{o.lines?.map((l) => `${l.quantity}× ${l.name}`).join(", ") ?? "-"}</td>
@@ -125,13 +125,16 @@ function OrdersTable({ admin }: { admin: boolean }) {
 export default function LiveOrdersPage() {
   const [user, setUser] = useState<SessionUser | null | undefined>(undefined);
 
-  const loadUser = useCallback(async () => {
-    const res = await fetch("/api/auth/me", { cache: "no-store" });
-    setUser(res.ok ? ((await res.json()) as SessionUser) : null);
-  }, []);
+  const loadUser = useCallback(
+    () =>
+      fetch("/api/auth/me", { cache: "no-store" })
+        .then((res) => (res.ok ? (res.json() as Promise<SessionUser>) : null))
+        .then(setUser),
+    []
+  );
 
   useEffect(() => {
-    loadUser();
+    void loadUser();
   }, [loadUser]);
 
   async function signOut() {
@@ -139,22 +142,26 @@ export default function LiveOrdersPage() {
     setUser(null);
   }
 
+  const admin = user?.role === "admin";
+
   return (
-    <main className={styles.page}>
-      <div className={styles.header}>
-        <h1 className={styles.title}>Orders (live)</h1>
-        {user && (
-          <span className={styles.status}>
+    <LiveShell
+      title={admin ? "ALL ORDERS" : user ? "YOUR ORDERS" : "LIVE ORDERS"}
+      subtitle={admin ? "Every order, live from Firestore." : "Your orders and their status, live from Firestore."}
+      aside={
+        user && (
+          <span className={styles.account}>
             {user.email} ({user.role}) ·{" "}
             <button className={styles.linkButton} onClick={signOut}>
               Sign out
             </button>
           </span>
-        )}
-      </div>
-      {user === undefined && <p>Loading…</p>}
+        )
+      }
+    >
+      {user === undefined && <p className={styles.message}>Loading…</p>}
       {user === null && <SignIn onSignedIn={loadUser} />}
-      {user && <OrdersTable admin={user.role === "admin"} />}
-    </main>
+      {user && <OrdersTable admin={admin} />}
+    </LiveShell>
   );
 }
