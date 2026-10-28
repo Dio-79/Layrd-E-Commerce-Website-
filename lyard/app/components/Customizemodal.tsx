@@ -169,18 +169,29 @@ export default function CustomizeModal({ product, breadcrumb = "Shop", onClose }
 
           <hr className={styles.divider} />
 
-          <div className={styles.notes}>
-            {allergenInfo && allergenInfo.allergens.length > 0 && (
-              <div className={styles.note}>
-                <span>ℹ️</span>
-                <span>Contains: {allergenInfo.allergens.join(", ")}.</span>
+          <section className={styles.notes} aria-labelledby="allergen-title">
+            <h3 id="allergen-title" className={styles.notesTitle}>
+              <span className={styles.notesIcon} aria-hidden="true">
+                ✓
+              </span>
+              Ingredients &amp; allergens
+            </h3>
+            {allergenInfo && allergenInfo.allergens.length > 0 ? (
+              <div className={styles.allergenRow}>
+                <span className={styles.allergenLabel}>Contains</span>
+                <ul className={styles.allergenList}>
+                  {allergenInfo.allergens.map((a) => (
+                    <li key={a} className={styles.allergenChip}>
+                      {a}
+                    </li>
+                  ))}
+                </ul>
               </div>
+            ) : (
+              <p className={styles.note}>No major allergens listed for this product.</p>
             )}
-            <div className={styles.note}>
-              <span>⚠️</span>
-              <span>{ALLERGY_DISCLAIMER}</span>
-            </div>
-          </div>
+            <p className={styles.note}>{ALLERGY_DISCLAIMER}</p>
+          </section>
         </div>
       </div>
     </div>

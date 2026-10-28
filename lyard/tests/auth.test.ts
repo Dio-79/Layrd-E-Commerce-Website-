@@ -19,6 +19,13 @@ describe("auth session", () => {
     expect(fake.status).toBe(401);
   });
 
+  it("refuses a session until the email is verified", async () => {
+    const { idToken } = await signUp("unverified@layrd.test", "test-pass-123", undefined, false);
+    const res = await startSession(request("/api/auth/session", { method: "POST", body: { idToken } }));
+    expect(res.status).toBe(403);
+    expect((await res.json()).error).toMatch(/Verify your email/);
+  });
+
   it("a new account gets a session, a profile and the customer role", async () => {
     const { idToken, uid } = await signUp("new.customer@layrd.test");
     const res = await startSession(

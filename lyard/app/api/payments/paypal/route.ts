@@ -2,8 +2,7 @@
 //   { action: "create", order }                  -> { paypalOrderId }  (buyer then approves in PayPal)
 //   { action: "capture", order, paypalOrderId }  -> { order }          (money taken, order saved)
 import { NextResponse, type NextRequest } from "next/server";
-import { getSessionUser } from "@/lib/server/session";
-import { checkOrder, OrderError, priceOrder, saveOrder, toCents } from "@/lib/server/orders";
+import { checkOrder, OrderError, priceOrder, requireBuyer, saveOrder, toCents } from "@/lib/server/orders";
 import { adminDb, COLLECTIONS } from "@/lib/firebase/admin";
 import { capturePayPalOrder, createPayPalOrder } from "@/lib/payments/paypal";
 import { CURRENCY } from "@/lib/payments/config";
@@ -15,6 +14,8 @@ export const dynamic = "force-dynamic";
 const fail = (error: string, status = 400) => NextResponse.json({ error }, { status });
 
 export async function POST(req: NextRequest) {
+  const user = await requireBuyer(req).catch((err: OrderError) => err);
+  if (user instanceof OrderError) return fail(user.message, user.status);
   const body = (await req.json().catch(() => null)) as {
     action?: "create" | "capture";
     order?: PlacedOrder;
@@ -57,8 +58,6 @@ export async function POST(req: NextRequest) {
     console.error("paypal capture does not match the order:", capture, order.orderNumber, amountCents);
     return fail("The PayPal payment doesn't match this order. Please contact us.", 409);
   }
-
-  const user = await getSessionUser(req);
   const payment: PaymentInfo = {
     method: "paypal",
     provider: "paypal",

@@ -2,7 +2,10 @@
 
 import { useState, type KeyboardEvent } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Header from "@/app/components/Header";
+import { useAuth } from "@/app/context/AuthContext";
+import { ROUTES } from "@/lib/Routes/Routes";
 import Footer from "../components/Footer";
 import styles from "./Account.module.css";
 import { useCustomerProfile } from "./Usecustomerprofile";
@@ -20,7 +23,16 @@ type TabId = (typeof TABS)[number]["id"];
 
 export default function AccountSettings() {
   const { identity, profile, loading, save } = useCustomerProfile();
+  const { signOut } = useAuth();
+  const router = useRouter();
   const [tab, setTab] = useState<TabId>("profile");
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  const logOut = async () => {
+    setLoggingOut(true);
+    await signOut();
+    router.replace(ROUTES.login);
+  };
 
   // Arrow keys / Home / End move between the tabs
   const onTabKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
@@ -43,7 +55,14 @@ export default function AccountSettings() {
       <Header />
 
       <main className={styles.page}>
-        <h1 className={styles.title}>Account settings</h1>
+        <div className={styles.titleRow}>
+          <h1 className={styles.title}>Account settings</h1>
+          {identity && (
+            <button type="button" className={styles.logout} onClick={logOut} disabled={loggingOut}>
+              {loggingOut ? "Logging out…" : "Log out"}
+            </button>
+          )}
+        </div>
 
         {!identity ? (
           <p className={styles.notice}>

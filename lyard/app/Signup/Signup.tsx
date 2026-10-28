@@ -2,14 +2,11 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { signup } from './SignupApi';
-import { setPending } from '@/lib/Auth/store';
+import { setPendingVerification, signUpWithEmail } from '@/lib/Auth/firebaseAuth';
+import { ROUTES } from '@/lib/Routes/Routes';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as yup from 'yup';
 import styles from './Signup.module.css';
-
-// Folder of the two-step verification page.
-const VERIFY_ROUTE = '/varifcationpage';
 
 const schema = yup.object({
   username: yup.string().required('Full name is required'),
@@ -47,11 +44,13 @@ export default function SignupForm() {
             onSubmit={async (values, { setSubmitting, setStatus }) => {
               setStatus(undefined);
               try {
-                // Creates the account as a "customer", then goes to two-step verification.
-                // They are signed in once the code is accepted there.
-                const result = await signup(values.email, values.username, values.password);
-                setPending(result);
-                router.push(VERIFY_ROUTE);
+                // Creates the Firebase account and emails the verification link. The site
+                // makes them a "customer" when they're signed in after verifying.
+                const email = values.email.trim();
+                const name = values.username.trim();
+                const result = await signUpWithEmail(email, values.password, name);
+                setPendingVerification({ idToken: result.idToken, refreshToken: result.refreshToken, email, name });
+                router.push(ROUTES.verify);
               } catch (err) {
                 setStatus(err instanceof Error ? err.message : 'Something went wrong.');
               } finally {

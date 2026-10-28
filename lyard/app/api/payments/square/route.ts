@@ -5,8 +5,7 @@
 //   3. save the order to Firestore
 //   4. complete the payment; if saving failed, cancel it so nobody pays for a missing order
 import { NextResponse, type NextRequest } from "next/server";
-import { getSessionUser } from "@/lib/server/session";
-import { checkOrder, OrderError, priceOrder, saveOrder, toCents } from "@/lib/server/orders";
+import { checkOrder, OrderError, priceOrder, requireBuyer, saveOrder, toCents } from "@/lib/server/orders";
 import { adminDb, COLLECTIONS } from "@/lib/firebase/admin";
 import { cancelPayment, completePayment, createPayment, PaymentDeclined } from "@/lib/payments/square";
 import { CURRENCY } from "@/lib/payments/config";
@@ -19,6 +18,8 @@ const fail = (error: string, status = 400) => NextResponse.json({ error }, { sta
 const SQUARE_METHODS: PaymentMethod[] = ["card", "apple", "google"];
 
 export async function POST(req: NextRequest) {
+  const user = await requireBuyer(req).catch((err: OrderError) => err);
+  if (user instanceof OrderError) return fail(user.message, user.status);
   const body = (await req.json().catch(() => null)) as {
     order?: PlacedOrder;
     sourceId?: string;
@@ -54,8 +55,6 @@ export async function POST(req: NextRequest) {
     console.error("square create payment failed:", err);
     return fail("Payment failed — please try again.", 502);
   }
-
-  const user = await getSessionUser(req);
   const payment: PaymentInfo = {
     method,
     provider: "square",

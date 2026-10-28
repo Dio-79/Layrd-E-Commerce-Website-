@@ -1,5 +1,6 @@
 "use client";
 
+import { RequireRole } from "@/app/components/RequiredRoles";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -56,7 +57,16 @@ interface FormValues {
 const money = (n: number) => `$${n.toFixed(2)}`;
 const isQuoteExpired = (expiresAt: string) => new Date(expiresAt).getTime() < Date.now();
 
+// Guests can browse, but only signed-in customers can buy.
 export default function BundleCheckoutPage() {
+  return (
+    <RequireRole permission="checkout:purchase">
+      <BundleCheckoutPageBody />
+    </RequireRole>
+  );
+}
+
+function BundleCheckoutPageBody() {
   const [draft, setDraft] = useState<BundleDraft | null>(null);
   const [loaded, setLoaded] = useState(false);
 

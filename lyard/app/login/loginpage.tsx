@@ -1,16 +1,24 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as yup from 'yup';
 import styles from './login.module.css';
-import { LoginForms as submitLoginForm } from './loginapi';
-import { setPending } from '@/lib/Auth/store';
+import { useAuth } from '@/app/context/AuthContext';
+import { homeForRole, type Role } from '@/lib/Auth/store';
+import {
+  sendVerificationEmail,
+  setPendingVerification,
+  signInWithEmail,
+  startSiteSession,
+} from '@/lib/Auth/firebaseAuth';
+import { LOGIN_REASONS, ROUTES, safeNext } from '@/lib/Routes/Routes';
 
-// Folder of the two-step verification page.
-const VERIFY_ROUTE = '/varifcationpage';
+// ?next=/Setting&reason=account:manage (set by pages that need a login)
+const noSubscribe = () => () => {};
+const useSearch = () => useSyncExternalStore(noSubscribe, () => window.location.search, () => '');
 
 const schema = yup.object({
   email: yup.string().trim().email('Invalid email format').required('Email is required'),
@@ -42,8 +50,14 @@ const Arrow = () => (
 
 export default function LoginForm() {
   const router = useRouter();
+  const { refresh } = useAuth();
   const [serverError, setServerError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+
+  const params = new URLSearchParams(useSearch());
+  const next = safeNext(params.get('next'));
+  const reason = LOGIN_REASONS[params.get('reason') as keyof typeof LOGIN_REASONS];
+  const justReset = params.get('reset') === '1';
 
   return (
     <main className={styles.page}>
@@ -55,6 +69,12 @@ export default function LoginForm() {
               <h1 id="login-title" className={styles.title}>Log in</h1>
               <Link href="/Signup" className={styles.signUp}>Sign up</Link>
             </div>
+
+            {(reason || justReset) && (
+              <p className={styles.notice} role="status">
+                {justReset ? 'Your password was changed. Log in with your new password.' : reason}
+              </p>
+            )}
 
             <div className={styles.brandRow}>
               <span className={styles.swirl}><Swirl /></span>
@@ -74,10 +94,22 @@ export default function LoginForm() {
               onSubmit={async (values) => {
                 setServerError('');
                 try {
-                  const response = await submitLoginForm(values);
-                  // Password is correct; the user is signed in after two-step verification.
-                  setPending(response);
-                  router.push(VERIFY_ROUTE);
+                  const result = await signInWithEmail(values.email.trim(), values.password);
+                  if (!result.emailVerified) {
+                    // Not verified yet: email a fresh link and wait on the verification page.
+                    await sendVerificationEmail(result.idToken);
+                    setPendingVerification({
+                      idToken: result.idToken,
+                      refreshToken: result.refreshToken,
+                      email: result.email,
+                      next: next ?? undefined,
+                    });
+                    router.push(ROUTES.verify);
+                    return;
+                  }
+                  const user = await startSiteSession(result.idToken);
+                  await refresh();
+                  router.push(next ?? homeForRole(user.role as Role));
                 } catch (error) {
                   setServerError(error instanceof Error ? error.message : 'Login failed.');
                 }
@@ -125,6 +157,8 @@ export default function LoginForm() {
                     </div>
                     <ErrorMessage name="password" component="div" className={styles.error} />
                   </div>
+
+                  <Link href={ROUTES.forgotPassword} className={styles.forgot}>Forgot password?</Link>
 
                   {serverError && <div className={styles.serverError} role="alert">{serverError}</div>}
 

@@ -1,13 +1,15 @@
 "use client";
 
 import { useEffect, type ReactNode } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/app/context/AuthContext";
 import type { Permission } from "@/lib/Auth/Permission";
+import { loginUrl } from "@/lib/Routes/Routes";
 
 /**
- * Page guard. Signed-out visitors go to /login, signed-in users without the
- * permission go to `fallback`. Nothing protected renders until the check passes.
+ * Page guard. Signed-out visitors go to /login (which says why, and comes back
+ * here afterwards); signed-in users without the permission go to `fallback`.
+ * Nothing protected renders until the check passes.
  */
 export function RequireRole({
   permission,
@@ -20,12 +22,13 @@ export function RequireRole({
 }) {
   const { user, loading, can } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
   const allowed = can(permission);
 
   useEffect(() => {
     if (loading || allowed) return;
-    router.replace(user ? fallback : "/login");
-  }, [loading, allowed, user, router, fallback]);
+    router.replace(user ? fallback : loginUrl(pathname, permission));
+  }, [loading, allowed, user, router, fallback, pathname, permission]);
 
   if (loading || !allowed) return null;
   return <>{children}</>;

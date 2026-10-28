@@ -6,11 +6,6 @@ const SizeByProduct: Record<number, Size[]> = {
     { label: 'Medium', price: 9 },
     { label: 'Large', price: 14 },
   ],
-  2: [
-    { label: 'small', price: 1.50 },
-    { label: 'Medium', price: 4 },
-    { label: 'Large', price: 10 },
-  ],
   // Oreo Cheesecake: menu bundles 1 / 4 / 6 cans
   3: [
     { label: '1 can', price: 8 },
@@ -37,11 +32,6 @@ const SizeByProduct: Record<number, Size[]> = {
     { label: '1 can', price: 8 },
     { label: '4 cans', price: 30 },
     { label: '6 cans', price: 44 },
-  ],
-  8: [
-    { label: 'small', price: 4.50 },
-    { label: 'Medium', price: 30 },
-    { label: 'Large', price: 14 },
   ],
   9: [
     { label: 'small', price: 4.50 },

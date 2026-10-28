@@ -1,5 +1,6 @@
 "use client";
 
+import { RequireRole } from "@/app/components/RequiredRoles";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -96,7 +97,16 @@ function Field({
   );
 }
 
+// Guests can browse, but only signed-in customers can buy.
 export default function CheckoutPage() {
+  return (
+    <RequireRole permission="checkout:purchase">
+      <CheckoutPageBody />
+    </RequireRole>
+  );
+}
+
+function CheckoutPageBody() {
   const router = useRouter();
   const hydrated = useHydrated();
 

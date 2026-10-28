@@ -14,7 +14,7 @@
   width: 100%;
   height: 520px;
   background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)),
-   url("/Lotus cheesecake.jpg")      center/cover no-repeat;
+   url("/images/classic bundle.jpg") center/cover no-repeat; /* LÄYRD classic bundle, team photo */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -242,6 +242,8 @@
 }
 
 .shopNowBtn {
+  display: inline-block;
+  text-decoration: none;
   background: none;
   border: 1px solid #ffffff;
   color: #ffffff;

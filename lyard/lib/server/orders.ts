@@ -1,6 +1,8 @@
 // Server-side order helpers shared by /api/orders and the payment routes:
 // checking what the browser sent, re-pricing it from Firestore, and saving it once.
+import type { NextRequest } from "next/server";
 import { adminDb, COLLECTIONS } from "@/lib/firebase/admin";
+import { getSessionUser, type SessionUser } from "@/lib/server/session";
 import { calculateTotals, findPromo, type Totals } from "@/lib/check-out/CheckoutPricing";
 import { getSizes } from "@/lib/catelog/dataSize";
 import type { OrderLine, PlacedOrder } from "@/lib/check-out/checkoutStore";
@@ -17,6 +19,13 @@ export class OrderError extends Error {
   ) {
     super(message);
   }
+}
+
+/** Guests can browse but not buy: every order needs a signed-in account. */
+export async function requireBuyer(req: NextRequest): Promise<SessionUser> {
+  const user = await getSessionUser(req);
+  if (!user || user.role === "guest") throw new OrderError("Log in or create an account to place an order.", 401);
+  return user;
 }
 
 /** Throws OrderError when the order is missing something we need. */

@@ -14,8 +14,11 @@
   justify-content: center;
   padding: clamp(20px, 5vw, 56px) 16px;
   box-sizing: border-box;
-  /* Photo from the public folder. Change the file name here if yours is different. */
-  background: #d9bf94 url('/public/Login-bg.jpg') center / cover no-repeat;
+  /* Photo from the public folder (served from the site root, so no /public in the URL).
+     The light wash keeps the dark text on the glass cards readable. */
+  background:
+    linear-gradient(rgba(255, 246, 230, .35), rgba(255, 246, 230, .35)),
+    #d9bf94 url('/loginn-bg.jpg') center / cover no-repeat;
   color: var(--ink);
   font-family: Montserrat, "Helvetica Neue", Arial, sans-serif;
 }
@@ -124,3 +127,7 @@
   .goButton, .inputPill, .goldPill { transition: none; }
   .spinner { animation-duration: 1.5s; }
 }
+/* "Forgot password?" link and the message explaining why someone was sent here */
+.forgot { align-self: flex-end; font-size: 12px; font-weight: 600; color: var(--ink); text-decoration: underline; }
+.forgot:hover { color: #000; }
+.notice { margin: 0 0 10px; padding: 8px 12px; border-radius: 10px; background: rgba(255, 248, 225, .85); border: 1px solid var(--gold); color: var(--ink); font-size: 12px; font-weight: 600; line-height: 1.4; }

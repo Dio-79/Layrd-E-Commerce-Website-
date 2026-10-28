@@ -1,5 +1,6 @@
 // app/api/event-preorders/route.ts
 import { NextRequest, NextResponse } from "next/server";
+import { OrderError, requireBuyer } from "@/lib/server/orders";
 import { promises as fs } from "fs";
 import path from "path";
 import {
@@ -81,6 +82,8 @@ export async function GET(req: NextRequest) {
 
 /* ---------- POST: register a preorder ---------- */
 export async function POST(req: NextRequest) {
+  const user = await requireBuyer(req).catch((err: OrderError) => err);
+  if (user instanceof OrderError) return fail(user.message, user.status);
   let body: {
     customer?: { name?: string; email?: string; phone?: string };
     pickupPerson?: string;

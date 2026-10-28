@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb, COLLECTIONS } from "@/lib/firebase/admin";
 import { getSessionUser } from "@/lib/server/session";
+import { OrderError, requireBuyer } from "@/lib/server/orders";
 import type { PlacedOrder } from "@/lib/check-out/checkoutStore";
 
 export const runtime = "nodejs";
@@ -12,6 +13,8 @@ export const dynamic = "force-dynamic";
 const fail = (error: string, status = 400) => NextResponse.json({ error }, { status });
 
 export async function POST(req: NextRequest) {
+  const user = await requireBuyer(req).catch((err: OrderError) => err);
+  if (user instanceof OrderError) return fail(user.message, user.status);
   const order = (await req.json().catch(() => null)) as PlacedOrder | null;
   if (!order || typeof order.orderNumber !== "string" || !/^LYD-[A-Z0-9]+$/.test(order.orderNumber)) {
     return fail("Invalid order.");
@@ -19,9 +22,7 @@ export async function POST(req: NextRequest) {
   if (!Array.isArray(order.lines) || order.lines.length === 0) return fail("The order has no items.");
   if (!/^\S+@\S+\.\S+$/.test(order.customer?.email ?? "")) return fail("Enter a valid email.");
 
-  // TODO: prices come from the browser. Before taking real money, re-price each
-  // line from the products collection here.
-  const user = await getSessionUser(req);
+  // Online payments go through /api/payments/*, which re-price on the server.
   const ref = adminDb.collection(COLLECTIONS.orders).doc(order.orderNumber);
 
   try {

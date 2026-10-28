@@ -36,9 +36,12 @@ function order(orderNumber: string, total = 18.9) {
   };
 }
 
+let customer = "";
+
 beforeEach(async () => {
   await resetEmulators();
   vi.clearAllMocks();
+  customer = (await signedInUser("customer@layrd.test")).cookie;
   await adminDb.collection("products").doc("1").set({ productID: 1, name: "Strawberry Matcha", price: 9 });
   square.createPayment.mockResolvedValue({ id: "sq-pay-1", status: "APPROVED", amount_money: { amount: SERVER_TOTAL_CENTS, currency: "CAD" } });
   square.completePayment.mockResolvedValue({
@@ -50,8 +53,9 @@ beforeEach(async () => {
   square.cancelPayment.mockResolvedValue(undefined);
 });
 
+/** Signed in as a customer unless another cookie (or "" for a guest) is given. */
 const post = (handler: (req: ReturnType<typeof request>) => Promise<Response>, path: string, body: unknown, cookie?: string) =>
-  handler(request(path, { method: "POST", body, cookie }));
+  handler(request(path, { method: "POST", body, cookie: cookie ?? customer }));
 const savedOrder = async (n: string) => (await adminDb.collection("orders").doc(n).get()).data();
 
 describe("Square (card, Apple Pay, Google Pay)", () => {
@@ -80,6 +84,15 @@ describe("Square (card, Apple Pay, Google Pay)", () => {
     expect((await res.json()).error).toMatch(/Your total is now \$18\.90/);
     expect(square.createPayment).not.toHaveBeenCalled();
     expect(await savedOrder("LYD-SQ0")).toBeUndefined();
+  });
+
+  it("guests can't pay: nothing is charged or saved", async () => {
+    const res = await post(paySquare, "/api/payments/square", { order: order("LYD-SQG"), sourceId: "tok" }, "");
+    expect(res.status).toBe(401);
+    expect(square.createPayment).not.toHaveBeenCalled();
+    expect((await post(payPayPal, "/api/payments/paypal", { action: "create", order: order("LYD-PPG") }, "")).status).toBe(401);
+    expect((await post(payETransfer, "/api/payments/etransfer", { order: order("LYD-ETG") }, "")).status).toBe(401);
+    expect(await savedOrder("LYD-SQG")).toBeUndefined();
   });
 
   it("records Apple Pay / Google Pay as the method", async () => {
@@ -163,7 +176,7 @@ describe("Interac e-Transfer", () => {
       payment: { method: "etransfer", status: "awaiting_etransfer", amount: 18.9, etransferEmail: "pay@layrd.test" },
     });
 
-    expect((await post(confirmETransfer, "/api/payments/etransfer/confirm", { orderNumber: "LYD-ET1" })).status).toBe(401);
+    expect((await post(confirmETransfer, "/api/payments/etransfer/confirm", { orderNumber: "LYD-ET1" }, "")).status).toBe(401);
     const customer = await signedInUser("bob@layrd.test");
     expect((await post(confirmETransfer, "/api/payments/etransfer/confirm", { orderNumber: "LYD-ET1" }, customer.cookie)).status).toBe(403);
 

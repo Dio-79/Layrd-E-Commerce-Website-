@@ -16,8 +16,44 @@
   padding: 2rem clamp(1rem, 5vw, 4rem) 4rem;
 }
 
-.title {
+.titleRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
   margin: 0 0 1.75rem;
+}
+
+.logout {
+  padding: 0.6rem 1.25rem;
+  border: 1px solid #000;
+  background: #000;
+  color: #fff;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.logout:hover {
+  background: #222;
+}
+
+.logout:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.logout:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+
+.title {
+  margin: 0;
   font-size: clamp(1.6rem, 4vw, 2.2rem);
   font-weight: 700;
   letter-spacing: 0.15em;

@@ -14,6 +14,9 @@ export async function POST(req: NextRequest) {
 
   try {
     const decoded = await adminAuth.verifyIdToken(body.idToken);
+    if (!decoded.email_verified) {
+      return NextResponse.json({ error: "Verify your email first: open the link we emailed you." }, { status: 403 });
+    }
     const name = typeof body.name === "string" && body.name.trim() ? body.name.trim() : String(decoded.name ?? "");
     const user = await ensureProfile(decoded.uid, decoded.email ?? "", name);
 

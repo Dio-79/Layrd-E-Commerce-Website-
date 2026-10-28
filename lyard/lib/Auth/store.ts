@@ -27,7 +27,7 @@ const SESSION_KEY = 'layrd_session';
 // Where each role lands after signing in (matches `home` in each RoleDefinition).
 const ROLE_HOME: Record<Role, string> = {
   guest: '/',
-  user: '/account',
+  user: '/Setting',
   customer: '/',
   wholesale: '/wholesale',
   admin: '/admin',

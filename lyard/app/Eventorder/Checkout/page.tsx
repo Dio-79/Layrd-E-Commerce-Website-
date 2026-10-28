@@ -1,5 +1,6 @@
 "use client";
 
+import { RequireRole } from "@/app/components/RequiredRoles";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -42,7 +43,16 @@ interface FormValues {
 
 const money = (n: number) => `$${n.toFixed(2)}`;
 
+// Guests can browse, but only signed-in customers can buy.
 export default function EventCheckoutPage() {
+  return (
+    <RequireRole permission="events:preorder">
+      <EventCheckoutPageBody />
+    </RequireRole>
+  );
+}
+
+function EventCheckoutPageBody() {
   const [draft, setDraft] = useState<EventOrderDraft | null>(null);
   const [loaded, setLoaded] = useState(false);
 
