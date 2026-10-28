@@ -1,0 +1,140 @@
+.page {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 32px 16px 64px;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  color: #1d1d1b;
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 16px;
+  margin-bottom: 20px;
+}
+
+.title {
+  font-size: 1.6rem;
+  margin: 0;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: #5c5c58;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #b5b5ae;
+}
+
+.live {
+  background: #2e9d4f;
+  box-shadow: 0 0 0 4px rgba(46, 157, 79, 0.18);
+}
+
+.reconnecting {
+  background: #e0a526;
+}
+
+.failed {
+  background: #c8412f;
+}
+
+.note {
+  color: #5c5c58;
+  margin: 0 0 16px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.table th,
+.table td {
+  text-align: left;
+  padding: 10px 8px;
+  border-bottom: 1px solid #e6e4dc;
+  vertical-align: top;
+}
+
+.table th {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #5c5c58;
+}
+
+.num {
+  text-align: right !important;
+  font-variant-numeric: tabular-nums;
+}
+
+.flash {
+  animation: flash 2.5s ease-out;
+}
+
+@keyframes flash {
+  from {
+    background: #fff2b8;
+  }
+  to {
+    background: transparent;
+  }
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #efede6;
+  font-size: 0.8rem;
+}
+
+.form {
+  display: grid;
+  gap: 10px;
+  max-width: 360px;
+}
+
+.form input {
+  padding: 10px;
+  border: 1px solid #cfcdc4;
+  border-radius: 6px;
+  font: inherit;
+}
+
+.form button,
+.linkButton {
+  padding: 10px 14px;
+  border: 0;
+  border-radius: 6px;
+  background: #1d1d1b;
+  color: #fff;
+  font: inherit;
+  cursor: pointer;
+}
+
+.linkButton {
+  background: transparent;
+  color: #1d1d1b;
+  text-decoration: underline;
+  padding: 0;
+}
+
+.error {
+  color: #c8412f;
+}
+
+.scroll {
+  overflow-x: auto;
+}
