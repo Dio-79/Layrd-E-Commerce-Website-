@@ -4,7 +4,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb, COLLECTIONS } from "@/lib/firebase/admin";
 import { getSessionUser } from "@/lib/server/session";
-import type { PlacedOrder } from "@/lib/checkout/checkoutStore";
+import type { PlacedOrder } from "@/lib/check-out/checkoutStore";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

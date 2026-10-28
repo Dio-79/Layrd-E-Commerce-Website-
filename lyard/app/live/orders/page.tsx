@@ -24,6 +24,34 @@ interface LiveOrder {
   customer?: { fullName?: string; email?: string };
   lines?: { name: string; quantity: number }[];
   totals?: { total?: number };
+  payment?: { method?: string; status?: string; label?: string };
+}
+
+const PAYMENT_LABELS: Record<string, string> = {
+  card: "Card",
+  apple: "Apple Pay",
+  google: "Google Pay",
+  paypal: "PayPal",
+  etransfer: "e-Transfer",
+};
+
+/** Admins mark an e-Transfer order as paid once the money arrives. */
+function ConfirmETransfer({ orderNumber }: { orderNumber: string }) {
+  const [state, setState] = useState<"idle" | "busy" | "error">("idle");
+  const confirm = async () => {
+    setState("busy");
+    const res = await fetch("/api/payments/etransfer/confirm", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ orderNumber }),
+    });
+    setState(res.ok ? "idle" : "error"); // the live stream shows the new status
+  };
+  return (
+    <button className={styles.linkButton} onClick={confirm} disabled={state === "busy"}>
+      {state === "busy" ? "Saving…" : state === "error" ? "Failed, retry" : "Mark paid"}
+    </button>
+  );
 }
 
 const API_KEY = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
@@ -97,6 +125,7 @@ function OrdersTable({ admin }: { admin: boolean }) {
                 <th>Placed</th>
                 {admin && <th>Customer</th>}
                 <th>Items</th>
+                <th>Payment</th>
                 <th>Status</th>
                 <th className={styles.num}>Total</th>
               </tr>
@@ -108,6 +137,17 @@ function OrdersTable({ admin }: { admin: boolean }) {
                   <td>{o.placedAt ? new Date(o.placedAt).toLocaleString() : "-"}</td>
                   {admin && <td>{o.customer?.fullName ?? o.customer?.email ?? "-"}</td>}
                   <td>{o.lines?.map((l) => `${l.quantity}× ${l.name}`).join(", ") ?? "-"}</td>
+                  <td>
+                    {o.payment
+                      ? `${o.payment.label ?? PAYMENT_LABELS[o.payment.method ?? ""] ?? o.payment.method} · ${(o.payment.status ?? "").replace("_", " ")}`
+                      : "-"}
+                    {admin && o.payment?.status === "awaiting_etransfer" && (
+                      <>
+                        {" "}
+                        <ConfirmETransfer orderNumber={o.orderNumber} />
+                      </>
+                    )}
+                  </td>
                   <td>
                     <span className={styles.badge}>{o.status ?? "placed"}</span>
                   </td>

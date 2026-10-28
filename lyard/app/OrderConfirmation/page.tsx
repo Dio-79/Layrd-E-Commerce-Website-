@@ -16,6 +16,15 @@ export default function OrderConfirmationPage() {
 
   const delivering = order?.delivery.method === "ship";
   const trackingUrl = delivering ? order?.delivery.trackingUrl : undefined;
+  const payment = order?.payment;
+  const awaitingETransfer = payment?.status === "awaiting_etransfer";
+  const PAID_WITH: Record<string, string> = {
+    card: "Card",
+    apple: "Apple Pay",
+    google: "Google Pay",
+    paypal: "PayPal",
+    etransfer: "Interac e-Transfer",
+  };
 
   return (
     <div className={montserrat.variable}>
@@ -35,7 +44,11 @@ export default function OrderConfirmationPage() {
           </div>
         ) : (
           <OrderConfirmation
-            message={`Thank you for your order. We're preparing your selections. A receipt was sent to ${order.customer.email}.`}
+            message={
+              awaitingETransfer
+                ? `Thank you for your order. Send your e-Transfer to finish it; we'll start preparing it once the money arrives.`
+                : `Thank you for your order. We're preparing your selections. A receipt was sent to ${order.customer.email}.`
+            }
             orderNumber={order.orderNumber}
             infoLabel={delivering ? "DOORDASH DELIVERY ESTIMATE" : "PICKUP"}
             infoValue={
@@ -70,9 +83,26 @@ export default function OrderConfirmationPage() {
               ...(trackingUrl
                 ? [{ label: "TRACK ON DOORDASH ↗", href: trackingUrl, primary: true }]
                 : []),
+              ...(payment?.receiptUrl ? [{ label: "VIEW RECEIPT ↗", href: payment.receiptUrl, primary: false }] : []),
               { label: "RETURN TO SHOP", href: ROUTES.home, primary: !trackingUrl },
             ]}
           >
+            {payment && (
+              <p style={{ margin: 0, fontSize: "0.8rem", color: "#333" }}>
+                {awaitingETransfer ? (
+                  <>
+                    <strong>Payment: waiting for your e-Transfer.</strong> Send {formatMoney(payment.amount)} to{" "}
+                    <strong>{payment.etransferEmail}</strong> and put <strong>{order.orderNumber}</strong> in the
+                    message.
+                  </>
+                ) : (
+                  <>
+                    Paid with {payment.label ?? PAID_WITH[payment.method] ?? payment.method} ·{" "}
+                    {formatMoney(payment.amount)} {payment.currency}
+                  </>
+                )}
+              </p>
+            )}
             {order.events.length > 0 && (
               <ul style={{ margin: 0, padding: 0, listStyle: "none", fontSize: "0.75rem", color: "#555" }}>
                 {order.events.map((e, i) => (
