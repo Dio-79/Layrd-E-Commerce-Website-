@@ -61,6 +61,13 @@ export async function priceOrder(order: PlacedOrder): Promise<PlacedOrder> {
   if (order.promoCode && !promo) throw new OrderError("That promo code isn't valid.");
 
   const totals: Totals = calculateTotals(lines, shipping, promo);
+  // Never charge an amount the customer didn't see at checkout.
+  if (toCents(totals.total) !== toCents(Number(order.totals?.total))) {
+    throw new OrderError(
+      `Prices have changed since you opened checkout. Your total is now $${totals.total.toFixed(2)}. Please refresh the page and try again.`,
+      409
+    );
+  }
   return { ...order, lines, promoCode: promo?.code ?? null, totals };
 }
 

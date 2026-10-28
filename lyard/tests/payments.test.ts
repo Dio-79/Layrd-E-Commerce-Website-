@@ -23,9 +23,18 @@ const { POST: payETransfer } = await import("@/app/api/payments/etransfer/route"
 const { POST: confirmETransfer } = await import("@/app/api/payments/etransfer/confirm/route");
 const { PaymentDeclined } = await import("@/lib/payments/square");
 
-// Strawberry Matcha really costs $9; the browser claims $7 (sampleOrder).
-// 2 x $9 = $18.00 + 5% GST = $18.90
+// Strawberry Matcha costs $9: 2 x $9 = $18.00 + 5% GST = $18.90
 const SERVER_TOTAL_CENTS = 1890;
+
+/** The order as the checkout page sends it, with the prices the customer saw. */
+function order(orderNumber: string, total = 18.9) {
+  const base = sampleOrder(orderNumber);
+  return {
+    ...base,
+    lines: base.lines.map((l) => ({ ...l, unitPrice: 9 })),
+    totals: { itemCount: 2, originalSubtotal: 18, subtotal: 18, discount: 0, shipping: 0, tax: 0.9, total },
+  };
+}
 
 beforeEach(async () => {
   await resetEmulators();
@@ -46,8 +55,8 @@ const post = (handler: (req: ReturnType<typeof request>) => Promise<Response>, p
 const savedOrder = async (n: string) => (await adminDb.collection("orders").doc(n).get()).data();
 
 describe("Square (card, Apple Pay, Google Pay)", () => {
-  it("charges the server price, saves the order, then completes the payment", async () => {
-    const res = await post(paySquare, "/api/payments/square", { order: sampleOrder("LYD-SQ1"), sourceId: "cnon:card-nonce-ok", method: "card" });
+  it("authorizes the order total, saves the order, then completes the payment", async () => {
+    const res = await post(paySquare, "/api/payments/square", { order: order("LYD-SQ1"), sourceId: "cnon:card-nonce-ok", method: "card" });
     expect(res.status).toBe(201);
 
     expect(square.createPayment).toHaveBeenCalledWith(
@@ -64,14 +73,23 @@ describe("Square (card, Apple Pay, Google Pay)", () => {
     expect(saved?.lines[0].unitPrice).toBe(9);
   });
 
+  it("refuses to charge if the prices changed since the customer saw them", async () => {
+    // The browser still has the old $7 price (total $15.12); Firestore says $9.
+    const res = await post(paySquare, "/api/payments/square", { order: sampleOrder("LYD-SQ0"), sourceId: "tok" });
+    expect(res.status).toBe(409);
+    expect((await res.json()).error).toMatch(/Your total is now \$18\.90/);
+    expect(square.createPayment).not.toHaveBeenCalled();
+    expect(await savedOrder("LYD-SQ0")).toBeUndefined();
+  });
+
   it("records Apple Pay / Google Pay as the method", async () => {
-    await post(paySquare, "/api/payments/square", { order: sampleOrder("LYD-SQ2"), sourceId: "wallet-token", method: "google" });
+    await post(paySquare, "/api/payments/square", { order: order("LYD-SQ2"), sourceId: "wallet-token", method: "google" });
     expect((await savedOrder("LYD-SQ2"))?.payment.method).toBe("google");
   });
 
   it("shows 'Payment declined' and saves nothing when the card is declined", async () => {
     square.createPayment.mockRejectedValue(new PaymentDeclined("Payment declined. Try another card or payment method.", "GENERIC_DECLINE"));
-    const res = await post(paySquare, "/api/payments/square", { order: sampleOrder("LYD-SQ3"), sourceId: "bad" });
+    const res = await post(paySquare, "/api/payments/square", { order: order("LYD-SQ3"), sourceId: "bad" });
     expect(res.status).toBe(402);
     expect((await res.json()).error).toMatch(/Payment declined/);
     expect(await savedOrder("LYD-SQ3")).toBeUndefined();
@@ -84,31 +102,31 @@ describe("Square (card, Apple Pay, Google Pay)", () => {
       await adminDb.collection("orders").doc("LYD-SQ4").set({ orderNumber: "LYD-SQ4" });
       return { id: "sq-pay-4", status: "APPROVED" };
     });
-    const res = await post(paySquare, "/api/payments/square", { order: sampleOrder("LYD-SQ4"), sourceId: "tok" });
+    const res = await post(paySquare, "/api/payments/square", { order: order("LYD-SQ4"), sourceId: "tok" });
     expect(res.status).toBe(409);
     expect(square.cancelPayment).toHaveBeenCalledWith("sq-pay-4");
     expect(square.completePayment).not.toHaveBeenCalled();
   });
 
   it("rejects unknown products, bad promo codes and orders already paid", async () => {
-    const unknown = { ...sampleOrder("LYD-SQ5"), lines: [{ ...sampleOrder("x").lines[0], productId: 999 }] };
+    const unknown = { ...order("LYD-SQ5"), lines: [{ ...order("x").lines[0], productId: 999 }] };
     expect((await post(paySquare, "/api/payments/square", { order: unknown, sourceId: "tok" })).status).toBe(400);
-    expect((await post(paySquare, "/api/payments/square", { order: { ...sampleOrder("LYD-SQ6"), promoCode: "FREE100" }, sourceId: "tok" })).status).toBe(400);
+    expect((await post(paySquare, "/api/payments/square", { order: { ...order("LYD-SQ6"), promoCode: "FREE100" }, sourceId: "tok" })).status).toBe(400);
 
-    await post(paySquare, "/api/payments/square", { order: sampleOrder("LYD-SQ7"), sourceId: "tok" });
-    expect((await post(paySquare, "/api/payments/square", { order: sampleOrder("LYD-SQ7"), sourceId: "tok" })).status).toBe(409);
+    await post(paySquare, "/api/payments/square", { order: order("LYD-SQ7"), sourceId: "tok" });
+    expect((await post(paySquare, "/api/payments/square", { order: order("LYD-SQ7"), sourceId: "tok" })).status).toBe(409);
     expect(square.createPayment).toHaveBeenCalledTimes(1);
   });
 
   it("applies valid promo codes on the server", async () => {
-    await post(paySquare, "/api/payments/square", { order: { ...sampleOrder("LYD-SQ8"), promoCode: "layrd10" }, sourceId: "tok" });
+    await post(paySquare, "/api/payments/square", { order: { ...order("LYD-SQ8", 17.01), promoCode: "layrd10" }, sourceId: "tok" });
     // $18 - 10% = $16.20 + 5% GST = $17.01
     expect(square.createPayment).toHaveBeenCalledWith(expect.objectContaining({ amountCents: 1701 }));
   });
 
   it("links the order to the signed-in customer", async () => {
     const alice = await signedInUser("alice@layrd.test");
-    await post(paySquare, "/api/payments/square", { order: sampleOrder("LYD-SQ9"), sourceId: "tok" }, alice.cookie);
+    await post(paySquare, "/api/payments/square", { order: order("LYD-SQ9"), sourceId: "tok" }, alice.cookie);
     expect((await savedOrder("LYD-SQ9"))?.userId).toBe(alice.uid);
   });
 });
@@ -116,21 +134,21 @@ describe("Square (card, Apple Pay, Google Pay)", () => {
 describe("PayPal", () => {
   it("creates the PayPal order for the server total", async () => {
     paypal.createPayPalOrder.mockResolvedValue("PP-ORDER-1");
-    const res = await post(payPayPal, "/api/payments/paypal", { action: "create", order: sampleOrder("LYD-PP1") });
+    const res = await post(payPayPal, "/api/payments/paypal", { action: "create", order: order("LYD-PP1") });
     expect(await res.json()).toEqual({ paypalOrderId: "PP-ORDER-1" });
     expect(paypal.createPayPalOrder).toHaveBeenCalledWith({ amountCents: SERVER_TOTAL_CENTS, orderNumber: "LYD-PP1" });
   });
 
   it("saves the order after capture", async () => {
     paypal.capturePayPalOrder.mockResolvedValue({ captureId: "CAP-1", amountCents: SERVER_TOTAL_CENTS, currency: "CAD", orderNumber: "LYD-PP2" });
-    const res = await post(payPayPal, "/api/payments/paypal", { action: "capture", order: sampleOrder("LYD-PP2"), paypalOrderId: "PP-ORDER-2" });
+    const res = await post(payPayPal, "/api/payments/paypal", { action: "capture", order: order("LYD-PP2"), paypalOrderId: "PP-ORDER-2" });
     expect(res.status).toBe(201);
     expect(await savedOrder("LYD-PP2")).toMatchObject({ status: "confirmed", payment: { provider: "paypal", status: "paid", paymentId: "CAP-1" } });
   });
 
   it("refuses a capture that doesn't match the order", async () => {
     paypal.capturePayPalOrder.mockResolvedValue({ captureId: "CAP-3", amountCents: 100, currency: "CAD", orderNumber: "LYD-PP3" });
-    const res = await post(payPayPal, "/api/payments/paypal", { action: "capture", order: sampleOrder("LYD-PP3"), paypalOrderId: "PP-ORDER-3" });
+    const res = await post(payPayPal, "/api/payments/paypal", { action: "capture", order: order("LYD-PP3"), paypalOrderId: "PP-ORDER-3" });
     expect(res.status).toBe(409);
     expect(await savedOrder("LYD-PP3")).toBeUndefined();
   });
@@ -138,7 +156,7 @@ describe("PayPal", () => {
 
 describe("Interac e-Transfer", () => {
   it("saves the order as waiting for an e-Transfer, and only admins can mark it paid", async () => {
-    const res = await post(payETransfer, "/api/payments/etransfer", { order: sampleOrder("LYD-ET1") });
+    const res = await post(payETransfer, "/api/payments/etransfer", { order: order("LYD-ET1") });
     expect(res.status).toBe(201);
     expect(await savedOrder("LYD-ET1")).toMatchObject({
       status: "awaiting_payment",
