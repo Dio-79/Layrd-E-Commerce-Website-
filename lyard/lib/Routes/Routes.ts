@@ -6,12 +6,12 @@
 export const ROUTES = {
   home: "/",
   main: "/Mainpage", //                 app/Mainpage/page.tsx
-  drinks: "/drinks", //                 app/drinks/page.tsx
+  Drinks: "/Drinks", //                 app/drinks/page.tsx
   cakeInACan: "/products", //           app/products/page.tsx
   bundles: "/Bundle", //                app/Bundle/page.tsx
   eventOrder: "/Eventorder", //         app/Eventorder/page.tsx
   search: "/Search", //                 app/Search/page.tsx
-  cart: "/cart", //                     app/cart/page.tsx
+  cart: "/Cart", //                     app/cart/page.tsx
   checkout: "/check-out", //            app/check-out/page.tsx
   confirmation: "/OrderConfirmation", // app/OrderConfirmation/page.tsx
   settings: "/Setting", //              app/Setting/page.tsx
