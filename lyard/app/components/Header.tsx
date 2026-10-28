@@ -87,7 +87,7 @@ const Header = () => {
         aria-label="Main"
         className="flex justify-center space-x-8 py-3 text-xs font-bold uppercase tracking-wider text-black"
       >
-        <Link href={ROUTES.Drinks} className="hover:underline">
+        <Link href={ROUTES.drinks} className="hover:underline">
           Drinks
         </Link>
         <Link href={ROUTES.cakeInACan} className="hover:underline">

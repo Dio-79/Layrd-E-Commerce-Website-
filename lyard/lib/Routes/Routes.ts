@@ -6,7 +6,7 @@
 export const ROUTES = {
   home: "/",
   main: "/Mainpage", //                 app/Mainpage/page.tsx
-  Drinks: "/Drinks", //                 app/drinks/page.tsx
+  drinks: "/drinks", //                 app/drinks/page.tsx
   cakeInACan: "/products", //           app/products/page.tsx
   bundles: "/Bundle", //                app/Bundle/page.tsx
   eventOrder: "/Eventorder", //         app/Eventorder/page.tsx
