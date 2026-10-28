@@ -5,14 +5,14 @@ import { useRouter } from "next/navigation";
 import { searchItems, type SearchItem } from "@/lib/Search/search";
 import { getSearchItems } from "@/lib/Search/Searchindex";
 import { ROUTES } from "@/lib/Routes/Routes";
-import styles from "./SearchBar.module.css";
+import styles from "./Searchbar.module.css";
 
 const MAX_SUGGESTIONS = 6;
 const money = (n: number) => `$${n.toFixed(2)}`;
 
 /**
  * Header search: a magnifier button that opens a search box with live suggestions.
- * Arrow keys move through the suggestions, Enter opens one (or the full results page),
+ * Arrow keys move through the suggestions, Entesr opens one (or the full results page),
  * Escape closes.
  */
 export default function SearchBar() {

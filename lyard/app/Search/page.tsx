@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import SearchResults from "./Searchresults";
+import SearchResults from "./searchresults";
 
 // useSearchParams() needs a Suspense boundary
 export default function SearchPage() {
