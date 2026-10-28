@@ -4,6 +4,7 @@
 // product changes (price, stock, name...). No reload needed.
 import { useEffect, useRef, useState } from "react";
 import styles from "../live.module.css";
+import { LiveShell } from "../LiveShell";
 import { LiveStatus } from "../LiveStatus";
 import { useLiveStream } from "../useLiveStream";
 
@@ -14,6 +15,7 @@ interface LiveProduct {
   price: number;
   stock?: number;
   tag?: string;
+  imageUrl?: string;
   section?: string;
   sizes?: string[];
 }
@@ -38,51 +40,50 @@ function useChangedIds(products: LiveProduct[] | null) {
   return changed;
 }
 
+function ProductCard({ product, flash }: { product: LiveProduct; flash: boolean }) {
+  return (
+    <div className={`${styles.card} ${flash ? styles.flash : ""}`}>
+      <div className={styles.imageWrapper}>
+        {product.tag && <span className={styles.tagBadge}>{product.tag}</span>}
+        {product.imageUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={product.imageUrl} alt={product.name} className={styles.image} />
+        )}
+      </div>
+      <div className={styles.cardBody}>
+        <h3 className={styles.productName}>{product.name}</h3>
+        <p className={styles.meta}>
+          {[product.section, product.sizes?.join(" · ")].filter(Boolean).join(" — ") || " "}
+        </p>
+      </div>
+      <div className={styles.cardFooter}>
+        <span className={styles.price}>{money(product.price)}</span>
+        {typeof product.stock === "number" && <span className={styles.stock}>{product.stock} in stock</span>}
+      </div>
+    </div>
+  );
+}
+
 export default function LiveProductsPage() {
   const { docs: products, state, updatedAt } = useLiveStream<LiveProduct>("/api/live/products");
   const changed = useChangedIds(products);
 
   return (
-    <main className={styles.page}>
-      <div className={styles.header}>
-        <h1 className={styles.title}>Products (live)</h1>
-        <LiveStatus state={state} updatedAt={updatedAt} />
-      </div>
-      <p className={styles.note}>
-        Straight from Firestore. Change a product in the Firebase console and it updates here within a second.
-      </p>
-
-      {products && products.length === 0 && <p>No products in Firestore yet.</p>}
+    <LiveShell
+      title="LIVE PRODUCTS"
+      subtitle="Straight from Firestore. A change in the Firebase console shows up here within a second."
+      aside={<LiveStatus state={state} updatedAt={updatedAt} />}
+    >
+      {!products && <p className={styles.message}>Connecting to Firebase…</p>}
+      {products?.length === 0 && <p className={styles.message}>No products in Firestore yet.</p>}
       {products && products.length > 0 && (
-        <div className={styles.scroll}>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Product</th>
-                <th>Section</th>
-                <th>Sizes</th>
-                <th className={styles.num}>Stock</th>
-                <th className={styles.num}>Price</th>
-              </tr>
-            </thead>
-            <tbody>
-              {products.map((p) => (
-                <tr key={`${p.id}-${changed.ids.has(p.id) ? changed.at : 0}`} className={changed.ids.has(p.id) ? styles.flash : undefined}>
-                  <td>{p.productID}</td>
-                  <td>
-                    {p.name} {p.tag && <span className={styles.badge}>{p.tag}</span>}
-                  </td>
-                  <td>{p.section ?? "-"}</td>
-                  <td>{p.sizes?.join(", ") ?? "-"}</td>
-                  <td className={styles.num}>{p.stock ?? "-"}</td>
-                  <td className={styles.num}>{money(p.price)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className={styles.grid}>
+          {products.map((p) => {
+            const flash = changed.ids.has(p.id);
+            return <ProductCard key={`${p.id}-${flash ? changed.at : 0}`} product={p} flash={flash} />;
+          })}
         </div>
       )}
-    </main>
+    </LiveShell>
   );
 }
