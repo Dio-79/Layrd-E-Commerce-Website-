@@ -113,9 +113,11 @@ async function fetchCurrentUser(): Promise<AuthUser | null> {
       return isRole(data?.role) ? { ...data, role: data.role } : null;
     }
 
-    // 401/403: the server says nobody is signed in. Believe it.
+    // 403: the server refuses this user. Believe it.
+    // 401: no server (Firebase) session. The login and sign-up pages still use the
+    //      local test session, so fall back to it (dev only).
     // 404: the endpoint does not exist yet, so use the local test session (dev only).
-    if (res.status !== 404) return null;
+    if (res.status !== 401 && res.status !== 404) return null;
   } catch {
     // Network error: fall through to the dev fallback below.
   }
