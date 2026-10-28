@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import styles from "./Search.module.css";
+import styles from "./search.module.css";
 import { searchItems } from "@/lib/Search/search";
 import { getSearchItems } from "@/lib/Search/Searchindex";
 import { ROUTES } from "@/lib/Routes/Routes";
