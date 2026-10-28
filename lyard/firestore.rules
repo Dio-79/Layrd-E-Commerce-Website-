@@ -1,0 +1,22 @@
+rules_version = '2';
+
+// The browser only talks to Firebase Auth directly. Everything else goes
+// through the Next.js API routes, which use the Admin SDK (rules don't apply
+// to it). So the browser may read the catalog and its own profile, nothing more.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    match /users/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false; // roles are set on the server only
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
