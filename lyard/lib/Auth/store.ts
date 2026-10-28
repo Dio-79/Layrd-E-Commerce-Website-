@@ -28,7 +28,7 @@ const SESSION_KEY = 'layrd_session';
 const ROLE_HOME: Record<Role, string> = {
   guest: '/',
   user: '/Setting',
-  customer: '/',
+  customer: '/Mainpage', // the shop ("/" is the login page)
   wholesale: '/wholesale',
   admin: '/admin',
 };
