@@ -8,13 +8,15 @@ import SubmitButton from "./SubmitButton";
 import styles from "./event.module.css";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
+import { TAX_RATE } from "@/lib/check-out/CheckoutPricing";
 
 const montserrat = Montserrat({ subsets: ["latin"], variable: "--font-montserrat" });
 const cinzel = Cinzel({ subsets: ["latin"], variable: "--font-cinzel" });
 
 export default function EventOrderPage() {
+  // Same GST as checkout, so the totals match
   return (
-    <EventOrderProvider taxRate={0.08}>
+    <EventOrderProvider taxRate={TAX_RATE}>
       <Header />
       <main className={`${styles.page} ${montserrat.variable} ${cinzel.variable}`}>
         <div className={styles.left}>
