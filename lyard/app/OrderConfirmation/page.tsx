@@ -60,7 +60,7 @@ export default function OrderConfirmationPage() {
               id: l.id,
               name: l.name,
               image: l.image,
-              meta: [l.size, l.flavor].filter(Boolean).join(" · ") + ` · Qty ${l.quantity}`,
+              meta: [l.group, l.size, l.flavor].filter(Boolean).join(" · ") + ` · Qty ${l.quantity}`,
               price: l.unitPrice * l.quantity,
             }))}
             rows={[
