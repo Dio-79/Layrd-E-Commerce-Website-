@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { products } from "@/lib/catelog/data";
 import { getProductId, getProductImage, useEventOrder } from "@/app/context/EventOrdercontext";
@@ -25,6 +25,14 @@ export default function SubmitButton() {
   const router = useRouter();
   const { totals } = useEventOrder();
   const [error, setError] = useState("");
+
+  // Hide the message once they start fixing the details
+  useEffect(() => {
+    const form = document.getElementById("selection-form");
+    const clear = () => setError("");
+    form?.addEventListener("input", clear);
+    return () => form?.removeEventListener("input", clear);
+  }, []);
 
   const handleSubmit = () => {
     setError("");

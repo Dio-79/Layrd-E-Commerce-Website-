@@ -180,7 +180,7 @@ function SlotCard({ item, index, onChange }: SlotCardProps) {
                     onClick={() => updateItem(item.id, "selectedSize", size)}
                   >
                     {size}
-                    {product ? ` · ${getUnitPrice(product, size).toFixed(2)}` : ""}
+                    {product ? ` · $${getUnitPrice(product, size).toFixed(2)}` : ""}
                   </button>
                 ))}
               </div>
