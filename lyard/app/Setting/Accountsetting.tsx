@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Header from "@/app/components/Header";
 import { useAuth } from "@/app/context/AuthContext";
-import { ROUTES } from "@/lib/Routes/Routes";
+import { loginUrl, ROUTES } from "@/lib/Routes/Routes";
+import GoogleButton from "@/app/components/GoogleButton";
 import Footer from "../components/Footer";
 import styles from "./Account.module.css";
 import { useCustomerProfile } from "./Usecustomerprofile";
@@ -23,10 +24,11 @@ type TabId = (typeof TABS)[number]["id"];
 
 export default function AccountSettings() {
   const { identity, profile, loading, save } = useCustomerProfile();
-  const { signOut } = useAuth();
+  const { signOut, loading: authLoading } = useAuth();
   const router = useRouter();
   const [tab, setTab] = useState<TabId>("profile");
   const [loggingOut, setLoggingOut] = useState(false);
+  const [googleError, setGoogleError] = useState("");
 
   const logOut = async () => {
     setLoggingOut(true);
@@ -64,10 +66,34 @@ export default function AccountSettings() {
           )}
         </div>
 
-        {!identity ? (
-          <p className={styles.notice}>
-            <Link href="/login">Sign in</Link> to manage your account.
+        {authLoading ? (
+          <p className={styles.notice} role="status">
+            Loading your account…
           </p>
+        ) : !identity ? (
+          <section className={styles.guestPanel} aria-labelledby="guest-title">
+            <h2 id="guest-title" className={styles.guestTitle}>
+              Welcome to LÄYRD
+            </h2>
+            <p className={styles.guestText}>
+              Log in or create a free account to manage your profile, saved addresses and payment methods, and to
+              place orders.
+            </p>
+            <div className={styles.guestActions}>
+              <Link href={loginUrl(ROUTES.settings)} className={styles.guestPrimary}>
+                Log in
+              </Link>
+              <Link href={ROUTES.signup} className={styles.guestSecondary}>
+                Create account
+              </Link>
+            </div>
+            <GoogleButton className={styles.guestGoogle} next={ROUTES.settings} onError={setGoogleError} />
+            {googleError && (
+              <p className={styles.guestError} role="alert">
+                {googleError}
+              </p>
+            )}
+          </section>
         ) : loading || !profile ? (
           <p className={styles.notice} role="status">
             Loading your account…

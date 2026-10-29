@@ -393,3 +393,100 @@
     flex-direction: column;
   }
 }
+/* Signed-out view of the Settings page: log in / create account */
+.guestPanel {
+  display: grid;
+  gap: 1rem;
+  max-width: 32rem;
+  padding: 1.75rem;
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--gold);
+  background: #fff;
+}
+
+.guestTitle {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.guestText {
+  margin: 0;
+  color: #555;
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
+.guestActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.guestPrimary,
+.guestSecondary {
+  padding: 0.7rem 1.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+
+.guestPrimary {
+  background: #000;
+  color: #fff;
+}
+
+.guestPrimary:hover {
+  background: #222;
+}
+
+.guestSecondary {
+  border: 1px solid #000;
+  color: #000;
+}
+
+.guestSecondary:hover {
+  background: #f5f5f5;
+}
+
+.guestGoogle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  width: fit-content;
+  padding: 0.65rem 1.25rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  color: #111;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.guestGoogle:hover {
+  background: #f7f7f7;
+}
+
+.guestGoogle:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.guestError {
+  margin: 0;
+  color: var(--danger);
+  font-size: 0.8rem;
+}
+
+.guestPrimary:focus-visible,
+.guestSecondary:focus-visible,
+.guestGoogle:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
