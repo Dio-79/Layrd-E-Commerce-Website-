@@ -7,6 +7,10 @@ import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as yup from 'yup';
 import styles from './login.module.css';
 import { LoginForms as submitLoginForm } from './loginapi';
+import { setPending } from '@/lib/Auth/store';
+
+// Folder of the two-step verification page.
+const VERIFY_ROUTE = '/varifcationpage';
 
 const schema = yup.object({
   email: yup.string().trim().email('Invalid email format').required('Email is required'),
@@ -71,9 +75,9 @@ export default function LoginForm() {
                 setServerError('');
                 try {
                   const response = await submitLoginForm(values);
-                  const token = (response as { token?: string } | null)?.token;
-                  console.log('Logged in, token:', token); // store the token however your app needs
-                  router.push('/'); // or '/varificationpage' (check the folder spelling)
+                  // Password is correct; the user is signed in after two-step verification.
+                  setPending(response);
+                  router.push(VERIFY_ROUTE);
                 } catch (error) {
                   setServerError(error instanceof Error ? error.message : 'Login failed.');
                 }

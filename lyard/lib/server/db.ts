@@ -1,3 +1,4 @@
+// @ts-expect-error -- pg must be installed as a runtime dependency.
 import { Pool } from "pg";
 
 //used to grab database variables from env.local and conenct to it

@@ -1,5 +1,4 @@
 "use client";
-
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -194,7 +193,7 @@ function ConfirmationInner() {
         <button type="button" className={styles.actionBtn} onClick={() => window.print()}>
           PRINT ORDER
         </button>
-        <Link href="/Mainpage" className={styles.complete}>
+        <Link href="Mainpage" className={styles.complete}>
           RETURN TO SHOP
         </Link>
       </div>

@@ -1,0 +1,327 @@
+/* ------------------------------------------------------------------ */
+/* Customize modal (shared)                                           */
+/* Every colour, size and spacing value is a variable defined once in */
+/* .backdrop below. (Media-query widths are the only literals.)       */
+/* ------------------------------------------------------------------ */
+.backdrop {
+  /* colours */
+  --amber: #d9a21b;
+  --rule: #e6d9a6;
+  --ink: #111;
+  --dark: #000;
+  --dark-hover: #222;
+  --on-dark: #fff;
+  --muted: #777;
+  --subtle: #555;
+  --control-line: #ddd;
+  --surface: #fff;
+  --image-bg: #f1f3f5;
+  --blue: #1e88e5;
+  --overlay: rgb(0 0 0 / 0.55);
+  --shadow-modal: 0 1rem 3rem rgb(0 0 0 / 0.25);
+
+  /* typography */
+  --font-body: var(--font-montserrat), Montserrat, system-ui, sans-serif;
+  --text-title: clamp(1.4rem, 3vw, 2rem);
+  --text-price: 1.25rem;
+  --text-body: 0.85rem;
+  --text-option: 0.8rem;
+  --text-label: 0.7rem;
+  --text-note: 0.72rem;
+  --weight-title: 700;
+  --weight-strong: 600;
+  --track-label: 0.08em;
+  --track-btn: 0.06em;
+  --line-height-body: 1.5;
+
+  /* layout + shapes */
+  --modal-max: 56rem;
+  --modal-pad: 2rem;
+  --gap: 1rem;
+  --gap-sm: 0.5rem;
+  --image-min: 16rem;
+  --thumb-size: 4.4rem;
+  --thumb-dim: 0.7;
+  --ctrl-size: 2.25rem;
+  --btn-pad-y: 0.45rem;
+  --btn-pad-x: 0.9rem;
+  --hairline: 1px;
+  --radius: 0.5rem;
+  --radius-sm: 0.25rem;
+  --focus-width: 2px;
+  --focus-offset: 2px;
+  --z-modal: 1000;
+  --transition: 0.2s ease;
+
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: grid;
+  place-items: center;
+  padding: var(--gap);
+  background: var(--overlay);
+  font-family: var(--font-body);
+  color: var(--ink);
+}
+
+.dialog {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: 100%;
+  max-width: var(--modal-max);
+  max-height: 100%;
+  overflow: auto;
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow-modal);
+}
+
+.close {
+  position: absolute;
+  top: var(--gap-sm);
+  right: var(--gap-sm);
+  z-index: 1;
+  width: var(--ctrl-size);
+  height: var(--ctrl-size);
+  border: 0;
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+
+/* Photos */
+.gallery {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+  min-width: 0;
+}
+
+.imageWrap {
+  position: relative;
+  flex: 1;
+  min-height: var(--image-min);
+  overflow: hidden;
+  background: var(--image-bg);
+}
+
+.image {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  font-size: 0; /* a broken image never spills its alt text over the dialog */
+}
+
+.thumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-sm);
+  padding: 0 var(--gap-sm) var(--gap-sm);
+}
+
+.thumb {
+  width: var(--thumb-size);
+  height: var(--thumb-size);
+  padding: 0;
+  overflow: hidden;
+  border: var(--hairline) solid var(--control-line);
+  border-radius: var(--radius-sm);
+  background: var(--image-bg);
+  opacity: var(--thumb-dim);
+  cursor: pointer;
+  transition: opacity var(--transition), border-color var(--transition);
+}
+
+.thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.activeThumb {
+  border-color: var(--amber);
+  opacity: 1;
+}
+
+/* Details */
+.details {
+  display: grid;
+  gap: var(--gap);
+  align-content: start;
+  min-width: 0;
+  padding: var(--modal-pad);
+}
+
+.breadcrumb {
+  color: var(--muted);
+  font-size: var(--text-label);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+}
+
+.heading {
+  margin: 0;
+  font-size: var(--text-title);
+  font-weight: var(--weight-strong);
+}
+
+.subtitle {
+  margin: 0;
+  color: var(--subtle);
+  font-size: var(--text-body);
+  line-height: var(--line-height-body);
+}
+
+.price {
+  font-size: var(--text-price);
+  font-weight: var(--weight-title);
+}
+
+.divider {
+  width: 100%;
+  margin: 0;
+  border: 0;
+  border-top: var(--hairline) solid var(--rule);
+}
+
+.optionGroup {
+  display: grid;
+  gap: var(--gap-sm);
+}
+
+.optionLabel {
+  font-size: var(--text-label);
+  font-weight: var(--weight-strong);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+}
+
+.sizeButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-sm);
+}
+
+.sizeBtn {
+  padding: var(--btn-pad-y) var(--btn-pad-x);
+  border: var(--hairline) solid var(--control-line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--text-label);
+  letter-spacing: var(--track-btn);
+  cursor: pointer;
+  transition: background-color var(--transition), color var(--transition), border-color var(--transition);
+}
+
+.sizeBtn:hover {
+  border-color: var(--amber);
+}
+
+.selected,
+.selected:hover {
+  border-color: var(--dark);
+  background: var(--dark);
+  color: var(--on-dark);
+}
+
+.actionRow {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--gap);
+}
+
+.qtyBox {
+  display: grid;
+  gap: var(--gap-sm);
+}
+
+.qtyControls {
+  display: inline-flex;
+  align-items: center;
+  border: var(--hairline) solid var(--control-line);
+  border-radius: var(--radius-sm);
+}
+
+.qtyControls button {
+  width: var(--ctrl-size);
+  height: var(--ctrl-size);
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.qtyControls span {
+  min-width: var(--ctrl-size);
+  text-align: center;
+  font-size: var(--text-option);
+  font-weight: var(--weight-strong);
+}
+
+.addBtn {
+  flex: 1;
+  height: var(--ctrl-size);
+  padding: 0 var(--btn-pad-x);
+  border: var(--hairline) solid var(--dark);
+  background: var(--dark);
+  color: var(--on-dark);
+  font: inherit;
+  font-size: var(--text-label);
+  letter-spacing: var(--track-btn);
+  cursor: pointer;
+  transition: background-color var(--transition);
+}
+
+.addBtn:hover {
+  background: var(--dark-hover);
+}
+
+.notes {
+  display: grid;
+  gap: var(--gap-sm);
+}
+
+.note {
+  display: flex;
+  gap: var(--gap-sm);
+  color: var(--subtle);
+  font-size: var(--text-note);
+  line-height: var(--line-height-body);
+}
+
+/* Keyboard focus */
+.close:focus-visible,
+.thumb:focus-visible,
+.sizeBtn:focus-visible,
+.qtyControls button:focus-visible,
+.addBtn:focus-visible {
+  outline: var(--focus-width) solid var(--blue);
+  outline-offset: var(--focus-offset);
+}
+
+/* Narrow screens */
+@media (max-width: 640px) {
+  .backdrop {
+    --modal-pad: 1.25rem;
+    --image-min: 0;
+  }
+
+  .dialog {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .imageWrap {
+    flex: none;
+    aspect-ratio: 1 / 1;
+  }
+}

@@ -1,29 +1,75 @@
-// lib/auth.ts
-// Browser-side helpers that talk to your /api/auth routes.
-// No "use client" needed: it has no React code, so client components can import it.
+'use client';
 
-export interface User {
-  id: number | string;
-  email: string;
-  name: string;
+// app/context/AuthContext.tsx
+import { createContext, createElement, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import type { ReactNode } from 'react';
+import type { Permission, RoleDefinition } from '@/lib/Auth/Permission';
+import { getRoleDefinition, roleCan } from '@/lib/Auth/Roles';
+import { clearSession, getSession, saveSession, type Role, type Session } from '@/lib/Auth/store';
+
+interface AuthContextValue {
+  /** The signed-in user, or null for guests. */
+  user: Session | null;
+  /** The current role ("guest" when signed out). */
+  role: Role;
+  roleDefinition: RoleDefinition;
+  /** False until the saved session has been read in the browser. */
+  ready: boolean;
+  can: (permission: Permission) => boolean;
+  signIn: (session: Session) => void;
+  signOut: () => void;
 }
 
-// Sends JSON to an API route and returns the parsed response.
-// Throws an Error with the server's message so pages can show it on screen.
-async function postJSON<T>(url: string, body: unknown): Promise<T> {
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
+const AuthContext = createContext<AuthContextValue | null>(null);
 
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error ?? "Something went wrong. Please try again.");
-  return data as T;
+/** Wrap the app with this (for example in app/layout.tsx). */
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<Session | null>(null);
+  const [ready, setReady] = useState(false);
+
+  // Read the saved session once, in the browser.
+  useEffect(() => {
+    let active = true;
+
+    queueMicrotask(() => {
+      if (!active) return;
+      setUser(getSession());
+      setReady(true);
+    });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const signIn = useCallback((session: Session) => {
+    saveSession(session);
+    setUser(session);
+  }, []);
+
+  const signOut = useCallback(() => {
+    clearSession();
+    setUser(null);
+  }, []);
+
+  const value = useMemo<AuthContextValue>(() => {
+    const role: Role = user?.role ?? 'guest';
+    return {
+      user,
+      role,
+      roleDefinition: getRoleDefinition(role),
+      ready,
+      can: (permission) => roleCan(role, permission),
+      signIn,
+      signOut,
+    };
+  }, [user, ready, signIn, signOut]);
+
+  return createElement(AuthContext.Provider, { value }, children);
 }
 
-/** Logs in. Returns the user, or throws (for example "Invalid email or password"). */
-export async function login(email: string, password: string): Promise<User> {
-  const data = await postJSON<{ user: User }>("/api/login", { email, password });
-  return data.user;
+export function useAuth(): AuthContextValue {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('useAuth must be used inside <AuthProvider>.');
+  return ctx;
 }

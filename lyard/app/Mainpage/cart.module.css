@@ -1,5 +1,6 @@
 /* Container */
 .bodyWrapper {
+  --scroll-offset: 5rem; /* space left above the featured section when "Explore" scrolls to it */
   width: 100%;
   background-color: #ffffff;
   color: #111111;
@@ -62,6 +63,7 @@
 
 /* 2. Featured Collection Section */
 .featuredSection {
+  scroll-margin-top: var(--scroll-offset);
   max-width: 1200px;
   margin: 60px auto;
   padding: 0 24px;

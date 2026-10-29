@@ -1,9 +1,15 @@
-import type { Permission, Role, RoleDefinition } from "./Permission";
-import { GUEST_ROLE } from "@/app/User/guest";
-import { USER_ROLE } from "@/app/User/user";
-import { CUSTOMER_ROLE } from "@/app/User/Customer";
-import { WHOLESALE_ROLE } from "@/app/User/WholesSale/Wholesales";
-import { ADMIN_ROLE } from "@/app/User/Admin/Adminstartor";
+// lib/Auth/roles.ts
+// One place that gathers every role definition so permission checks can look them up.
+//
+// NOTE: adjust these import paths if your role files live somewhere else.
+import { ADMIN_ROLE } from '@/app/User/Admin/Adminstartor';
+import { WHOLESALE_ROLE } from '@/app/User/WholesSale/Wholesales';
+import { CUSTOMER_ROLE } from '@/app/User/Customer';
+import { GUEST_ROLE } from '@/app/User/guest';
+import { USER_ROLE } from '@/app/User/user';
+
+import type { Permission, RoleDefinition } from './Permission';
+import type { Role } from './store';
 
 export const ROLES: Record<Role, RoleDefinition> = {
   guest: GUEST_ROLE,
@@ -13,12 +19,8 @@ export const ROLES: Record<Role, RoleDefinition> = {
   admin: ADMIN_ROLE,
 };
 
-export const isRole = (value: unknown): value is Role =>
-  typeof value === "string" && value in ROLES;
+export const getRoleDefinition = (role: Role | null | undefined): RoleDefinition =>
+  ROLES[role ?? 'guest'] ?? GUEST_ROLE;
 
-/** Unknown or missing roles are treated as guest (least privilege). */
-export const can = (role: Role | null | undefined, permission: Permission): boolean =>
-  (ROLES[role ?? "guest"] ?? GUEST_ROLE).permissions.includes(permission);
-
-export const homeFor = (role: Role | null | undefined): string =>
-  (ROLES[role ?? "guest"] ?? GUEST_ROLE).home;
+export const roleCan = (role: Role | null | undefined, permission: Permission): boolean =>
+  getRoleDefinition(role).permissions.includes(permission);

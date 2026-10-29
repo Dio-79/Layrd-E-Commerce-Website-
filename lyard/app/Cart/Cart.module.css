@@ -1,0 +1,360 @@
+/* ------------------------------------------------------------------ */
+/* Cart page                                                          */
+/* Every colour, size and spacing value is a variable defined once in */
+/* .page below. Change the look there; nothing further down is        */
+/* hard-coded. (Media-query widths are the only literals, because CSS */
+/* does not allow variables inside @media conditions.)                */
+/* ------------------------------------------------------------------ */
+.page {
+  /* colours (also used by the order-summary card from checkout.module.css) */
+  --gold: #e6c200;
+  --amber: #d9a21b;
+  --rule: #e6d9a6;
+  --ink: #111;
+  --muted: #777;
+  --subtle: #555;
+  --faint: #999;
+  --line: #e3e3e3;
+  --control-line: #ddd;
+  --surface: #fff;
+  --thumb-bg: #f1f3f5;
+  --blue: #1e88e5;
+  --danger: #a32020;
+  --success: #1b6e3a;
+
+  /* typography */
+  --font-body: var(--font-montserrat), Montserrat, system-ui, sans-serif;
+  --text-title: clamp(2rem, 6vw, 3.2rem);
+  --text-name: clamp(1.1rem, 2.4vw, 1.45rem);
+  --text-total: 1.25rem;
+  --text-link: 1.15rem;
+  --text-body: 0.9rem;
+  --text-qty: 0.8rem;
+  --text-head: 0.75rem;
+  --text-sub: 0.7rem;
+  --text-small: 0.68rem;
+  --text-meta: 0.65rem;
+  --weight-title: 700;
+  --weight-name: 500;
+  --weight-strong: 600;
+  --weight-total: 700;
+  --track-title: 0.18em;
+  --track-head: 0.2em;
+  --track-event: 0.1em;
+  --track-link: 0.06em;
+  --track-total: 0.02em;
+
+  /* layout */
+  --page-max: 76rem;
+  --page-pad-x: clamp(1rem, 5vw, 4rem);
+  --page-pad-top: 2rem;
+  --page-pad-bottom: 4rem;
+  --layout-gap: clamp(1.5rem, 5vw, 4rem);
+  --summary-min: 16rem;
+  --summary-max: 22rem;
+  --sticky-top: 1rem;
+  --col-qty: 7.5rem;
+  --col-trash: 2rem;
+  --col-total: 6.5rem;
+  --col-gap: 1rem;
+  --row-pad: 1.25rem;
+  --block-gap: 1.5rem;
+
+  /* shapes */
+  --hairline: 1px;
+  --accent-line: 2px;
+  --thumb-size: 4.5rem;
+  --thumb-radius: 0.75rem;
+  --stepper-width: 6.25rem;
+  --stepper-btn-w: 2rem;
+  --stepper-btn-h: 2.1rem;
+  --focus-width: 2px;
+  --focus-offset: 2px;
+  --underline-offset: 4px;
+  --disabled-opacity: 0.55;
+
+  font-family: var(--font-body);
+  color: var(--ink);
+  background: var(--surface);
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: var(--page-pad-top) var(--page-pad-x) var(--page-pad-bottom);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--text-title);
+  font-weight: var(--weight-title);
+  letter-spacing: var(--track-title);
+}
+
+.sub {
+  margin: 0.35rem 0 2rem;
+  color: var(--muted);
+  font-size: var(--text-sub);
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(var(--summary-min), var(--summary-max));
+  gap: var(--layout-gap);
+  align-items: start;
+}
+
+/* ------------------------------------------------------------------ */
+/* Table                                                              */
+/* ------------------------------------------------------------------ */
+.head,
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--col-qty) var(--col-trash) var(--col-total);
+  align-items: center;
+  column-gap: var(--col-gap);
+}
+
+.head {
+  padding-bottom: 0.6rem;
+  border-bottom: var(--hairline) solid var(--rule);
+  font-size: var(--text-head);
+  font-weight: var(--weight-name);
+  letter-spacing: var(--track-head);
+  text-transform: uppercase;
+}
+
+.head span:nth-child(2) {
+  text-align: center;
+}
+
+.head span:last-child {
+  text-align: right;
+}
+
+.table {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.row {
+  grid-template-areas: "product qty trash total";
+  padding: var(--row-pad) 0;
+  border-bottom: var(--hairline) solid var(--rule);
+}
+
+.product {
+  grid-area: product;
+  display: flex;
+  align-items: center;
+  gap: var(--col-gap);
+  min-width: 0;
+}
+
+.thumb {
+  flex: none;
+  width: var(--thumb-size);
+  height: var(--thumb-size);
+  overflow: hidden;
+  border: var(--accent-line) solid var(--amber);
+  border-radius: var(--thumb-radius);
+  background: var(--thumb-bg);
+}
+
+.thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  font-size: 0; /* a broken image never spills its alt text over the row */
+}
+
+.name {
+  margin: 0;
+  font-size: var(--text-name);
+  font-weight: var(--weight-name);
+  line-height: 1.2;
+}
+
+.meta {
+  margin: 0.5rem 0 0;
+  color: var(--muted);
+  font-size: var(--text-meta);
+}
+
+/* Quantity */
+.qtyCol {
+  grid-area: qty;
+  display: grid;
+  justify-items: center;
+}
+
+.qtyText {
+  font-size: var(--text-qty);
+  color: var(--subtle);
+}
+
+.stepper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  width: var(--stepper-width);
+  border: var(--hairline) solid var(--control-line);
+  background: var(--surface);
+}
+
+.stepper button {
+  width: var(--stepper-btn-w);
+  height: var(--stepper-btn-h);
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.stepper output {
+  font-size: var(--text-sub);
+  font-weight: var(--weight-strong);
+}
+
+/* Remove + line total */
+.trashCol {
+  grid-area: trash;
+  display: grid;
+  justify-items: center;
+}
+
+.trash {
+  display: inline-flex;
+  padding: 0.25rem;
+  border: 0;
+  background: none;
+  color: var(--subtle);
+  cursor: pointer;
+}
+
+.totalCol {
+  grid-area: total;
+  display: grid;
+  justify-items: end;
+  font-size: var(--text-total);
+  font-weight: var(--weight-total);
+  letter-spacing: var(--track-total);
+}
+
+.struck {
+  text-decoration: line-through;
+}
+
+/* ------------------------------------------------------------------ */
+/* Event / bundle orders                                              */
+/* ------------------------------------------------------------------ */
+.eventBlock {
+  margin-top: var(--block-gap);
+}
+
+.eventHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--col-gap);
+  padding-bottom: 0.5rem;
+  border-bottom: var(--hairline) solid var(--rule);
+  font-size: var(--text-small);
+  font-weight: var(--weight-strong);
+  letter-spacing: var(--track-event);
+  text-transform: uppercase;
+}
+
+.eventRemove {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--faint);
+  font: inherit;
+  font-size: var(--text-small);
+  letter-spacing: 0;
+  text-decoration: underline;
+  text-transform: none;
+  cursor: pointer;
+}
+
+/* ------------------------------------------------------------------ */
+/* Empty state, links, summary                                        */
+/* ------------------------------------------------------------------ */
+.empty {
+  margin: 0 0 1rem;
+  padding: var(--block-gap) 0;
+  border-top: var(--hairline) solid var(--rule);
+  border-bottom: var(--hairline) solid var(--rule);
+  font-size: var(--text-body);
+  color: var(--subtle);
+}
+
+.continue {
+  display: inline-block;
+  margin-top: var(--row-pad);
+  color: var(--ink);
+  font-size: var(--text-link);
+  letter-spacing: var(--track-link);
+  text-decoration: underline;
+  text-underline-offset: var(--underline-offset);
+}
+
+.summaryCol {
+  position: sticky;
+  top: var(--sticky-top);
+}
+
+.disabled {
+  opacity: var(--disabled-opacity);
+  pointer-events: none;
+}
+
+/* ------------------------------------------------------------------ */
+/* Keyboard focus                                                     */
+/* ------------------------------------------------------------------ */
+.stepper button:focus-visible,
+.trash:focus-visible,
+.eventRemove:focus-visible,
+.continue:focus-visible {
+  outline: var(--focus-width) solid var(--blue);
+  outline-offset: var(--focus-offset);
+}
+
+/* ------------------------------------------------------------------ */
+/* Narrow screens                                                     */
+/* ------------------------------------------------------------------ */
+@media (max-width: 860px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .summaryCol {
+    position: static;
+  }
+
+  /* checkout.module.css moves its summary to the top on small screens;
+     keep the cart summary below the items instead */
+  .layout > .summaryCol {
+    order: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .head {
+    display: none;
+  }
+
+  .row {
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "product trash"
+      "qty total";
+    row-gap: 0.9rem;
+  }
+
+  .qtyCol {
+    justify-items: start;
+  }
+}

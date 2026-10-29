@@ -1,12 +1,11 @@
 "use client";
-
 import Link from "next/link";
 import { Montserrat } from "next/font/google";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import OrderConfirmation from "../components/ordercomfirmation";
-import { useCheckout, useHydrated } from "@/lib/checkout/checkoutStore";
-import { formatDate, formatMoney } from "@/lib/checkout/CheckoutPricing";
+import { useCheckout, useHydrated } from "@/lib/check-out/checkoutStore";
+import { formatDate, formatMoney } from "@/lib/check-out/CheckoutPricing";
 import { ROUTES } from "@/lib/Routes/Routes";
 
 const montserrat = Montserrat({ subsets: ["latin"], variable: "--font-montserrat" });
@@ -32,7 +31,7 @@ export default function OrderConfirmationPage() {
         {!hydrated ? null : !order ? (
           <div style={{ textAlign: "center", display: "grid", gap: "1rem", marginTop: "3rem" }}>
             <p>There is no recent order to show.</p>
-            <Link href={ROUTES.mainpage}>← Back to the shop</Link>
+            <Link href={ROUTES.main}>← Back to the shop</Link>
           </div>
         ) : (
           <OrderConfirmation

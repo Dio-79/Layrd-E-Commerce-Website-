@@ -1,10 +1,15 @@
 'use client';
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import { signup } from './SignupApi';
+import { setPending } from '@/lib/Auth/store';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as yup from 'yup';
 import styles from './Signup.module.css';
+
+// Folder of the two-step verification page.
+const VERIFY_ROUTE = '/varifcationpage';
 
 const schema = yup.object({
   username: yup.string().required('Full name is required'),
@@ -20,6 +25,8 @@ const schema = yup.object({
 });
 
 export default function SignupForm() {
+  const router = useRouter();
+
   return (
     <div className={styles.pageContainer}>
       <div className={styles.cardGrid}>
@@ -40,8 +47,11 @@ export default function SignupForm() {
             onSubmit={async (values, { setSubmitting, setStatus }) => {
               setStatus(undefined);
               try {
+                // Creates the account as a "customer", then goes to two-step verification.
+                // They are signed in once the code is accepted there.
                 const result = await signup(values.email, values.username, values.password);
-                console.log('Signed up:', result);
+                setPending(result);
+                router.push(VERIFY_ROUTE);
               } catch (err) {
                 setStatus(err instanceof Error ? err.message : 'Something went wrong.');
               } finally {

@@ -1,23 +1,20 @@
 'use client';
 
 import { useState } from 'react';
-import { ProductItem } from "@/app/types/models";
-import { products } from "@/lib/catelog/data";
+import { products, type CatalogProduct } from "@/lib/catelog/data";
+import CustomizeModal from "@/app/components/Customizemodal";
+import { toCustomizable } from "@/app/components/toCustomizable";
 import styles from "./ProductGrid.module.css";
 
+/** How many products the home screen shows. */
+const FEATURED_COUNT = 3;
 
 interface ProductCardProps {
-  product: ProductItem;
-  onCustomize?: (product: ProductItem) => void;
+  product: CatalogProduct;
+  onCustomize: (product: CatalogProduct) => void;
 }
 
-type ProductWithImage = ProductItem & {
-  image?: string;
-};
-
 function ProductCard({ product, onCustomize }: ProductCardProps) {
-  const productImage = (product as ProductWithImage).image || product.imageUrl;
-
   return (
     <div className={styles.card}>
       {/* Image & Badge Wrapper */}
@@ -28,11 +25,7 @@ function ProductCard({ product, onCustomize }: ProductCardProps) {
           </div>
         )}
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={productImage}
-          alt={`${product.name} ${product.tag}`}
-          className={styles.productImage}
-        />
+        <img src={product.imageUrl} alt={product.name} className={styles.productImage} />
       </div>
 
       {/* Text Content */}
@@ -48,11 +41,7 @@ function ProductCard({ product, onCustomize }: ProductCardProps) {
           <span className={styles.priceValue}>${product.price}</span>
         </div>
 
-        <button
-          type="button"
-          className={styles.customizeBtn}
-          onClick={() => onCustomize && onCustomize(product)}
-        >
+        <button type="button" className={styles.customizeBtn} onClick={() => onCustomize(product)}>
           Customize
         </button>
       </div>
@@ -61,64 +50,20 @@ function ProductCard({ product, onCustomize }: ProductCardProps) {
 }
 
 export default function ProductRow() {
-  const [selectedProduct, setSelectedProduct] = useState<ProductItem | null>(null);
-
-  const handleCustomize = (product: ProductItem) => {
-    setSelectedProduct(product);
-  };
+  const [selected, setSelected] = useState<CatalogProduct | null>(null);
 
   return (
     <div className={styles.container}>
-     
       {/* Product Grid */}
       <div className={styles.grid}>
-        {(products as unknown as ProductItem[]).slice(0,3).map((product) => (
-          <ProductCard
-            key={`${product.name}-${product.category}`}
-            product={product}
-            onCustomize={handleCustomize}
-
-          />
-          
+        {products.slice(0, FEATURED_COUNT).map((product) => (
+          <ProductCard key={product.productID} product={product} onCustomize={setSelected} />
         ))}
       </div>
 
-      {/* Customization Dialog / Modal */}
-      {selectedProduct && (
-        <div className={styles.modalBackdrop}>
-          <div className={styles.modalContent}>
-            <div className={styles.modalHeader}>
-              <h3 className={styles.modalTitle}>Customize {selectedProduct.name}</h3>
-              <button
-                type="button"
-                className={styles.closeBtn}
-                onClick={() => setSelectedProduct(null)}
-              >
-                ✕
-              </button>
-            </div>
-            <p className={styles.description}>{selectedProduct.description}</p>
-            <div>
-              Base Price: <strong className={styles.priceValue}>${selectedProduct.price}</strong>
-            </div>
-            <div className={styles.modalActions}>
-              <button
-                type="button"
-                className={styles.cancelModalBtn}
-                onClick={() => setSelectedProduct(null)}
-              >
-                Close
-              </button>
-              <button
-                type="button"
-                className={styles.addToCartBtn}
-                onClick={() => setSelectedProduct(null)}
-              >
-                Add to Cart
-              </button>
-            </div>
-          </div>
-        </div>
+      {/* Same customize popup as the other pages: size, quantity, add to bag */}
+      {selected && (
+        <CustomizeModal product={toCustomizable(selected)} breadcrumb="Featured" onClose={() => setSelected(null)} />
       )}
     </div>
   );
