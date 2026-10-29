@@ -19,6 +19,15 @@ export default function EventOrderPage() {
     <EventOrderProvider taxRate={TAX_RATE}>
       <Header />
       <main className={`${styles.page} ${montserrat.variable} ${cinzel.variable}`}>
+        <header className={styles.intro}>
+          <h1 className={styles.introTitle}>EVENT ORDERING</h1>
+          <p className={styles.introText}>
+            Planning a wedding, party or office event? Add the drinks and cakes you&apos;d like, choose sizes and
+            quantities, tell us the date and type of event, then press Submit to check out. You can upload custom
+            labels and ask us anything below.
+          </p>
+        </header>
+
         <div className={styles.left}>
           <Calculationpage />
           <Request />

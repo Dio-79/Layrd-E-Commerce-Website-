@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { products } from "@/lib/catelog/data";
+import { products, SECTIONS } from "@/lib/catelog/data";
 import {
   FLAVOR_OPTIONS,
   getFromPrice,
@@ -9,11 +9,18 @@ import {
   getProductImage,
   getProductName,
   getProductSizes,
+  getUnitPrice,
   useEventOrder,
   type DetailedItem,
   type Product,
 } from "@/app/context/EventOrdercontext";
 import styles from "./event.module.css";
+
+// The picker lists drinks first, then cakes.
+const PICKER_GROUPS = [...SECTIONS]
+  .sort((a, b) => (a.id === "drinks" ? -1 : b.id === "drinks" ? 1 : 0))
+  .map((section) => ({ ...section, items: products.filter((p) => p.section === section.id) }))
+  .filter((g) => g.items.length > 0);
 
 /* ------------------------------------------------------------------ */
 /* "Choose item for slot #N" dialog                                   */
@@ -55,12 +62,15 @@ function ChooseItemDialog({ open, slotNumber, onClose, onSelect }: DialogProps) 
           <h2 id="slot-dialog-title" className={styles.dialogTitle}>
             Choose item for slot #{slotNumber}
           </h2>
-          <p className={styles.dialogSub}>
-            Select a flavor to populate this slot in your custom bundle.
-          </p>
+          <p className={styles.dialogSub}>Pick a drink or a cake for your event order.</p>
 
+          {PICKER_GROUPS.map((group) => (
+          <section key={group.id} aria-labelledby={`event-pick-${group.id}`}>
+          <h3 id={`event-pick-${group.id}`} className={styles.choiceGroup}>
+            {group.label.toUpperCase()}
+          </h3>
           <ul className={styles.choices}>
-            {products.map((product, index) => {
+            {group.items.map((product, index) => {
               const name = getProductName(product);
               const image = getProductImage(product);
 
@@ -84,6 +94,8 @@ function ChooseItemDialog({ open, slotNumber, onClose, onSelect }: DialogProps) 
               );
             })}
           </ul>
+          </section>
+          ))}
         </div>
       )}
     </dialog>
@@ -107,8 +119,7 @@ function SlotCard({ item, index, onChange }: SlotCardProps) {
   const image = product ? getProductImage(product) : null;
   const name = product ? getProductName(product) : item.productName;
   const sizes = getProductSizes(item.productId); // unique string labels
-  const flavorMissing = status === "error" && !item.selectedFlavor;
-console.log("productId", item.productId, "sizes", getProductSizes(item.productId));
+  void status;
   return (
     <li className={styles.slot}>
       <div className={styles.slotThumb}>
@@ -137,23 +148,21 @@ console.log("productId", item.productId, "sizes", getProductSizes(item.productId
         <div className={styles.slotOptions}>
           <div>
             <label className={styles.optionLabel} htmlFor={`flavor-${item.id}`}>
-              Flavor
+              Flavor (optional)
             </label>
             <select
               id={`flavor-${item.id}`}
               className={`${styles.select} ${styles.slotSelect}`}
               value={item.selectedFlavor}
-              aria-invalid={flavorMissing}
               onChange={(e) => updateItem(item.id, "selectedFlavor", e.target.value)}
             >
-              <option value="">Select</option>
+              <option value="">No preference</option>
               {FLAVOR_OPTIONS.map((flavor: string) => (
                 <option key={flavor} value={flavor}>
                   {flavor}
                 </option>
               ))}
             </select>
-            {flavorMissing && <span className={styles.error}>Choose a flavor</span>}
           </div>
 
           {sizes.length > 0 && (
@@ -171,6 +180,7 @@ console.log("productId", item.productId, "sizes", getProductSizes(item.productId
                     onClick={() => updateItem(item.id, "selectedSize", size)}
                   >
                     {size}
+                    {product ? ` · ${getUnitPrice(product, size).toFixed(2)}` : ""}
                   </button>
                 ))}
               </div>
@@ -243,9 +253,7 @@ export default function Calculationpage() {
 
       <div className={styles.addMoreRow}>
         <button type="button" className={styles.addMore} onClick={() => setTarget("add")}>
-          +Add
-          <br />
-          More
+          {slots.length === 0 ? "+ ADD ITEMS" : "+ ADD MORE"}
         </button>
       </div>
 

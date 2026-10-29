@@ -183,10 +183,6 @@ export default function ProductPicker() {
 
   const handleAddToBag = () => {
     if (!hasSlots) return;
-    if (missingFlavor) {
-      setShowErrors(true);
-      return;
-    }
 
     // The real product id (so checkout can price it), with the size and flavor on the cart line.
     slots.forEach((slot) => {

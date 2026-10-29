@@ -48,11 +48,6 @@ export default function SubmitButton() {
       setError("Add at least one item to your event order.");
       return;
     }
-    const missingFlavor = items.findIndex((item) => !item.selectedFlavor);
-    if (missingFlavor !== -1) {
-      setError(`Choose a flavor for slot #${missingFlavor + 1}.`);
-      return;
-    }
 
     const fileInput = document.querySelector<HTMLInputElement>('input[type="file"]');
 
@@ -72,7 +67,7 @@ export default function SubmitButton() {
           name: item.productName,
           image: product ? getProductImage(product) ?? null : null,
           size: item.selectedSize,
-          flavor: item.selectedFlavor,
+          flavor: item.selectedFlavor || undefined,
           quantity: item.quantity,
           unitPrice: item.unitPrice,
         };
