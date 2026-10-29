@@ -4,8 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { products } from "@/lib/catelog/data";
 import { getProductId, getProductImage, useEventOrder } from "@/app/context/EventOrdercontext";
-import { addEventOrder } from "@/lib/check-out/checkoutStore";
-import { ROUTES } from "@/lib/Routes/Routes";
+import { saveEventDraft } from "@/lib/event/eventCheckoutStore";
 import styles from "./event.module.css";
 
 /** Reads the current values of a form by id. Field names come from the register() calls. */
@@ -59,7 +58,7 @@ export default function SubmitButton() {
 
     const fileInput = document.querySelector<HTMLInputElement>('input[type="file"]');
 
-    addEventOrder({
+    saveEventDraft({
       details: {
         pickupDate: selection.Starttime,
         eventType: selection.type,
@@ -74,15 +73,16 @@ export default function SubmitButton() {
           productId: item.productId,
           name: item.productName,
           image: product ? getProductImage(product) ?? null : null,
-          size: item.selectedSize,
-          flavor: item.selectedFlavor || undefined,
+          size: item.selectedSize ?? "",
+          flavor: item.selectedFlavor ?? "",
           quantity: item.quantity,
           unitPrice: item.unitPrice,
         };
       }),
     });
 
-    router.push(ROUTES.checkout);
+    // Event orders have their own checkout (pickup date and time, deposit) and confirmation.
+    router.push("/Eventorder/Checkout");
   };
 
   return (

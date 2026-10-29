@@ -1,8 +1,21 @@
 // app/api/bundle-preorders/route.ts
+// Bundle orders from /Bundle/checkout, saved to Firestore "bundlePreorders".
+//   GET  ?date=YYYY-MM-DD                 how many drinks are still free that day
+//   GET  ?reference=BN-...&email=...      look up an order (confirmation page)
+//   POST { customer, fulfillment, ... }   place a bundle order (signed-in customers only)
+//   PATCH { reference, status }           staff: x-admin-key header, or signed in as admin
 import { NextRequest, NextResponse } from "next/server";
-import { OrderError, requireBuyer } from "@/lib/server/orders";
-import { promises as fs } from "fs";
-import path from "path";
+import { assertSamePrices, OrderError, repriceLines, requireBuyer } from "@/lib/server/orders";
+import {
+  bookedUnits,
+  canManage,
+  findPreorder,
+  newReference,
+  preorderPayment,
+  savePreorder,
+  updatePreorderStatus,
+} from "@/lib/server/preorders";
+import { COLLECTIONS } from "@/lib/firebase/admin";
 import {
   MAX_UNITS_PER_DAY,
   PICKUP_TIMES,
@@ -18,50 +31,21 @@ import {
 } from "@/lib/Bundle/bundleRules";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
-/* ---------- storage ----------
-   A JSON file works locally. On Vercel and other serverless hosts the disk is
-   temporary, so swap readAll/writeAll for a database before deploying. */
-const FILE = path.join(process.cwd(), ".data", "bundle-preorders.json");
-
-async function readAll(): Promise<BundleRecord[]> {
-  try {
-    return JSON.parse(await fs.readFile(FILE, "utf8")) as BundleRecord[];
-  } catch {
-    return [];
-  }
-}
-
-async function writeAll(rows: BundleRecord[]) {
-  await fs.mkdir(path.dirname(FILE), { recursive: true });
-  await fs.writeFile(FILE, JSON.stringify(rows, null, 2));
-}
-
-// Runs writes one at a time so two orders can't overwrite each other or oversell a day
-let lock: Promise<unknown> = Promise.resolve();
-function withLock<T>(fn: () => Promise<T>): Promise<T> {
-  const run = lock.then(fn, fn);
-  lock = run.catch(() => undefined);
-  return run;
-}
+const COLLECTION = COLLECTIONS.bundlePreorders;
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const fail = (error: string, status = 400) => NextResponse.json({ error }, { status });
 
-const unitsOn = (rows: BundleRecord[], date: string) =>
-  rows
-    .filter((r) => r.pickupDate === date && r.status !== "cancelled")
-    .reduce((s, r) => s + r.units, 0);
-
 /* ---------- GET: capacity for a date, or look up an order ---------- */
 export async function GET(req: NextRequest) {
   const q = req.nextUrl.searchParams;
-  const rows = await readAll();
 
   const date = q.get("date");
   if (date) {
     if (!DATE_RE.test(date)) return fail("Invalid date");
-    const booked = unitsOn(rows, date);
+    const booked = await bookedUnits(COLLECTION, date);
     return NextResponse.json({
       date,
       booked,
@@ -73,9 +57,7 @@ export async function GET(req: NextRequest) {
   const reference = q.get("reference")?.trim().toUpperCase();
   const email = q.get("email")?.trim().toLowerCase();
   if (reference && email) {
-    const record = rows.find(
-      (r) => r.reference === reference && r.customer.email.toLowerCase() === email
-    );
+    const record = await findPreorder(COLLECTION, reference, email);
     // Same message for "no such order" and "wrong email" so references can't be guessed
     return record ? NextResponse.json({ record }) : fail("We couldn't find that order.", 404);
   }
@@ -107,6 +89,7 @@ export async function POST(req: NextRequest) {
     pickupTime?: string;
     notes?: unknown;
     lines?: BundleLine[];
+    paymentMethod?: unknown;
     acceptedPolicy?: boolean;
   };
   try {
@@ -115,7 +98,7 @@ export async function POST(req: NextRequest) {
     return fail("Invalid request");
   }
 
-  const { customer, pickupPerson, delivery, pickupDate, pickupTime, notes, lines, acceptedPolicy } =
+  const { customer, pickupPerson, delivery, pickupDate, pickupTime, notes, lines, paymentMethod, acceptedPolicy } =
     body ?? {};
   const fulfillment: Fulfillment = body?.fulfillment === "delivery" ? "delivery" : "pickup";
   const noun = fulfillment === "delivery" ? "delivery" : "pickup";
@@ -178,77 +161,57 @@ export async function POST(req: NextRequest) {
     return fail(`Orders of ${units} drinks need at least ${leadDaysFor(units)} day(s) notice (earliest: ${earliest}).`);
   }
 
-  // TODO: prices come from the browser. Before taking real money, look each
-  // line up in your product catalog here and use the catalog price instead.
-  const money = priceOrder(
-    lines.reduce<number>((s, l) => s + l.unitPrice * l.quantity, 0),
-    deliveryFee
-  );
+  try {
+    // Prices come from the catalog, not the browser.
+    const catalog = await repriceLines(lines, 10000);
+    assertSamePrices(lines, catalog);
 
-  return withLock(async () => {
-    try {
-      const rows = await readAll();
+    const money = priceOrder(
+      catalog.reduce((s, l) => s + l.unitPrice * l.quantity, 0),
+      deliveryFee
+    );
+    const payment = preorderPayment(paymentMethod, {
+      pickup: fulfillment === "pickup",
+      dueNow: money.total,
+      total: money.total,
+    });
 
-      const booked = unitsOn(rows, date);
-      if (booked + units > MAX_UNITS_PER_DAY) {
-        const remaining = Math.max(0, MAX_UNITS_PER_DAY - booked);
-        return fail(
-          remaining === 0
-            ? "That date is fully booked. Please choose another date."
-            : `Only ${remaining} drinks are left on that date. Reduce the order or choose another date.`,
-          409
-        );
-      }
+    const record: BundleRecord & { userId: string; payment: typeof payment; paymentMethod: string } = {
+      reference: newReference("BN"),
+      status: "requested",
+      createdAt: new Date().toISOString(),
+      fulfillment,
+      pickupDate: date,
+      pickupTime: time,
+      customer: {
+        name: String(customer.name).trim(),
+        email: String(customer.email).trim(),
+        phone: String(customer.phone).trim(),
+      },
+      pickupPerson: String(pickupPerson || customer.name).trim(),
+      notes: String(notes ?? ""),
+      lines: catalog,
+      units,
+      ...money,
+      delivery: deliveryRecord,
+      paymentMethod: payment.method,
+      payment,
+      userId: user.id,
+      policyAcceptedAt: new Date().toISOString(),
+    };
 
-      // TODO: charge the payment here with your payment provider and only continue
-      // if it succeeds. Card details never reach this route.
-
-      const reference = `BN-${Date.now().toString(36).toUpperCase()}${Math.random()
-        .toString(36)
-        .slice(2, 5)
-        .toUpperCase()}`;
-
-      const record: BundleRecord = {
-        reference,
-        status: "requested",
-        createdAt: new Date().toISOString(),
-        fulfillment,
-        pickupDate: date,
-        pickupTime: time,
-        customer: {
-          name: String(customer.name).trim(),
-          email: String(customer.email).trim(),
-          phone: String(customer.phone).trim(),
-        },
-        pickupPerson: String(pickupPerson || customer.name).trim(),
-        notes: String(notes ?? ""),
-        lines,
-        units,
-        ...money,
-        delivery: deliveryRecord,
-        policyAcceptedAt: new Date().toISOString(),
-      };
-
-      await writeAll([...rows, record]);
-      return NextResponse.json({ record }, { status: 201 });
-    } catch (err) {
-      console.error("bundle-preorders POST failed:", err);
-      return fail(
-        err instanceof Error ? `Server error: ${err.message}` : "Server error while saving the order.",
-        500
-      );
-    }
-  });
+    await savePreorder(COLLECTION, record, MAX_UNITS_PER_DAY, "drinks");
+    return NextResponse.json({ record }, { status: 201 });
+  } catch (err) {
+    if (err instanceof OrderError) return fail(err.message, err.status);
+    console.error("bundle-preorders POST failed:", err);
+    return fail("Couldn't save the order. Please try again.", 500);
+  }
 }
 
-/* ---------- PATCH: staff changes an order's status ----------
-   Set BUNDLE_ADMIN_KEY in .env.local, then:
-   fetch("/api/bundle-preorders", { method: "PATCH",
-     headers: { "Content-Type": "application/json", "x-admin-key": "<key>" },
-     body: JSON.stringify({ reference: "BN-...", status: "confirmed" }) }) */
+/* ---------- PATCH: staff changes an order's status ---------- */
 export async function PATCH(req: NextRequest) {
-  const key = process.env.BUNDLE_ADMIN_KEY;
-  if (!key || req.headers.get("x-admin-key") !== key) return fail("Not allowed", 403);
+  if (!(await canManage(req, process.env.BUNDLE_ADMIN_KEY))) return fail("Not allowed", 403);
 
   const { reference, status } = (await req.json().catch(() => ({}))) as {
     reference?: string;
@@ -256,12 +219,6 @@ export async function PATCH(req: NextRequest) {
   };
   if (!reference || !status || !STATUSES.includes(status)) return fail("Provide reference and a valid status.");
 
-  return withLock(async () => {
-    const rows = await readAll();
-    const index = rows.findIndex((r) => r.reference === reference);
-    if (index === -1) return fail("Order not found", 404);
-    rows[index] = { ...rows[index], status };
-    await writeAll(rows);
-    return NextResponse.json({ record: rows[index] });
-  });
+  const record = await updatePreorderStatus(COLLECTION, reference, status);
+  return record ? NextResponse.json({ record }) : fail("Order not found", 404);
 }

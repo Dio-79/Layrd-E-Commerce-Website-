@@ -12,9 +12,8 @@ import {
   type Product,
 } from "@/app/context/Bundlecontext";
 import { getAllergenInfo } from "@/lib/catelog/dataAllergens";
-import { useCart } from "@/app/context/CartContext";
-import type { Product as CartProduct } from "@/app/types/models";
-import { ROUTES } from "@/lib/Routes/Routes";
+import { saveBundleDraft } from "@/lib/Bundle/Bundlecheckoutstore";
+import type { BundleLine } from "@/lib/Bundle/bundleRules";
 import styles from "./bundlebuilder.module.css";
 
 const MIN_SLOTS = 3; // change this number to require more or fewer slots
@@ -35,7 +34,6 @@ const PICKER_GROUPS = [...SECTIONS]
 
 export default function BundleBuilder() {
   const router = useRouter();
-  const { addItem } = useCart();
   const {
     slots,
     quantity,
@@ -53,22 +51,29 @@ export default function BundleBuilder() {
   const filledCount = slots.filter((s) => s !== null).length;
   const canAdd = filledCount >= MIN_SLOTS;
 
-  // Each filled slot becomes a cart line, grouped as one "Custom bundle" in the bag.
-  const addBundleToBag = () => {
+  // The bundle has its own checkout (pickup or delivery date, payment) and confirmation.
+  const checkoutBundle = () => {
     if (!canAdd) return;
-    const group = { id: `bundle-${Date.now().toString(36)}`, name: "Custom bundle" };
-    slots.forEach((s) => {
+    const lines: BundleLine[] = [];
+    slots.forEach((s, i) => {
       if (!s) return;
       const product = findProduct(s.productId);
       if (!product) return;
-      const cartProduct = {
-        ...(product as unknown as CartProduct),
-        price: getUnitPrice(product, s.size),
-      };
-      addItem(cartProduct, s.quantity * quantity, { size: s.size || undefined, group });
+      lines.push({
+        id: `${i}-${getProductId(product)}-${s.size}`,
+        productId: Number(getProductId(product)),
+        name: getProductName(product),
+        size: s.size,
+        flavor: s.flavor,
+        quantity: s.quantity * quantity, // items per slot x bundle quantity
+        unitPrice: getUnitPrice(product, s.size),
+        image: getProductImage(product),
+      });
     });
+    if (lines.length === 0) return;
+    saveBundleDraft({ lines });
     reset();
-    router.push(ROUTES.cart);
+    router.push("/Bundle/checkout");
   };
 
   return (
@@ -76,8 +81,8 @@ export default function BundleBuilder() {
       <header className={styles.intro}>
         <h1 className={styles.introTitle}>BUILD YOUR BUNDLE</h1>
         <p className={styles.introText}>
-          Fill at least {MIN_SLOTS} of the {slots.length} slots with drinks and cakes, choose sizes, then add the bundle
-          to your bag.
+          Fill at least {MIN_SLOTS} of the {slots.length} slots with drinks and cakes, choose sizes, then check out to pick a
+          pickup or delivery time.
         </p>
       </header>
 
@@ -201,15 +206,15 @@ export default function BundleBuilder() {
             </div>
           </div>
 
-          <button type="button" className={styles.addToBag} disabled={!canAdd} onClick={addBundleToBag}>
-            ADD BUNDLE TO BAG →
+          <button type="button" className={styles.addToBag} disabled={!canAdd} onClick={checkoutBundle}>
+            CHECK OUT BUNDLE →
           </button>
         </div>
       </div>
 
       {!canAdd && (
         <p className={styles.hint}>
-          Fill at least {MIN_SLOTS} slots to add the bundle ({filledCount}/{MIN_SLOTS} selected)
+          Fill at least {MIN_SLOTS} slots to check out ({filledCount}/{MIN_SLOTS} selected)
         </p>
       )}
 

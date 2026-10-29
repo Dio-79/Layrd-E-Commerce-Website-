@@ -30,11 +30,12 @@ import {
   type DoorDashQuote,
 } from "@/lib/Intergration/doordashapi";
 import { ALLERGY_DISCLAIMER } from "@/lib/catelog/dataAllergens";
+import PreorderPayment, { preorderMethods, type PreorderPayMethod } from "@/app/components/PreorderPayment";
 import styles from "./checkout.module.css";
 
 const montserrat = Montserrat({ subsets: ["latin"], variable: "--font-montserrat" });
 
-type PayMethod = "card" | "apple" | "google" | "paypal";
+type PayMethod = PreorderPayMethod;
 
 interface FormValues {
   email: string;
@@ -48,9 +49,6 @@ interface FormValues {
   pickupDate: string;
   pickupTime: string;
   notes: string;
-  cardNumber: string;
-  expiry: string;
-  cvc: string;
   policy: boolean;
 }
 
@@ -116,26 +114,19 @@ function StoreIcon() {
   );
 }
 
-function CardIcon() {
-  return (
-    <svg className={styles.cardIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <rect x="2.5" y="5" width="19" height="14" rx="2" />
-      <path d="M2.5 10h19" />
-      <path d="M6 15h4" />
-    </svg>
-  );
-}
-
 function CheckoutForm({ draft }: { draft: BundleDraft }) {
   const router = useRouter();
   const [fulfillment, setFulfillment] = useState<Fulfillment>("pickup");
-  const [method, setMethod] = useState<PayMethod>("card");
+  const [chosenMethod, setMethod] = useState<PayMethod | null>(null);
   const [promo, setPromo] = useState("");
   const [promoMessage, setPromoMessage] = useState("");
   const [submitError, setSubmitError] = useState("");
   const [remaining, setRemaining] = useState<number | null>(null);
 
   const isDelivery = fulfillment === "delivery";
+  // Pay at pickup isn't possible for deliveries; fall back to the first method on offer.
+  const methods = preorderMethods(isDelivery);
+  const method = methods.some((m) => m.id === chosenMethod) ? chosenMethod : (methods[0]?.id ?? null);
   const noun = isDelivery ? "delivery" : "pickup";
 
   const units = useMemo(() => draft.lines.reduce((s, l) => s + l.quantity, 0), [draft]);
@@ -145,11 +136,6 @@ function CheckoutForm({ draft }: { draft: BundleDraft }) {
     () => draft.lines.reduce((s, l) => s + l.unitPrice * l.quantity, 0),
     [draft]
   );
-
-  const today = useMemo(() => {
-    const t = new Date();
-    return new Date(t.getFullYear(), t.getMonth(), t.getDate());
-  }, []);
 
   const {
     register,
@@ -169,9 +155,6 @@ function CheckoutForm({ draft }: { draft: BundleDraft }) {
       pickupDate: "",
       pickupTime: "",
       notes: "",
-      cardNumber: "",
-      expiry: "",
-      cvc: "",
       policy: false,
     },
   });
@@ -323,10 +306,6 @@ function CheckoutForm({ draft }: { draft: BundleDraft }) {
       setSubmitError("We couldn't reach the server. Please try again.");
     }
   };
-
-  const cardOnly = <T,>(check: (v: string) => T | string | true) => ({
-    validate: (v: string) => method !== "card" || check(v),
-  });
 
   const deliveryOnly = (check: (v: string) => true | string) => ({
     validate: (v: string) => !isDelivery || check(v),
@@ -545,88 +524,13 @@ function CheckoutForm({ draft }: { draft: BundleDraft }) {
 
         <h2 className={styles.heading}>Payment Details</h2>
 
-        <div
-          role="group"
-          aria-label="Credit or debit card"
-          className={`${styles.card} ${method === "card" ? styles.cardActive : ""}`}
-          onClick={() => setMethod("card")}
-        >
-          <div className={styles.cardHeader}>
-            <span className={styles.cardTitleRow}>
-              <CardIcon />
-              Credit/ Debit Card
-            </span>
-            <span className={styles.brands} aria-hidden="true">
-              <span className={styles.visa}>VISA</span>
-              <span className={styles.mc} />
-            </span>
-          </div>
-          <label className={styles.field}>
-            <span className={styles.smallLabel}>Card number</span>
-            <input
-              inputMode="numeric"
-              autoComplete="cc-number"
-              placeholder="0000 0000 0000 0000"
-              aria-invalid={!!errors.cardNumber}
-              {...register(
-                "cardNumber",
-                cardOnly((v) => /^\d{13,19}$/.test(v.replace(/\s/g, "")) || "Enter a valid card number")
-              )}
-            />
-            {errors.cardNumber && <span className={styles.error}>{errors.cardNumber.message}</span>}
-          </label>
-          <div className={styles.grid2}>
-            <label className={styles.field}>
-              <span className={styles.smallLabel}>Expiration</span>
-              <input
-                placeholder="MM/YY"
-                autoComplete="cc-exp"
-                aria-invalid={!!errors.expiry}
-                {...register(
-                  "expiry",
-                  cardOnly((v) => {
-                    const match = /^(\d{2})\/(\d{2})$/.exec(v.trim());
-                    if (!match) return "Use MM/YY";
-                    const month = Number(match[1]);
-                    const year = 2000 + Number(match[2]);
-                    if (month < 1 || month > 12) return "Invalid month";
-                    return new Date(year, month, 0) >= today || "This card has expired";
-                  })
-                )}
-              />
-              {errors.expiry && <span className={styles.error}>{errors.expiry.message}</span>}
-            </label>
-            <label className={styles.field}>
-              <span className={styles.smallLabel}>Security code</span>
-              <input
-                inputMode="numeric"
-                placeholder="CVC"
-                autoComplete="cc-csc"
-                aria-invalid={!!errors.cvc}
-                {...register("cvc", cardOnly((v) => /^\d{3,4}$/.test(v) || "3 or 4 digits"))}
-              />
-              {errors.cvc && <span className={styles.error}>{errors.cvc.message}</span>}
-            </label>
-          </div>
-        </div>
-
-        {(
-          [
-            ["apple", "Apple Pay"],
-            ["google", "Google Pay"],
-            ["paypal", "PayPal"],
-          ] as const
-        ).map(([key, label]) => (
-          <button
-            key={key}
-            type="button"
-            className={`${styles.wallet} ${method === key ? styles.walletActive : ""}`}
-            aria-pressed={method === key}
-            onClick={() => setMethod(key)}
-          >
-            <span>{label}</span>
-          </button>
-        ))}
+        <PreorderPayment
+          method={method}
+          onChange={setMethod}
+          delivery={isDelivery}
+          amountNow={money(price.total)}
+          classes={{ option: styles.wallet, active: styles.walletActive, note: styles.leadNote }}
+        />
 
         <p className={styles.leadNote}>{ALLERGY_DISCLAIMER}</p>
 
@@ -711,7 +615,7 @@ function CheckoutForm({ draft }: { draft: BundleDraft }) {
         <button
           type="submit"
           className={styles.complete}
-          disabled={isSubmitting || overCapacity || (isDelivery && quoteLoading)}
+          disabled={isSubmitting || overCapacity || (isDelivery && quoteLoading) || method === null}
         >
           {isSubmitting ? "REGISTERING…" : `PLACE PREORDER · ${money(price.total)}`}
         </button>

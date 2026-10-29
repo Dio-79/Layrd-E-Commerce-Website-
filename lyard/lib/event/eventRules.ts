@@ -2,7 +2,7 @@
 
 /* ---------- edit these ---------- */
 export const DEPOSIT_RATE = 0.3;        // charged at checkout
-export const TAX_RATE = 0.08;
+export const TAX_RATE = 0.05; // Alberta GST, same as the main checkout
 export const MAX_UNITS_PER_DAY = 300;   // kitchen capacity per pickup date
 export const CANCEL_HOURS = 72;         // changes/cancellations allowed until this long before pickup
 export const PICKUP_LOCATION = "Pickup at 123 St. NE";

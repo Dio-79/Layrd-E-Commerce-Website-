@@ -23,10 +23,11 @@ import {
   leadDaysFor,
   priceOrder,
 } from "@/lib/event/eventRules";
+import PreorderPayment, { preorderMethods, type PreorderPayMethod } from "@/app/components/PreorderPayment";
 import styles from "./checkout.module.css";
 const montserrat = Montserrat({ subsets: ["latin"], variable: "--font-montserrat" });
 
-type PayMethod = "card" | "apple" | "google" | "paypal";
+type PayMethod = PreorderPayMethod;
 
 interface FormValues {
   email: string;
@@ -35,9 +36,6 @@ interface FormValues {
   pickupPerson: string;
   pickupDate: string;
   pickupTime: string;
-  cardNumber: string;
-  expiry: string;
-  cvc: string;
   policy: boolean;
 }
 
@@ -84,7 +82,9 @@ function EventCheckoutPageBody() {
 
 function CheckoutForm({ draft }: { draft: EventOrderDraft }) {
   const router = useRouter();
-  const [method, setMethod] = useState<PayMethod>("card");
+  const [chosenMethod, setMethod] = useState<PayMethod | null>(null);
+  const methods = preorderMethods(false);
+  const method = methods.some((m) => m.id === chosenMethod) ? chosenMethod : (methods[0]?.id ?? null);
   const [promo, setPromo] = useState("");
   const [promoMessage, setPromoMessage] = useState("");
   const [submitError, setSubmitError] = useState("");
@@ -97,11 +97,6 @@ function CheckoutForm({ draft }: { draft: EventOrderDraft }) {
     () => priceOrder(draft.lines.reduce((s, l) => s + l.unitPrice * l.quantity, 0)),
     [draft]
   );
-
-  const today = useMemo(() => {
-    const t = new Date();
-    return new Date(t.getFullYear(), t.getMonth(), t.getDate());
-  }, []);
 
   const {
     register,
@@ -116,9 +111,6 @@ function CheckoutForm({ draft }: { draft: EventOrderDraft }) {
       pickupPerson: "",
       pickupDate: draft.details.pickupDate >= earliest ? draft.details.pickupDate : "",
       pickupTime: "",
-      cardNumber: "",
-      expiry: "",
-      cvc: "",
       policy: false,
     },
   });
@@ -168,15 +160,11 @@ function CheckoutForm({ draft }: { draft: EventOrderDraft }) {
 
       saveLastOrder(data.record);
       clearEventDraft();
-      router.push(`/Eventorder/confirmation?ref=${encodeURIComponent(data.record.reference)}`);
+      router.push(`/Eventorder/Confirmation?ref=${encodeURIComponent(data.record.reference)}`);
     } catch {
       setSubmitError("We couldn't reach the server. Please try again.");
     }
   };
-
-  const cardOnly = <T,>(check: (v: string) => T | string | true) => ({
-    validate: (v: string) => method !== "card" || check(v),
-  });
 
   return (
     <form className={styles.layout} onSubmit={handleSubmit(onSubmit)} noValidate>
@@ -291,81 +279,17 @@ function CheckoutForm({ draft }: { draft: EventOrderDraft }) {
 
         <h2 className={styles.heading}>Payment Details</h2>
         <p className={styles.depositNote}>
-          Event orders need a <strong>{Math.round(DEPOSIT_RATE * 100)}% deposit</strong> today. The remaining
-          balance is paid when you pick up.
+          Event orders need a <strong>{Math.round(DEPOSIT_RATE * 100)}% deposit</strong>. Pay it by e-Transfer
+          now, or pay the whole order when you pick up.
         </p>
 
-        <fieldset
-          className={`${styles.card} ${method === "card" ? styles.cardActive : ""}`}
-          onClick={() => setMethod("card")}
-        >
-          <legend className={styles.cardTitle}>Credit / Debit Card</legend>
-          <label className={styles.field}>
-            <span className={styles.smallLabel}>Card number</span>
-            <input
-              inputMode="numeric"
-              autoComplete="cc-number"
-              placeholder="0000 0000 0000 0000"
-              aria-invalid={!!errors.cardNumber}
-              {...register(
-                "cardNumber",
-                cardOnly((v) => /^\d{13,19}$/.test(v.replace(/\s/g, "")) || "Enter a valid card number")
-              )}
-            />
-            {errors.cardNumber && <span className={styles.error}>{errors.cardNumber.message}</span>}
-          </label>
-          <div className={styles.grid2}>
-            <label className={styles.field}>
-              <span className={styles.smallLabel}>Expiration</span>
-              <input
-                placeholder="MM/YY"
-                autoComplete="cc-exp"
-                aria-invalid={!!errors.expiry}
-                {...register(
-                  "expiry",
-                  cardOnly((v) => {
-                    const match = /^(\d{2})\/(\d{2})$/.exec(v.trim());
-                    if (!match) return "Use MM/YY";
-                    const month = Number(match[1]);
-                    const year = 2000 + Number(match[2]);
-                    if (month < 1 || month > 12) return "Invalid month";
-                    return new Date(year, month, 0) >= today || "This card has expired";
-                  })
-                )}
-              />
-              {errors.expiry && <span className={styles.error}>{errors.expiry.message}</span>}
-            </label>
-            <label className={styles.field}>
-              <span className={styles.smallLabel}>Security code</span>
-              <input
-                inputMode="numeric"
-                placeholder="CVC"
-                autoComplete="cc-csc"
-                aria-invalid={!!errors.cvc}
-                {...register("cvc", cardOnly((v) => /^\d{3,4}$/.test(v) || "3 or 4 digits"))}
-              />
-              {errors.cvc && <span className={styles.error}>{errors.cvc.message}</span>}
-            </label>
-          </div>
-        </fieldset>
-
-        {(
-          [
-            ["apple", "Apple Pay"],
-            ["google", "Google Pay"],
-            ["paypal", "PayPal"],
-          ] as const
-        ).map(([key, label]) => (
-          <button
-            key={key}
-            type="button"
-            className={`${styles.wallet} ${method === key ? styles.walletActive : ""}`}
-            aria-pressed={method === key}
-            onClick={() => setMethod(key)}
-          >
-            <span>{label}</span>
-          </button>
-        ))}
+        <PreorderPayment
+          method={method}
+          onChange={setMethod}
+          delivery={false}
+          amountNow={money(price.deposit)}
+          classes={{ option: styles.wallet, active: styles.walletActive, note: styles.depositNote }}
+        />
 
         <label className={styles.checkRow}>
           <input
@@ -472,8 +396,8 @@ function CheckoutForm({ draft }: { draft: EventOrderDraft }) {
           </p>
         )}
 
-        <button type="submit" className={styles.complete} disabled={isSubmitting || overCapacity}>
-          {isSubmitting ? "REGISTERING…" : `PAY ${money(price.deposit)} DEPOSIT`}
+        <button type="submit" className={styles.complete} disabled={isSubmitting || overCapacity || method === null}>
+          {isSubmitting ? "REGISTERING…" : `PLACE EVENT ORDER · ${money(price.total)}`}
         </button>
       </aside>
     </form>

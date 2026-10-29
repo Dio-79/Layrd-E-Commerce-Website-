@@ -239,3 +239,13 @@
   .timeline li { grid-template-columns: auto 1fr; justify-items: start; align-items: center; }
   .actionRow { grid-template-columns: 1fr; }
 }
+/* How and when to pay */
+.paymentNote {
+  margin: 1rem 0 0;
+  padding: 0.85rem 1rem;
+  border-left: 4px solid #d9a21b;
+  background: #fff8e6;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: #333;
+}
