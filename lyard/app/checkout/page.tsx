@@ -59,6 +59,8 @@ const PAYMENT_OPTIONS: { id: PaymentMethod; label: string; badge: string; on: bo
   { id: "google", label: "Google Pay", badge: "G Pay", on: paymentsEnabled.square },
   { id: "paypal", label: "PayPal", badge: "PayPal", on: paymentsEnabled.paypal },
   { id: "etransfer", label: "Interac e-Transfer", badge: "e-Transfer", on: paymentsEnabled.etransfer },
+  // Always available for pickup orders: the order is saved and paid in store.
+  { id: "in_store", label: "Pay at pickup", badge: "In store", on: true },
 ];
 const AVAILABLE = PAYMENT_OPTIONS.filter((o) => o.on);
 
@@ -126,7 +128,10 @@ function CheckoutPageBody() {
   const lines = useMemo(() => [...bagLines, ...eventLines], [bagLines, eventLines]);
 
   const [deliveryMethod, setDeliveryMethod] = useState<"ship" | "pickup">("ship");
-  const [payment, setPayment] = useState<PaymentMethod | null>(AVAILABLE[0]?.id ?? null);
+  const [paymentChoice, setPayment] = useState<PaymentMethod | null>(null);
+  // "Pay at pickup" only for pickup orders; fall back to the first method on offer.
+  const available = AVAILABLE.filter((o) => o.id !== "in_store" || deliveryMethod === "pickup");
+  const payment = available.some((o) => o.id === paymentChoice) ? paymentChoice : (available[0]?.id ?? null);
   const cardRef = useRef<SquareCardHandle>(null);
   // Also the payment idempotency key; a new one after each failed attempt.
   const orderNumber = useRef(makeOrderNumber());
@@ -295,7 +300,7 @@ function CheckoutPageBody() {
     }
   };
 
-  // The COMPLETE ORDER button: card and e-Transfer.
+  // The COMPLETE ORDER button: card, e-Transfer and pay at pickup.
   const onSubmit = (values: FormValues) =>
     attempt(async () => {
       if (payment === "card") {
@@ -306,6 +311,9 @@ function CheckoutPageBody() {
       }
       if (payment === "etransfer") {
         return postPayment("/api/payments/etransfer", { order: await prepareOrder(values) });
+      }
+      if (payment === "in_store") {
+        return postPayment("/api/payments/in-store", { order: await prepareOrder(values) });
       }
       throw new Error("Choose a payment method.");
     });
@@ -498,14 +506,13 @@ function CheckoutPageBody() {
             <section className={styles.section}>
               <h2>Payment Details</h2>
 
-              {AVAILABLE.length === 0 && (
+              {available.length === 0 && (
                 <p className={styles.error} role="alert">
-                  Payments aren&apos;t set up yet. Add the Square, PayPal or e-Transfer settings to .env.local (see
-                  PAYMENTS.md).
+                  Online payment isn&apos;t set up yet. Choose Pickup above to order now and pay at pickup.
                 </p>
               )}
 
-              {AVAILABLE.map(({ id, label, badge }) => (
+              {available.map(({ id, label, badge }) => (
                 <div key={id} className={payment === id ? styles.paymentCard : undefined}>
                   <button
                     type="button"
@@ -521,6 +528,12 @@ function CheckoutPageBody() {
                   </button>
                   {payment === id && id === "card" && <SquareCard ref={cardRef} />}
                   {payment === id && id === "etransfer" && <ETransferNote total={totals.total} />}
+                  {payment === id && id === "in_store" && (
+                    <p className={styles.note}>
+                      Pay when you pick up your order at <strong>{PICKUP_LOCATION.address}</strong>. Your order is
+                      saved now and we start preparing it.
+                    </p>
+                  )}
                   {payment === id && (id === "apple" || id === "google" || id === "paypal") && (
                     <p className={styles.note}>Fill in your details, then use the {label} button under the order summary.</p>
                   )}
@@ -637,7 +650,7 @@ function CheckoutPageBody() {
                 className={styles.complete}
                 disabled={submitting || lines.length === 0 || payment === null}
               >
-                {submitting ? "PLACING ORDER…" : payment === "etransfer" ? "PLACE ORDER →" : `PAY ${formatMoney(totals.total)} →`}
+                {submitting ? "PLACING ORDER…" : payment === "etransfer" || payment === "in_store" ? "PLACE ORDER →" : `PAY ${formatMoney(totals.total)} →`}
               </button>
             )}
             {submitting && payment !== "card" && payment !== "etransfer" && (

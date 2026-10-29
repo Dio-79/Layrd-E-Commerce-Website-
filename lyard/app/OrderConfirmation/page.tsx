@@ -18,6 +18,7 @@ export default function OrderConfirmationPage() {
   const trackingUrl = delivering ? order?.delivery.trackingUrl : undefined;
   const payment = order?.payment;
   const awaitingETransfer = payment?.status === "awaiting_etransfer";
+  const payAtPickup = payment?.status === "pay_at_pickup";
   const PAID_WITH: Record<string, string> = {
     card: "Card",
     apple: "Apple Pay",
@@ -47,7 +48,9 @@ export default function OrderConfirmationPage() {
             message={
               awaitingETransfer
                 ? `Thank you for your order. Send your e-Transfer to finish it; we'll start preparing it once the money arrives.`
-                : `Thank you for your order. We're preparing your selections. A receipt was sent to ${order.customer.email}.`
+                : payAtPickup
+                  ? `Thank you for your order. We're preparing it now; you'll pay when you pick it up.`
+                  : `Thank you for your order. We're preparing your selections. A receipt was sent to ${order.customer.email}.`
             }
             orderNumber={order.orderNumber}
             infoLabel={delivering ? "DOORDASH DELIVERY ESTIMATE" : "PICKUP"}
@@ -94,6 +97,11 @@ export default function OrderConfirmationPage() {
                     <strong>Payment: waiting for your e-Transfer.</strong> Send {formatMoney(payment.amount)} to{" "}
                     <strong>{payment.etransferEmail}</strong> and put <strong>{order.orderNumber}</strong> in the
                     message.
+                  </>
+                ) : payAtPickup ? (
+                  <>
+                    <strong>Payment: at pickup.</strong> Bring {formatMoney(payment.amount)} {payment.currency} (card or
+                    cash) and your order number <strong>{order.orderNumber}</strong>.
                   </>
                 ) : (
                   <>

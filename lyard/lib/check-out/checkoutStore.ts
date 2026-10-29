@@ -59,16 +59,16 @@ export interface DeliveryInfo {
   pickupLocation?: string;
 }
 
-export type PaymentMethod = "card" | "apple" | "google" | "paypal" | "etransfer";
+export type PaymentMethod = "card" | "apple" | "google" | "paypal" | "etransfer" | "in_store";
 
 export interface PaymentInfo {
   method: PaymentMethod;
-  provider: "square" | "paypal" | "etransfer";
+  provider: "square" | "paypal" | "etransfer" | "in_store";
   /**
    * "paid" once the money is taken; "authorized" if Square approved it but completing
    * failed (staff complete it in the Square dashboard); e-Transfers wait for an admin.
    */
-  status: "paid" | "authorized" | "awaiting_etransfer";
+  status: "paid" | "authorized" | "awaiting_etransfer" | "pay_at_pickup";
   amount: number;
   currency: string;
   /** Square payment id or PayPal capture id */
