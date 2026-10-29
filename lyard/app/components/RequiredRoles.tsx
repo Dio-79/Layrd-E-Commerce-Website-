@@ -8,27 +8,28 @@ import { loginUrl } from "@/lib/Routes/Routes";
 
 /**
  * Page guard. Signed-out visitors go to /login (which says why, and comes back
- * here afterwards); signed-in users without the permission go to `fallback`.
+ * here afterwards); signed-in users without the permission go to `fallback`
+ * (by default their own home page, e.g. the shop for customers).
  * Nothing protected renders until the check passes.
  */
 export function RequireRole({
   permission,
   children,
-  fallback = "/",
+  fallback,
 }: {
   permission: Permission;
   children: ReactNode;
   fallback?: string;
 }) {
-  const { user, loading, can } = useAuth();
+  const { user, loading, can, home } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const allowed = can(permission);
 
   useEffect(() => {
     if (loading || allowed) return;
-    router.replace(user ? fallback : loginUrl(pathname, permission));
-  }, [loading, allowed, user, router, fallback, pathname, permission]);
+    router.replace(user ? (fallback ?? home) : loginUrl(pathname, permission));
+  }, [loading, allowed, user, router, fallback, home, pathname, permission]);
 
   if (loading || !allowed) return null;
   return <>{children}</>;

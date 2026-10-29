@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useSyncExternalStore } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
@@ -51,7 +51,7 @@ const Arrow = () => (
 
 export default function LoginForm() {
   const router = useRouter();
-  const { refresh } = useAuth();
+  const { refresh, user, loading, home } = useAuth();
   const [serverError, setServerError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
@@ -59,6 +59,11 @@ export default function LoginForm() {
   const next = safeNext(params.get('next'));
   const reason = LOGIN_REASONS[params.get('reason') as keyof typeof LOGIN_REASONS];
   const justReset = params.get('reset') === '1';
+
+  // Already logged in: no need for the login form.
+  useEffect(() => {
+    if (!loading && user) router.replace(next ?? home);
+  }, [loading, user, next, home, router]);
 
   return (
     <main className={styles.page}>

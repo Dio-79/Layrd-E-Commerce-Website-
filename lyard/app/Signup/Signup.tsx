@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useAuth } from '@/app/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import { setPendingVerification, signUpWithEmail } from '@/lib/Auth/firebaseAuth';
 import { ROUTES } from '@/lib/Routes/Routes';
@@ -25,6 +26,12 @@ const schema = yup.object({
 export default function SignupForm() {
   const router = useRouter();
   const [googleError, setGoogleError] = useState('');
+  const { user, loading, home } = useAuth();
+
+  // Already logged in: no need to sign up.
+  useEffect(() => {
+    if (!loading && user) router.replace(home);
+  }, [loading, user, home, router]);
 
   return (
     <div className={styles.pageContainer}>
