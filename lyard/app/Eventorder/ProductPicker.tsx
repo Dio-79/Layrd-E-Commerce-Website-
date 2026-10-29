@@ -20,14 +20,6 @@ type DetailedItem = CartItem & { productName: string; unitPrice: number };
 
 const STEP = 2; // how many products "+Add more" reveals
 
-// Same product + size + flavor => same cart id, so identical lines merge.
-// Negative so it never collides with real product IDs.
-const makeCartId = (key: string) => {
-  let hash = 0;
-  for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) | 0;
-  return -Math.abs(hash) - 1;
-};
-
 // getSizes may return strings or objects like { size: "Small", price: 5 }
 const sizeLabel = (s: unknown): string => {
   if (typeof s === "string" || typeof s === "number") return String(s);
@@ -196,21 +188,21 @@ export default function ProductPicker() {
       return;
     }
 
+    // The real product id (so checkout can price it), with the size and flavor on the cart line.
     slots.forEach((slot) => {
-      const details = [slot.selectedSize, slot.selectedFlavor].filter(Boolean).join(", ");
       const product = products.find((p) => getProductId(p) === slot.productId);
       const cartProduct: CartProduct = {
-        productID: makeCartId(`${slot.productId}|${slot.selectedSize}|${slot.selectedFlavor}`),
-        name: details ? `${slot.productName} (${details})` : slot.productName,
+        productID: slot.productId,
+        name: slot.productName,
         price: slot.unitPrice,
         tag: product?.tag ?? "",
-        description: product?.description ?? (details || slot.productName),
+        description: product?.description ?? slot.productName,
         imageUrl: product?.imageUrl ?? "",
       };
-
-      for (let i = 0; i < slot.quantity; i++) {
-        addToCart(cartProduct);
-      }
+      addToCart(cartProduct, slot.quantity, {
+        size: slot.selectedSize || undefined,
+        flavor: slot.selectedFlavor || undefined,
+      });
     });
 
     slots.forEach((slot) => removeItem(slot.id)); // clear the slots after adding

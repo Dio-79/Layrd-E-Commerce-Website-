@@ -74,8 +74,8 @@ export default function CartPage() {
 
                     <ul className={styles.table}>
                       {bag.map((line) => {
-                        const productId = Number(line.productId);
-                        const meta = [line.size, line.flavor].filter(Boolean).join(" · ");
+                        const key = line.id.replace(/^bag:/, "");
+                        const meta = [line.group, line.size, line.flavor].filter(Boolean).join(" · ");
                         const total = line.unitPrice * line.quantity;
                         const original = (line.originalUnitPrice ?? line.unitPrice) * line.quantity;
 
@@ -97,7 +97,7 @@ export default function CartPage() {
                                 <button
                                   type="button"
                                   aria-label={`Decrease quantity of ${line.name}`}
-                                  onClick={() => decreaseQuantity(productId)}
+                                  onClick={() => decreaseQuantity(key)}
                                 >
                                   −
                                 </button>
@@ -105,7 +105,7 @@ export default function CartPage() {
                                 <button
                                   type="button"
                                   aria-label={`Increase quantity of ${line.name}`}
-                                  onClick={() => increaseQuantity(productId)}
+                                  onClick={() => increaseQuantity(key)}
                                 >
                                   +
                                 </button>
@@ -117,7 +117,7 @@ export default function CartPage() {
                                 type="button"
                                 className={styles.trash}
                                 aria-label={`Remove ${line.name}`}
-                                onClick={() => removeItem(productId)}
+                                onClick={() => removeItem(key)}
                               >
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                                   <path
@@ -156,7 +156,7 @@ export default function CartPage() {
 
                     <ul className={styles.table}>
                       {event.lines.map((line) => {
-                        const meta = [line.size, line.flavor].filter(Boolean).join(" · ");
+                        const meta = [line.group, line.size, line.flavor].filter(Boolean).join(" · ");
                         return (
                           <li key={line.id} className={styles.row}>
                             <div className={styles.product}>

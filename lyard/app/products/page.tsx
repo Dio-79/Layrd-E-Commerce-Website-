@@ -21,6 +21,9 @@ import CatalogHeader from "./sorting";
 import { sortProducts, type SortOption } from "./sortProducts";
 
 // Loads the Montserrat font and exposes it as --font-montserrat (the CSS reads that variable)
+// Drinks first, then cakes
+const SECTION_ORDER = [...SECTIONS].sort((a, b) => (a.id === "drinks" ? -1 : b.id === "drinks" ? 1 : 0));
+
 const montserrat = Montserrat({ subsets: ["latin"], variable: "--font-montserrat" });
 
 /* ------------------------------------------------------------------ */
@@ -116,12 +119,27 @@ export default function ProductsPage() {
           />
         </aside>
 
-        {/* Product grid */}
+        {/* Product grid: drinks first, then cakes, each under its own heading */}
         <div className={styles.grid}>
           {visible.length === 0 ? (
             <p className={styles.emptyMsg}>No products match those filters.</p>
           ) : (
-            visible.map((item) => <ProductCard key={item.productID} product={item} onCustomize={setSelected} />)
+            SECTION_ORDER.map((section) => {
+              const items = visible.filter((p) => p.section === section.id);
+              if (items.length === 0) return null;
+              return (
+                <section key={section.id} id={section.id} className={styles.sectionGroup} aria-labelledby={`h-${section.id}`}>
+                  <h2 id={`h-${section.id}`} className={styles.sectionTitle}>
+                    {section.label.toUpperCase()}
+                  </h2>
+                  <div className={styles.sectionGrid}>
+                    {items.map((item) => (
+                      <ProductCard key={item.productID} product={item} onCustomize={setSelected} />
+                    ))}
+                  </div>
+                </section>
+              );
+            })
           )}
         </div>
 

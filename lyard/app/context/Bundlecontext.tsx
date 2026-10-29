@@ -9,22 +9,10 @@ export type Product = (typeof products)[number];
 const asRecord = (value: unknown): Record<string, unknown> => value as unknown as Record<string, unknown>;
 
 export const SLOT_COUNT = 6;
-export const FLAVORS = ["Black", "Sugar", "Stevia", "Brown-Sugar"] as const;
-
-// Sizes every product should offer. Any missing from your data get added.
-export const FALLBACK_SIZES = ["Small", "Medium", "Large"];
-
-// Used ONLY when a size has no price in your data (placeholder values: set your own)
-const FALLBACK_MULTIPLIER: Record<string, number> = {
-  small: 1,
-  medium: 1.25,
-  regular: 1.25,
-  large: 1.5,
-};
 
 export interface SlotData {
   productId: number;
-  flavor: string; // "" until the customer picks one
+  flavor: string; // optional; "" when not used
   size: string;
   quantity: number;
 }
@@ -75,12 +63,14 @@ const sizeLabel = (s: unknown): string => {
 const rawSizes = (p: Product): unknown[] =>
   (getSizes(getProductId(p)) as unknown[] | undefined) ?? [];
 
-// Sizes from your data, plus any of Small/Medium/Large that are missing
+// The product's real sizes: the priced sizes from dataSize.ts, otherwise the catalog's
+// own size list (e.g. "150ml"), which costs the base price. No made-up sizes, so the
+// price here always matches what checkout charges.
 export const getProductSizes = (p: Product): string[] => {
   const fromData = rawSizes(p).map(sizeLabel).filter(Boolean);
-  const have = fromData.map((s) => s.toLowerCase());
-  const extras = FALLBACK_SIZES.filter((s) => !have.includes(s.toLowerCase()));
-  return Array.from(new Set([...fromData, ...extras]));
+  if (fromData.length) return Array.from(new Set(fromData));
+  const listed = asRecord(p).sizes;
+  return Array.isArray(listed) && listed.length ? listed.map(String) : [""];
 };
 
 // If the size entry is an object with its own price, use that
@@ -102,8 +92,7 @@ export const getUnitPrice = (p: Product, size: string) => {
   const sized = Number(getPrice(p, size));
   if (Number.isFinite(sized) && sized > 0) return sized;
 
-  // size not in your data: scale the base price (placeholder multipliers)
-  return getBasePrice(p) * (FALLBACK_MULTIPLIER[size.toLowerCase()] ?? 1);
+  return getBasePrice(p);
 };
 
 // ---------- context ----------
@@ -136,7 +125,7 @@ export function BundleProvider({ children }: { children: ReactNode }) {
   const selectProduct = (productId: number) => {
     if (activeSlot === null) return;
     const product = findProduct(productId);
-    const sizes = product ? getProductSizes(product) : FALLBACK_SIZES;
+    const sizes = product ? getProductSizes(product) : [""];
 
     setSlots((prev) =>
       prev.map((s, i) => {

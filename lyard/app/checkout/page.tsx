@@ -30,6 +30,7 @@ import {
   type PlacedOrder,
 } from "@/lib/check-out/checkoutStore";
 import { useCart } from "@/app/context/CartContext";
+import { cartItemToLine } from "@/lib/check-out/CartLine";
 import { ROUTES } from "@/lib/Routes/Routes";
 import { calculateTotals, findPromo, formatDate, formatMoney, type PromoCode } from "@/lib/check-out/CheckoutPricing";
 import {
@@ -117,15 +118,7 @@ function CheckoutPageBody() {
   );
   const bagLines = useMemo<OrderLine[]>(
     () =>
-      bag.map((item) => ({
-        id: `bag:${item.product.productID}`,
-        source: "bag",
-        productId: item.product.productID,
-        name: item.product.name,
-        image: item.product.imageUrl ?? null,
-        quantity: item.quantity,
-        unitPrice: item.product.price,
-      })),
+      bag.map(cartItemToLine),
     [bag]
   );
 

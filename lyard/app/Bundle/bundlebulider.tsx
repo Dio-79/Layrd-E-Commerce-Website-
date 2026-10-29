@@ -1,27 +1,41 @@
 "use client";
-import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { products } from "@/lib/catelog/data";
+import { products, SECTIONS, type CatalogProduct } from "@/lib/catelog/data";
 import {
   useBundle,
   findProduct,
-  FLAVORS,
   getProductId,
   getProductName,
   getProductImage,
-  getBasePrice,
   getProductSizes,
   getUnitPrice,
+  type Product,
 } from "@/app/context/Bundlecontext";
-import allergenData from "@/lib/catelog/dataAllergens";
-import { saveBundleDraft } from "@/lib/Bundle/Bundlecheckoutstore";
-import type { BundleLine } from "@/lib/Bundle/bundleRules";
+import { getAllergenInfo } from "@/lib/catelog/dataAllergens";
+import { useCart } from "@/app/context/CartContext";
+import type { Product as CartProduct } from "@/app/types/models";
+import { ROUTES } from "@/lib/Routes/Routes";
 import styles from "./bundlebuilder.module.css";
 
 const MIN_SLOTS = 3; // change this number to require more or fewer slots
 
+/** Lowest price across the product's sizes, for "From $X". */
+const fromPrice = (p: Product) => Math.min(...getProductSizes(p).map((s) => getUnitPrice(p, s)));
+
+// The picker lists drinks first, then cakes. Ready-made bundles can't go inside a bundle.
+const PICKER_GROUPS = [...SECTIONS]
+  .sort((a, b) => (a.id === "drinks" ? -1 : b.id === "drinks" ? 1 : 0))
+  .map((section) => ({
+    ...section,
+    items: products.filter(
+      (p: CatalogProduct) => p.section === section.id && !p.categories.some((c) => c === "Bundles")
+    ),
+  }))
+  .filter((g) => g.items.length > 0);
+
 export default function BundleBuilder() {
   const router = useRouter();
+  const { addItem } = useCart();
   const {
     slots,
     quantity,
@@ -33,45 +47,40 @@ export default function BundleBuilder() {
     updateSlot,
     clearSlot,
     setQuantity,
+    reset,
   } = useBundle();
-  const [showErrors, setShowErrors] = useState(false);
 
   const filledCount = slots.filter((s) => s !== null).length;
-  const canPreorder = filledCount >= MIN_SLOTS;
-  const missingFlavor = slots.some((s) => s && !s.flavor); // only checks filled slots
+  const canAdd = filledCount >= MIN_SLOTS;
 
-  // Preorder: hand the bundle to its own checkout (pickup or DoorDash delivery)
-  const handlePreorder = () => {
-    if (!canPreorder) return;
-    if (missingFlavor) {
-      setShowErrors(true);
-      return;
-    }
-
-    const lines: BundleLine[] = [];
-    slots.forEach((s, i) => {
+  // Each filled slot becomes a cart line, grouped as one "Custom bundle" in the bag.
+  const addBundleToBag = () => {
+    if (!canAdd) return;
+    const group = { id: `bundle-${Date.now().toString(36)}`, name: "Custom bundle" };
+    slots.forEach((s) => {
       if (!s) return;
       const product = findProduct(s.productId);
       if (!product) return;
-      lines.push({
-        id: `${i}-${String(getProductId(product))}-${s.size}-${s.flavor}`,
-        name: getProductName(product),
-        size: s.size,
-        flavor: s.flavor,
-        quantity: s.quantity * quantity, // drinks per slot x bundle quantity
-        unitPrice: getUnitPrice(product, s.size),
-        image: getProductImage(product),
-      });
+      const cartProduct = {
+        ...(product as unknown as CartProduct),
+        price: getUnitPrice(product, s.size),
+      };
+      addItem(cartProduct, s.quantity * quantity, { size: s.size || undefined, group });
     });
-
-    if (lines.length === 0) return;
-    saveBundleDraft({ lines });
-    setShowErrors(false);
-    router.push("/Bundle/checkout");
+    reset();
+    router.push(ROUTES.cart);
   };
 
   return (
     <section className={styles.builder}>
+      <header className={styles.intro}>
+        <h1 className={styles.introTitle}>BUILD YOUR BUNDLE</h1>
+        <p className={styles.introText}>
+          Fill at least {MIN_SLOTS} of the {slots.length} slots with drinks and cakes, choose sizes, then add the bundle
+          to your bag.
+        </p>
+      </header>
+
       {/* Slot grid */}
       <div className={styles.slotGrid}>
         {slots.map((slot, i) => {
@@ -80,12 +89,17 @@ export default function BundleBuilder() {
           if (!slot || !product) {
             return (
               <div key={i} className={styles.slot}>
-                <button type="button" className={styles.emptyBox} onClick={() => openPicker(i)}>
+                <button
+                  type="button"
+                  className={styles.emptyBox}
+                  onClick={() => openPicker(i)}
+                  aria-label={`Choose an item for slot ${i + 1}`}
+                >
                   +
                 </button>
                 <div className={styles.emptyLabel}>Empty Slot #{i + 1}</div>
                 <button type="button" className={styles.addMoreBtn} onClick={() => openPicker(i)}>
-                  +ADD More
+                  +ADD
                 </button>
               </div>
             );
@@ -93,22 +107,19 @@ export default function BundleBuilder() {
 
           const sizes = getProductSizes(product);
           const slotPrice = getUnitPrice(product, slot.size) * slot.quantity;
+          const allergens = getAllergenInfo(Number(getProductId(product))).allergens;
 
           return (
             <div key={i} className={styles.slotFilled}>
               <div className={styles.slotTop}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={getProductImage(product)}
-                  alt={getProductName(product)}
-                  className={styles.slotImg}
-                />
+                <img src={getProductImage(product)} alt={getProductName(product)} className={styles.slotImg} />
                 <div className={styles.slotInfo}>
                   <div className={styles.slotName}>{getProductName(product)}</div>
                   <div className={styles.slotLabel}>Slot #{i + 1}</div>
                   <div className={styles.slotPrice}>${slotPrice.toFixed(2)}</div>
-                  {allergenData[Number(getProductId(product))] && (
-                    <div>{JSON.stringify(allergenData[Number(getProductId(product))])}</div>
+                  {allergens.length > 0 && (
+                    <div className={styles.slotLabel}>Contains: {allergens.join(", ")}</div>
                   )}
                 </div>
                 <div className={styles.slotActions}>
@@ -122,56 +133,44 @@ export default function BundleBuilder() {
               </div>
 
               <div className={styles.slotOptions}>
-                {/* Flavor per slot */}
-                <div className={styles.optionCol}>
-                  <label className={styles.optionLabel} htmlFor={`flavor-${i}`}>
-                    FLAVOR
-                  </label>
-                  <select
-                    id={`flavor-${i}`}
-                    className={styles.slotSelect}
-                    value={slot.flavor}
-                    onChange={(e) => updateSlot(i, { flavor: e.target.value })}
-                  >
-                    <option value="">Select</option>
-                    {FLAVORS.map((f) => (
-                      <option key={f} value={f}>
-                        {f}
-                      </option>
-                    ))}
-                  </select>
-                  {showErrors && !slot.flavor && (
-                    <span className={styles.errorMessage}>Please select a flavor</span>
-                  )}
-                </div>
-
                 {/* Size per slot: only this product's sizes, each with its own price */}
-                <div className={styles.optionCol}>
-                  <span className={styles.optionLabel}>SIZE</span>
-                  <div className={styles.slotSizeBtns}>
-                    {sizes.map((s) => (
-                      <button
-                        key={s}
-                        type="button"
-                        className={`${styles.slotSizeBtn} ${slot.size === s ? styles.sizeActive : ""}`}
-                        onClick={() => updateSlot(i, { size: s })}
-                        title={`$${getUnitPrice(product, s).toFixed(2)}`}
-                      >
-                        {s}
-                      </button>
-                    ))}
+                {sizes.some(Boolean) && (
+                  <div className={styles.optionCol}>
+                    <span className={styles.optionLabel}>SIZE</span>
+                    <div className={styles.slotSizeBtns}>
+                      {sizes.map((s) => (
+                        <button
+                          key={s}
+                          type="button"
+                          className={`${styles.slotSizeBtn} ${slot.size === s ? styles.sizeActive : ""}`}
+                          aria-pressed={slot.size === s}
+                          onClick={() => updateSlot(i, { size: s })}
+                          title={`$${getUnitPrice(product, s).toFixed(2)}`}
+                        >
+                          {s} · ${getUnitPrice(product, s).toFixed(2)}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Qty per slot */}
                 <div className={styles.optionCol}>
                   <span className={styles.optionLabel}>QTY</span>
                   <div className={styles.slotQty}>
-                    <button type="button" onClick={() => updateSlot(i, { quantity: slot.quantity - 1 })}>
+                    <button
+                      type="button"
+                      aria-label="Fewer"
+                      onClick={() => updateSlot(i, { quantity: slot.quantity - 1 })}
+                    >
                       -
                     </button>
                     <span>{slot.quantity}</span>
-                    <button type="button" onClick={() => updateSlot(i, { quantity: slot.quantity + 1 })}>
+                    <button
+                      type="button"
+                      aria-label="More"
+                      onClick={() => updateSlot(i, { quantity: slot.quantity + 1 })}
+                    >
                       +
                     </button>
                   </div>
@@ -184,76 +183,82 @@ export default function BundleBuilder() {
 
       <hr className={styles.divider} />
 
-      {/* Footer: price, bundle qty, preorder */}
+      {/* Footer: price, bundle qty, add to bag */}
       <div className={styles.footer}>
-        <div className={styles.priceBox}>Price:${total.toFixed(2)}</div>
+        <div className={styles.priceBox}>Price: ${total.toFixed(2)}</div>
 
         <div className={styles.footerRight}>
           <div>
             <span className={styles.label}>BUNDLE QTY</span>
             <div className={styles.qty}>
-              <button type="button" onClick={() => setQuantity(quantity - 1)}>
+              <button type="button" aria-label="Fewer bundles" onClick={() => setQuantity(quantity - 1)}>
                 -
               </button>
               <span>{quantity}</span>
-              <button type="button" onClick={() => setQuantity(quantity + 1)}>
+              <button type="button" aria-label="More bundles" onClick={() => setQuantity(quantity + 1)}>
                 +
               </button>
             </div>
           </div>
 
-          <button
-            type="button"
-            className={styles.addToBag}
-            disabled={!canPreorder}
-            onClick={handlePreorder}
-          >
-            PREORDER →
+          <button type="button" className={styles.addToBag} disabled={!canAdd} onClick={addBundleToBag}>
+            ADD BUNDLE TO BAG →
           </button>
         </div>
       </div>
 
-      {!canPreorder && (
+      {!canAdd && (
         <p className={styles.hint}>
-          Fill at least {MIN_SLOTS} slots to preorder ({filledCount}/{MIN_SLOTS} selected)
+          Fill at least {MIN_SLOTS} slots to add the bundle ({filledCount}/{MIN_SLOTS} selected)
         </p>
       )}
 
-      {showErrors && missingFlavor && (
-        <p className={styles.hint} style={{ color: "#b91c1c" }}>
-          Choose a flavor for every filled slot before continuing.
-        </p>
-      )}
-
-      {/* Picker modal */}
+      {/* Picker modal: drinks first, then cakes */}
       {activeSlot !== null && (
         <div className={styles.backdrop} onClick={closePicker}>
-          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <button type="button" className={styles.closeX} onClick={closePicker}>
+          <div
+            className={styles.modal}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="bundle-picker-title"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button type="button" className={styles.closeX} onClick={closePicker} aria-label="Close">
               ✕
             </button>
-            <h2 className={styles.modalTitle}>CHOOSE ITEM FOR SLOT #{activeSlot + 1}</h2>
-            <p className={styles.modalSub}>
-              Select a flavor to populate this slot in your custom bundle.
-            </p>
+            <h2 id="bundle-picker-title" className={styles.modalTitle}>
+              CHOOSE ITEM FOR SLOT #{activeSlot + 1}
+            </h2>
+            <p className={styles.modalSub}>Pick a drink or a cake for this slot of your bundle.</p>
 
-            <div className={styles.pickGrid}>
-              {products.map((p) => (
-                <div key={getProductId(p)} className={styles.pickCard}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={getProductImage(p)} alt={getProductName(p)} className={styles.pickImg} />
-                  <div className={styles.pickName}>{getProductName(p)}</div>
-                  <div className={styles.pickPrice}>From ${getBasePrice(p).toFixed(2)}</div>
-                  <button
-                    type="button"
-                    className={styles.selectBtn}
-                    onClick={() => selectProduct(getProductId(p))}
-                  >
-                    SELECT
-                  </button>
+            {PICKER_GROUPS.map((group) => (
+              <section key={group.id} aria-labelledby={`pick-${group.id}`}>
+                <h3 id={`pick-${group.id}`} className={styles.pickGroupTitle}>
+                  {group.label.toUpperCase()}
+                </h3>
+                <div className={styles.pickGrid}>
+                  {group.items.map((item) => {
+                    const p = item as unknown as Product;
+                    return (
+                      <div key={getProductId(p)} className={styles.pickCard}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={getProductImage(p)} alt="" className={styles.pickImg} />
+                        <div className={styles.pickName}>{getProductName(p)}</div>
+                        <div className={styles.pickPrice}>From ${fromPrice(p).toFixed(2)}</div>
+                        <button
+                          type="button"
+                          className={styles.selectBtn}
+                          onClick={() => selectProduct(getProductId(p))}
+                          aria-label={`Select ${getProductName(p)}`}
+                        >
+                          SELECT
+                        </button>
+                      </div>
+                    );
+                  })}
                 </div>
-              ))}
-            </div>
+              </section>
+            ))}
           </div>
         </div>
       )}

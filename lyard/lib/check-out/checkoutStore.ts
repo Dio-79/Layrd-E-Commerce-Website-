@@ -22,6 +22,8 @@ export interface OrderLine {
   unitPrice: number;
   /** Regular price per unit, when the item is on sale */
   originalUnitPrice?: number;
+  /** Shown with the line, e.g. "Custom bundle" */
+  group?: string;
 }
 
 export type NewLine = Omit<OrderLine, "source" | "eventId">;

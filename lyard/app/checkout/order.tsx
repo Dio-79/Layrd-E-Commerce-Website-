@@ -26,7 +26,7 @@ export function useOrderLines() {
 export function SummaryLine({ line, actions }: { line: OrderLine; actions?: React.ReactNode }) {
   const total = line.unitPrice * line.quantity;
   const original = (line.originalUnitPrice ?? line.unitPrice) * line.quantity;
-  const meta = [line.size, line.flavor].filter(Boolean).join(" · ");
+  const meta = [line.group, line.size, line.flavor].filter(Boolean).join(" · ");
 
   return (
     <li className={styles.line}>
@@ -52,7 +52,7 @@ export function SummaryLine({ line, actions }: { line: OrderLine; actions?: Reac
 /** A cart line with − / + and Remove, wired to CartContext. */
 export function BagSummaryLine({ line }: { line: OrderLine }) {
   const { increaseQuantity, decreaseQuantity, removeItem } = useCart();
-  const productId = Number(line.productId);
+  const key = line.id.replace(/^bag:/, "");
 
   return (
     <SummaryLine
@@ -63,7 +63,7 @@ export function BagSummaryLine({ line }: { line: OrderLine }) {
             <button
               type="button"
               aria-label={`Decrease quantity of ${line.name}`}
-              onClick={() => decreaseQuantity(productId)}
+              onClick={() => decreaseQuantity(key)}
             >
               −
             </button>
@@ -71,12 +71,12 @@ export function BagSummaryLine({ line }: { line: OrderLine }) {
             <button
               type="button"
               aria-label={`Increase quantity of ${line.name}`}
-              onClick={() => increaseQuantity(productId)}
+              onClick={() => increaseQuantity(key)}
             >
               +
             </button>
           </div>
-          <button type="button" className={styles.lineRemove} onClick={() => removeItem(productId)}>
+          <button type="button" className={styles.lineRemove} onClick={() => removeItem(key)}>
             Remove
           </button>
         </div>

@@ -285,3 +285,28 @@
     --card-gap: 0.75rem;
   }
 }
+/* Drinks and Cake in a Can sections inside the product grid */
+.sectionGroup {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: var(--card-gap);
+}
+
+.sectionGroup + .sectionGroup {
+  margin-top: var(--block-gap);
+}
+
+.sectionTitle {
+  margin: 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--amber);
+  font-size: var(--text-group);
+  font-weight: var(--weight-title);
+  letter-spacing: var(--track-title);
+}
+
+.sectionGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--card-min), 1fr));
+  gap: var(--card-gap);
+}
