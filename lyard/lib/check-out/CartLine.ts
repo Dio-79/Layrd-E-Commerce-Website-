@@ -1,4 +1,4 @@
-import type { CartItem } from "@/app/types/models";
+import { cartKey, type CartItem } from "@/app/types/models";
 import type { OrderLine } from "./checkoutStore";
 
 const num = (v: unknown): number | undefined =>
@@ -27,13 +27,14 @@ export function cartItemToLine(item: CartItem): OrderLine {
   const sweetness = str(p.sweetness);
 
   return {
-    id: `bag:${String(id)}`,
+    id: `bag:${cartKey(item)}`,
     source: "bag",
     productId: typeof id === "number" ? id : String(id),
     name: str(p.name) ?? str(p.productName) ?? str(p.title) ?? `Product #${String(id)}`,
     image: toSrc(p.image) ?? toSrc(p.imageUrl) ?? toSrc(p.img),
-    size: str(p.size) ?? str(p.selectedSize),
-    flavor: str(p.flavor) ?? (sweetness ? `Sweetness: ${sweetness}` : undefined),
+    size: item.size ?? str(p.size) ?? str(p.selectedSize),
+    flavor: item.flavor ?? str(p.flavor) ?? (sweetness ? `Sweetness: ${sweetness}` : undefined),
+    group: item.group?.name,
     quantity: item.quantity,
     unitPrice,
     originalUnitPrice: regular !== undefined && regular > unitPrice ? regular : undefined,

@@ -7,6 +7,7 @@ import { Montserrat } from "next/font/google";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import { loadLastOrder, type PreorderRecord } from "@/lib/event/eventCheckoutStore";
+import { PreorderPaymentNote } from "@/app/components/PreorderPayment";
 import { CANCEL_HOURS, PICKUP_LOCATION, STATUS_STEPS, parseDate, timeLabel } from "@/lib/event/eventRules";
 import styles from "./confirmation.module.css";
 const montserrat = Montserrat({ subsets: ["latin"], variable: "--font-montserrat" });
@@ -134,7 +135,7 @@ function ConfirmationInner() {
             <dd>{money(record.tax)}</dd>
           </div>
           <div>
-            <dt>Deposit Paid</dt>
+            <dt>Deposit (30%)</dt>
             <dd>{money(record.deposit)}</dd>
           </div>
           <div className={styles.balanceRow}>
@@ -147,6 +148,11 @@ function ConfirmationInner() {
           <span>Total</span>
           <span>{money(record.total)}</span>
         </div>
+        <PreorderPaymentNote
+          payment={(record as { payment?: Parameters<typeof PreorderPaymentNote>[0]["payment"] }).payment}
+          reference={record.reference}
+          className={styles.paymentNote}
+        />
       </div>
 
       {record.status === "cancelled" ? (

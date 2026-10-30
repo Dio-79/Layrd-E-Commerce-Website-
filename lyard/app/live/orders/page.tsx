@@ -33,6 +33,7 @@ const PAYMENT_LABELS: Record<string, string> = {
   google: "Google Pay",
   paypal: "PayPal",
   etransfer: "e-Transfer",
+  in_store: "Pay at pickup",
 };
 
 /** Admins mark an e-Transfer order as paid once the money arrives. */
@@ -139,9 +140,9 @@ function OrdersTable({ admin }: { admin: boolean }) {
                   <td>{o.lines?.map((l) => `${l.quantity}× ${l.name}`).join(", ") ?? "-"}</td>
                   <td>
                     {o.payment
-                      ? `${o.payment.label ?? PAYMENT_LABELS[o.payment.method ?? ""] ?? o.payment.method} · ${(o.payment.status ?? "").replace("_", " ")}`
+                      ? `${o.payment.label ?? PAYMENT_LABELS[o.payment.method ?? ""] ?? o.payment.method} · ${(o.payment.status ?? "").replaceAll("_", " ")}`
                       : "-"}
-                    {admin && o.payment?.status === "awaiting_etransfer" && (
+                    {admin && (o.payment?.status === "awaiting_etransfer" || o.payment?.status === "pay_at_pickup") && (
                       <>
                         {" "}
                         <ConfirmETransfer orderNumber={o.orderNumber} />

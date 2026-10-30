@@ -6,6 +6,7 @@ import { Montserrat } from "next/font/google";
 import Header from "@/app/components/Header";
 import Footer from "@/app/components/Footer";
 import { loadLastOrder, type BundleRecord } from "@/lib/Bundle/Bundlecheckoutstore";
+import { PreorderPaymentNote } from "@/app/components/PreorderPayment";
 import { CANCEL_HOURS, PICKUP_LOCATION, STATUS_STEPS, parseDate, timeLabel } from "@/lib/Bundle/bundleRules";
 import styles from "./confirmation.module.css";
 
@@ -149,6 +150,11 @@ function ConfirmationInner() {
           <span>Total</span>
           <span>{money(record.total)}</span>
         </div>
+        <PreorderPaymentNote
+          payment={(record as { payment?: Parameters<typeof PreorderPaymentNote>[0]["payment"] }).payment}
+          reference={record.reference}
+          className={styles.paymentNote}
+        />
       </div>
 
       {record.status === "cancelled" ? (
@@ -193,7 +199,7 @@ function ConfirmationInner() {
         <button type="button" className={styles.actionBtn} onClick={() => window.print()}>
           PRINT ORDER
         </button>
-        <Link href="Mainpage" className={styles.complete}>
+        <Link href="/Mainpage" className={styles.complete}>
           RETURN TO SHOP
         </Link>
       </div>

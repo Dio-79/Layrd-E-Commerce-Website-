@@ -20,6 +20,10 @@ export const ROUTES = {
   verify: "/varifcationpage", //        app/varifcationpage/page.tsx
   forgotPassword: "/forgot-password", // app/forgot-password/page.tsx
   resetPassword: "/reset-password", //  app/reset-password/page.tsx
+  contact: "/contact", //               app/contact/page.tsx
+  refund: "/refund", //                 app/refund/page.tsx
+  info: "/info", //                     app/info/page.tsx (shipping, FAQ, about, policies)
+  wholesale: "/wholesale", //           wholesale portal (proxy.ts sends it to app/User/WholesSale)
 } as const;
 
 /** Why a page sent someone to the login page; the login page shows the matching message. */
@@ -29,6 +33,7 @@ export const LOGIN_REASONS = {
   "events:preorder": "Log in or create an account to place an event order.",
   "admin:portal": "Log in with an admin account to open the admin portal.",
   "wholesale:portal": "Log in with a wholesale account to open the wholesale portal.",
+  refund: "Log in to request a refund on one of your orders.",
 } as const;
 
 /** /login URL that comes back to `next` after logging in. */

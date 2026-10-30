@@ -78,8 +78,7 @@ export default function CustomizeModal({ product, breadcrumb = "Shop", onClose }
       imageUrl: product.imageUrl,
     } as unknown as Product;
 
-    // addItem adds 1 per call
-    for (let i = 0; i < quantity; i++) addItem(cartProduct);
+    addItem(cartProduct, quantity, { size: selectedSize || undefined });
     onClose();
   };
 

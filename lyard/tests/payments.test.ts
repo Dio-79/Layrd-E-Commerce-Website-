@@ -131,6 +131,25 @@ describe("Square (card, Apple Pay, Google Pay)", () => {
     expect(square.createPayment).toHaveBeenCalledTimes(1);
   });
 
+  it("prices sizes and bundle lines from the catalog (Large drink + 4-can cake)", async () => {
+    await adminDb.collection("products").doc("3").set({ productID: 3, name: "Oreo Cheesecake", price: 8 });
+    const base = order("LYD-SZ1");
+    const sized = {
+      ...base,
+      lines: [
+        { ...base.lines[0], id: "bag:1|Large||bundle-x", quantity: 1, size: "Large", unitPrice: 14, group: "Custom bundle" },
+        { ...base.lines[0], id: "bag:3|4 cans||bundle-x", productId: 3, name: "Oreo Cheesecake", quantity: 1, size: "4 cans", unitPrice: 30, group: "Custom bundle" },
+      ],
+      // $14 + $30 = $44 + 5% GST = $46.20
+      totals: { itemCount: 2, originalSubtotal: 44, subtotal: 44, discount: 0, shipping: 0, tax: 2.2, total: 46.2 },
+    };
+    const res = await post(paySquare, "/api/payments/square", { order: sized, sourceId: "tok" });
+    expect(res.status).toBe(201);
+    expect(square.createPayment).toHaveBeenCalledWith(expect.objectContaining({ amountCents: 4620 }));
+    const saved = await savedOrder("LYD-SZ1");
+    expect(saved?.lines.map((l: { unitPrice: number; size: string }) => [l.size, l.unitPrice])).toEqual([["Large", 14], ["4 cans", 30]]);
+  });
+
   it("applies valid promo codes on the server", async () => {
     await post(paySquare, "/api/payments/square", { order: { ...order("LYD-SQ8", 17.01), promoCode: "layrd10" }, sourceId: "tok" });
     // $18 - 10% = $16.20 + 5% GST = $17.01

@@ -6,7 +6,7 @@ import {
   availableOptions,
   EMPTY_FILTERS,
   filterProducts,
-  products,
+  getProductsBySection,
   SECTIONS,
   type CatalogProduct,
   type Filters,
@@ -21,6 +21,9 @@ import CatalogHeader from "./sorting";
 import { sortProducts, type SortOption } from "./sortProducts";
 
 // Loads the Montserrat font and exposes it as --font-montserrat (the CSS reads that variable)
+// This is the Cake-in-a-Can page; drinks have their own page (/Drinks).
+const cakes = getProductsBySection("cake-in-a-can");
+
 const montserrat = Montserrat({ subsets: ["latin"], variable: "--font-montserrat" });
 
 /* ------------------------------------------------------------------ */
@@ -65,7 +68,7 @@ function ProductCard({ product, onCustomize }: { product: CatalogProduct; onCust
 
 export default function ProductsPage() {
   // Only the filter options that actually exist in the product data
-  const options = useMemo(() => availableOptions(products), []);
+  const options = useMemo(() => availableOptions(cakes), []);
 
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
   const [minPrice, setMinPrice] = useState("");
@@ -76,7 +79,7 @@ export default function ProductsPage() {
   const visible = useMemo(() => {
     const min = minPrice === "" ? -Infinity : Number(minPrice);
     const max = maxPrice === "" ? Infinity : Number(maxPrice);
-    const filtered = filterProducts(products, filters).filter((p) => p.price >= min && p.price <= max);
+    const filtered = filterProducts(cakes, filters).filter((p) => p.price >= min && p.price <= max);
     return sortProducts(filtered, sortBy);
   }, [filters, minPrice, maxPrice, sortBy]);
 
@@ -97,7 +100,7 @@ export default function ProductsPage() {
       <div className={styles.container}>
         {/* Title + count + sort */}
         <header className={styles.headerBar}>
-          <h1 className={styles.mainTitle}>OUR COLLECTION</h1>
+          <h1 className={styles.mainTitle}>CAKE-IN-A-CAN</h1>
           <div className={styles.headerMeta}>
             <CatalogHeader count={visible.length} sortBy={sortBy} onSortChange={setSortBy} />
           </div>

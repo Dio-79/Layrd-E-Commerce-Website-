@@ -42,9 +42,15 @@ export function checkOrder(order: PlacedOrder | null): asserts order is PlacedOr
  * the promo code and recalculates the totals, so the browser can't change what
  * is charged. Returns the order with server prices.
  */
-export async function priceOrder(order: PlacedOrder): Promise<PlacedOrder> {
-  const ids = [...new Set(order.lines.map((l) => Number(l.productId)))];
-  if (ids.some((id) => !Number.isInteger(id))) throw new OrderError("The order has an unknown product.");
+type PricedLine = { productId: number | string; name: string; size?: string; quantity: number; unitPrice: number };
+
+/**
+ * The catalog price of each line: the size's price from dataSize.ts, otherwise the
+ * product's price in Firestore. Throws for unknown products or bad quantities.
+ */
+export async function repriceLines<T extends PricedLine>(input: T[], maxQuantity = 500): Promise<T[]> {
+  const ids = [...new Set(input.map((l) => Number(l.productId)))];
+  if (ids.length === 0 || ids.some((id) => !Number.isInteger(id))) throw new OrderError("The order has an unknown product.");
 
   const snaps = await adminDb.getAll(...ids.map((id) => adminDb.collection(COLLECTIONS.products).doc(String(id))));
   const basePrice = new Map<number, number>();
@@ -53,15 +59,26 @@ export async function priceOrder(order: PlacedOrder): Promise<PlacedOrder> {
     if (typeof price === "number") basePrice.set(Number(snap.id), price);
   }
 
-  const lines: OrderLine[] = order.lines.map((line) => {
+  return input.map((line) => {
     const id = Number(line.productId);
     const base = basePrice.get(id);
     if (base === undefined) throw new OrderError(`"${line.name}" is no longer available.`);
     const quantity = Math.floor(Number(line.quantity));
-    if (!(quantity >= 1 && quantity <= 500)) throw new OrderError(`Check the quantity of "${line.name}".`);
+    if (!(quantity >= 1 && quantity <= maxQuantity)) throw new OrderError(`Check the quantity of "${line.name}".`);
     const sized = line.size ? getSizes(id)?.find((s) => s.label === line.size)?.price : undefined;
-    return { ...line, quantity, unitPrice: sized ?? base, originalUnitPrice: undefined };
+    return { ...line, quantity, unitPrice: sized ?? base };
   });
+}
+
+/** Throws 409 when a price the customer saw differs from the catalog. */
+export function assertSamePrices(seen: { unitPrice: number }[], catalog: { unitPrice: number }[]) {
+  if (seen.some((l, i) => toCents(Number(l.unitPrice)) !== toCents(catalog[i].unitPrice))) {
+    throw new OrderError("Prices have changed since you started this order. Please go back and add the items again.", 409);
+  }
+}
+
+export async function priceOrder(order: PlacedOrder): Promise<PlacedOrder> {
+  const lines: OrderLine[] = (await repriceLines(order.lines)).map((l) => ({ ...l, originalUnitPrice: undefined }));
 
   const delivering = order.delivery?.method === "ship";
   const requested = Number(order.totals?.shipping ?? 0);
