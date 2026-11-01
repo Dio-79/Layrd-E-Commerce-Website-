@@ -1,74 +1,22 @@
-import React from 'react';
- 
-export default function Page() {
-    return (
-        <div>
-            <h1> Account settings</h1>
-            
-            {/* options */}
-            <div>
-                {/* side bar */}
-                <div>
-                    <ul>
-                        <li>Business profile</li>
-                        <li>Delivery addresses</li>
-                        <li>payment method</li>
-                        <li>Security</li>
-                    </ul>
-                </div>
-                {/* buisness profile */}
-                <div>
-                    
-                    {/* buisness profile header */}
-                    <div>
-                        
-                        <div>
-                            <h1>Business profile</h1>
-                            <p>This info appears and deliveries</p>
+"use client";
 
-                        </div>
-                        <p>Save changes </p>
+import Link from "next/link";
+import { useAuth } from "@/app/context/AuthContext";
+import { PageHeading, Panel, buttonStyle } from "@/app/portal-ui/PortalUI";
 
-                    </div>
-                    
-                    {/* register email */}
-                    <div> 
-                        <div>
-                            <p>Buisness Name</p>
-                            <p>cafe aroma ltd</p>
-                        </div>
-                        <div>
-                            <p>Contact person</p>
-                            <p>Sara al-harbi</p>
-                        </div>
-                        <div>
-                            <p>Buisness e-mail</p>
-                            <p>orders@caferoma.ca</p>
-                        </div>
-                        <div>
-                            <p>phone</p>
-                            <p>403 555 0192</p>
-                        </div>
-                    </div>
-
-                    {/* delivery address and notification */}
-                    <div>
-                        <div>
-                            <p>Primary delivery address</p>
-                            <p> blah blah address goes here</p>
-                        </div>
-                        
-                        {/* notifications */}
-                        <div>
-                            <p>Notifications</p>
-                            <p>new wholesale pricing and offers</p>
-                            <p> delivery reminders</p>
-                            
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-        </div>
-    )
+export default function WholesaleAccount() {
+  const { user } = useAuth();
+  return <>
+    <PageHeading title="Business account" subtitle="Your signed-in details and account preferences." />
+    <div className="grid gap-5 lg:grid-cols-2">
+      <Panel title="Account details"><dl className="space-y-4 text-sm">
+        <div><dt className="text-zinc-500">Contact name</dt><dd className="mt-1 font-semibold">{user?.name || "Not provided"}</dd></div>
+        <div><dt className="text-zinc-500">Email</dt><dd className="mt-1 font-semibold break-all">{user?.email || "Not available"}</dd></div>
+        <div><dt className="text-zinc-500">Account type</dt><dd className="mt-1 font-semibold capitalize">{user?.role || "Unknown"}</dd></div>
+      </dl><Link href="/Setting" className={`${buttonStyle} mt-5`}>Open existing account settings</Link></Panel>
+      <Panel title="Wholesale business profile"><p className="text-sm text-zinc-600">Business name, delivery addresses, invoice preferences, and notification settings will be available here once the wholesale account API supports them.</p>
+        <div className="mt-5 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-4 text-sm text-zinc-500">No wholesale business profile connected yet.</div>
+      </Panel>
+    </div>
+  </>;
 }

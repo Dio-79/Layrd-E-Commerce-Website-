@@ -1,14 +1,5 @@
-import React from 'react';
-import { ReactNode } from 'react';
-
-
-export default function wholesaleLayout({children}: {children: ReactNode}) {
-    return (
-        // admin container
-        <div>
-            <nav>navbar here</nav>
-            {children}
-        </div>
-    );
-
+import type { ReactNode } from "react";
+import { PortalShell } from "@/app/portal-ui/PortalUI";
+export default function WholesaleLayout({ children }: { children: ReactNode }) {
+  return <PortalShell kind="wholesale">{children}</PortalShell>;
 }
