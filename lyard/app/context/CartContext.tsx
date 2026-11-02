@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { CartItem, Product } from "@/app/types/models";
+import { cartKey, type CartItem, type Product } from "@/app/types/models";
 
 const STORAGE_KEY = "layrd:cart:v1";
 
@@ -11,13 +11,17 @@ interface CartContextType {
   hydrated: boolean;
   /** total number of units in the bag (used for the bag icon badge) */
   itemCount: number;
-  addItem: (product: Product, quantity?: number) => void;
-  removeItem: (productID: number) => void;
-  increaseQuantity: (productID: number) => void;
-  decreaseQuantity: (productID: number) => void;
+  /** Adds to the line with the same product, size, flavor and group (or starts a new one). */
+  addItem: (product: Product, quantity?: number, options?: LineOptions) => void;
+  /** The line functions take the line's key: cartKey(item), or an order line's id without "bag:". */
+  removeItem: (key: string) => void;
+  increaseQuantity: (key: string) => void;
+  decreaseQuantity: (key: string) => void;
   clearCart: () => void;
   getTotal: () => number;
 }
+
+export type LineOptions = Pick<CartItem, "size" | "flavor" | "group">;
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
@@ -58,38 +62,29 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, [items, hydrated]);
 
-  function addItem(product: Product, quantity: number = 1) {
+  function addItem(product: Product, quantity: number = 1, options: LineOptions = {}) {
     const qty = Math.max(1, Math.floor(quantity));
+    const line: CartItem = { product, quantity: qty, ...options };
+    const key = cartKey(line);
     setItems((prevItems) => {
-      const existing = prevItems.find((i) => i.product.productID === product.productID);
-
-      if (existing) {
-        return prevItems.map((i) =>
-          i.product.productID === product.productID ? { ...i, quantity: i.quantity + qty } : i
-        );
+      if (prevItems.some((i) => cartKey(i) === key)) {
+        return prevItems.map((i) => (cartKey(i) === key ? { ...i, quantity: i.quantity + qty } : i));
       }
-
-      return [...prevItems, { product, quantity: qty }];
+      return [...prevItems, line];
     });
   }
 
-  function removeItem(productID: number) {
-    setItems((prevItems) => prevItems.filter((i) => i.product.productID !== productID));
+  function removeItem(key: string) {
+    setItems((prevItems) => prevItems.filter((i) => cartKey(i) !== key));
   }
 
-  function increaseQuantity(productID: number) {
-    setItems((prevItems) =>
-      prevItems.map((i) =>
-        i.product.productID === productID ? { ...i, quantity: i.quantity + 1 } : i
-      )
-    );
+  function increaseQuantity(key: string) {
+    setItems((prevItems) => prevItems.map((i) => (cartKey(i) === key ? { ...i, quantity: i.quantity + 1 } : i)));
   }
 
-  function decreaseQuantity(productID: number) {
+  function decreaseQuantity(key: string) {
     setItems((prevItems) =>
-      prevItems
-        .map((i) => (i.product.productID === productID ? { ...i, quantity: i.quantity - 1 } : i))
-        .filter((i) => i.quantity > 0)
+      prevItems.map((i) => (cartKey(i) === key ? { ...i, quantity: i.quantity - 1 } : i)).filter((i) => i.quantity > 0)
     );
   }
 

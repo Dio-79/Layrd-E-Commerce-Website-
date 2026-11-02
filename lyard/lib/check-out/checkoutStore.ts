@@ -22,6 +22,8 @@ export interface OrderLine {
   unitPrice: number;
   /** Regular price per unit, when the item is on sale */
   originalUnitPrice?: number;
+  /** Shown with the line, e.g. "Custom bundle" */
+  group?: string;
 }
 
 export type NewLine = Omit<OrderLine, "source" | "eventId">;
@@ -57,6 +59,27 @@ export interface DeliveryInfo {
   pickupLocation?: string;
 }
 
+export type PaymentMethod = "card" | "apple" | "google" | "paypal" | "etransfer" | "in_store";
+
+export interface PaymentInfo {
+  method: PaymentMethod;
+  provider: "square" | "paypal" | "etransfer" | "in_store";
+  /**
+   * "paid" once the money is taken; "authorized" if Square approved it but completing
+   * failed (staff complete it in the Square dashboard); e-Transfers wait for an admin.
+   */
+  status: "paid" | "authorized" | "awaiting_etransfer" | "pay_at_pickup";
+  amount: number;
+  currency: string;
+  /** Square payment id or PayPal capture id */
+  paymentId?: string;
+  receiptUrl?: string;
+  /** e.g. "VISA •••• 1111" */
+  label?: string;
+  /** Where to send an e-Transfer */
+  etransferEmail?: string;
+}
+
 export interface PlacedOrder {
   orderNumber: string;
   placedAt: string;
@@ -66,6 +89,7 @@ export interface PlacedOrder {
   events: EventDetails[];
   promoCode: string | null;
   totals: Totals;
+  payment?: PaymentInfo;
 }
 
 /**
@@ -189,10 +213,34 @@ export function removeEventOrder(eventId: string) {
   commit({ ...state, events: state.events.filter((e) => e.id !== eventId) });
 }
 
-function makeOrderNumber() {
+export function makeOrderNumber() {
   const time = Date.now().toString(36).toUpperCase().slice(-6);
   const rand = Math.floor(Math.random() * 90 + 10);
   return `LYD-${time}${rand}`;
+}
+
+/** The order as it will be sent for payment (event lines from this store are included). */
+export function draftOrder(input: {
+  orderNumber: string;
+  customer: CustomerInfo;
+  delivery: DeliveryInfo;
+  promoCode: string | null;
+  totals: Totals;
+  bagLines: OrderLine[];
+}): PlacedOrder {
+  const state = read();
+  const { bagLines, ...rest } = input;
+  return {
+    placedAt: new Date().toISOString(),
+    ...rest,
+    lines: [...bagLines, ...state.events.flatMap((e) => e.lines)],
+    events: state.events.map((e) => e.details),
+  };
+}
+
+/** Keeps the order the server saved (with its prices and payment) for the confirmation page. */
+export function rememberOrder(order: PlacedOrder) {
+  commit({ events: [], promoCode: null, lastOrder: order });
 }
 
 /**

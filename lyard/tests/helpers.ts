@@ -11,16 +11,30 @@ export async function resetEmulators() {
   await fetch(`${AUTH}/emulator/v1/projects/${PROJECT_ID}/accounts`, { method: "DELETE" });
 }
 
-/** Creates a user in the Auth emulator the way the browser does; returns its ID token and uid. */
-export async function signUp(email: string, password = "test-pass-123", displayName?: string) {
-  const res = await fetch(`${AUTH}/identitytoolkit.googleapis.com/v1/accounts:signUp?key=fake-api-key`, {
+async function identityToolkit(endpoint: string, body: unknown) {
+  const res = await fetch(`${AUTH}/identitytoolkit.googleapis.com/v1/${endpoint}?key=fake-api-key`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password, displayName, returnSecureToken: true }),
+    body: JSON.stringify(body),
   });
-  const data = (await res.json()) as { idToken?: string; localId?: string; error?: { message: string } };
+  return (await res.json()) as { idToken?: string; localId?: string; error?: { message: string } };
+}
+
+/**
+ * Creates a user in the Auth emulator the way the browser does; returns its ID token and uid.
+ * By default the email is marked verified (as if they clicked the emailed link), and the
+ * token is fresh, since a token records email_verified when it is issued.
+ */
+export async function signUp(email: string, password = "test-pass-123", displayName?: string, verified = true) {
+  const data = await identityToolkit("accounts:signUp", { email, password, displayName, returnSecureToken: true });
   if (!data.idToken || !data.localId) throw new Error(`signUp failed: ${data.error?.message}`);
-  return { idToken: data.idToken, uid: data.localId };
+  if (!verified) return { idToken: data.idToken, uid: data.localId };
+
+  const { adminAuth } = await import("@/lib/firebase/admin");
+  await adminAuth.updateUser(data.localId, { emailVerified: true });
+  const again = await identityToolkit("accounts:signInWithPassword", { email, password, returnSecureToken: true });
+  if (!again.idToken) throw new Error(`signIn failed: ${again.error?.message}`);
+  return { idToken: again.idToken, uid: data.localId };
 }
 
 /** Builds a NextRequest for calling a route handler directly. */

@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { RequireRole } from "@/app/components/RequiredRoles";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm, useWatch } from "react-hook-form";
@@ -9,14 +10,27 @@ import Footer from "../components/Footer";
 import styles from "./checkout.module.css";
 import { SummaryLine, TotalsList } from "./order";
 import {
-  placeOrder,
+  ETransferNote,
+  PayPalButton,
+  paymentsEnabled,
+  SquareCard,
+  WalletButton,
+  type SquareCardHandle,
+} from "./payments";
+import {
+  draftOrder,
+  makeOrderNumber,
+  rememberOrder,
   removeEventOrder,
   useCheckout,
   useHydrated,
   type DeliveryInfo,
   type OrderLine,
+  type PaymentMethod,
+  type PlacedOrder,
 } from "@/lib/check-out/checkoutStore";
 import { useCart } from "@/app/context/CartContext";
+import { cartItemToLine } from "@/lib/check-out/CartLine";
 import { ROUTES } from "@/lib/Routes/Routes";
 import { calculateTotals, findPromo, formatDate, formatMoney, type PromoCode } from "@/lib/check-out/CheckoutPricing";
 import {
@@ -37,12 +51,30 @@ type FormValues = {
   city: string;
   province: string;
   postal: string;
-  cardNumber: string;
-  expiry: string;
-  cvc: string;
 };
 
-type PaymentMethod = "card" | "apple" | "google" | "paypal";
+const PAYMENT_OPTIONS: { id: PaymentMethod; label: string; badge: string; on: boolean }[] = [
+  { id: "card", label: "💳 Credit / Debit Card", badge: "VISA ●●", on: paymentsEnabled.square },
+  { id: "apple", label: "Apple Pay", badge: "Pay", on: paymentsEnabled.square },
+  { id: "google", label: "Google Pay", badge: "G Pay", on: paymentsEnabled.square },
+  { id: "paypal", label: "PayPal", badge: "PayPal", on: paymentsEnabled.paypal },
+  { id: "etransfer", label: "Interac e-Transfer", badge: "e-Transfer", on: paymentsEnabled.etransfer },
+  // Always available for pickup orders: the order is saved and paid in store.
+  { id: "in_store", label: "Pay at pickup", badge: "In store", on: true },
+];
+const AVAILABLE = PAYMENT_OPTIONS.filter((o) => o.on);
+
+/** Sends the order to a payment route; returns the order the server saved. */
+async function postPayment(url: string, body: unknown): Promise<PlacedOrder> {
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const data = (await res.json().catch(() => ({}))) as { order?: PlacedOrder; error?: string };
+  if (!res.ok || !data.order) throw new Error(data.error ?? "Payment failed — please try again.");
+  return data.order;
+}
 
 function Field({
   label,
@@ -68,7 +100,16 @@ function Field({
   );
 }
 
+// Guests can browse, but only signed-in customers can buy.
 export default function CheckoutPage() {
+  return (
+    <RequireRole permission="checkout:purchase">
+      <CheckoutPageBody />
+    </RequireRole>
+  );
+}
+
+function CheckoutPageBody() {
   const router = useRouter();
   const hydrated = useHydrated();
 
@@ -79,15 +120,7 @@ export default function CheckoutPage() {
   );
   const bagLines = useMemo<OrderLine[]>(
     () =>
-      bag.map((item) => ({
-        id: `bag:${item.product.productID}`,
-        source: "bag",
-        productId: item.product.productID,
-        name: item.product.name,
-        image: item.product.imageUrl ?? null,
-        quantity: item.quantity,
-        unitPrice: item.product.price,
-      })),
+      bag.map(cartItemToLine),
     [bag]
   );
 
@@ -95,12 +128,20 @@ export default function CheckoutPage() {
   const lines = useMemo(() => [...bagLines, ...eventLines], [bagLines, eventLines]);
 
   const [deliveryMethod, setDeliveryMethod] = useState<"ship" | "pickup">("ship");
-  const [payment, setPayment] = useState<PaymentMethod>("card");
+  const [paymentChoice, setPayment] = useState<PaymentMethod | null>(null);
+  // "Pay at pickup" only for pickup orders; fall back to the first method on offer.
+  const available = AVAILABLE.filter((o) => o.id !== "in_store" || deliveryMethod === "pickup");
+  const payment = available.some((o) => o.id === paymentChoice) ? paymentChoice : (available[0]?.id ?? null);
+  const cardRef = useRef<SquareCardHandle>(null);
+  // Also the payment idempotency key; a new one after each failed attempt.
+  const orderNumber = useRef(makeOrderNumber());
 
   const {
     register,
     handleSubmit,
     control,
+    trigger,
+    getValues,
     formState: { errors },
   } = useForm<FormValues>({
     mode: "onBlur",
@@ -112,9 +153,6 @@ export default function CheckoutPage() {
       city: "",
       province: "",
       postal: "",
-      cardNumber: "",
-      expiry: "",
-      cvc: "",
     },
   });
 
@@ -195,64 +233,120 @@ export default function CheckoutPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
 
-  const onSubmit = async (values: FormValues) => {
-    setSubmitError("");
+  /** Books the delivery (dummy DoorDash) and builds the order to send for payment. */
+  const prepareOrder = async (values: FormValues): Promise<PlacedOrder> => {
+    if (lines.length === 0) throw new Error("Your order is empty. Add items to your bag or create an event order first.");
 
-    if (lines.length === 0) {
-      setSubmitError("Your order is empty. Add items to your bag or create an event order first.");
-      return;
+    let delivery: DeliveryInfo;
+    if (deliveryMethod === "ship") {
+      if (!quote) throw new Error("We couldn't get a DoorDash quote for that address yet.");
+      const address = {
+        street: values.street.trim(),
+        city: values.city.trim(),
+        province: values.province.trim(),
+        postal: values.postal.trim(),
+      };
+      const result = await createDelivery(quote, address, {
+        name: values.fullName,
+        phone: values.phone,
+      });
+      delivery = {
+        method: "ship",
+        carrier: "DoorDash",
+        address,
+        deliveryId: result.deliveryId,
+        etaMinutes: result.etaMinutes,
+        courierName: result.courier.name,
+      };
+    } else {
+      delivery = { method: "pickup", pickupLocation: PICKUP_LOCATION.address };
     }
 
+    return draftOrder({
+      orderNumber: orderNumber.current,
+      customer: {
+        email: values.email.trim(),
+        phone: values.phone.trim(),
+        fullName: values.fullName.trim(),
+      },
+      delivery,
+      promoCode: appliedPromo?.code ?? null,
+      totals,
+      bagLines,
+    });
+  };
+
+  const buyer = (values: FormValues) => ({
+    fullName: values.fullName,
+    email: values.email,
+    phone: values.phone,
+    city: deliveryMethod === "ship" ? values.city : undefined,
+    postal: deliveryMethod === "ship" ? values.postal : undefined,
+  });
+
+  /** Runs one payment attempt; on success shows the confirmation page. */
+  const attempt = async (pay: () => Promise<PlacedOrder>) => {
+    setSubmitError("");
     setSubmitting(true);
     try {
-      let delivery: DeliveryInfo;
-
-      if (deliveryMethod === "ship") {
-        if (!quote) throw new Error("We couldn't get a DoorDash quote for that address yet.");
-        const address = {
-          street: values.street.trim(),
-          city: values.city.trim(),
-          province: values.province.trim(),
-          postal: values.postal.trim(),
-        };
-        const result = await createDelivery(quote, address, {
-          name: values.fullName,
-          phone: values.phone,
-        });
-        delivery = {
-          method: "ship",
-          carrier: "DoorDash",
-          address,
-          deliveryId: result.deliveryId,
-          etaMinutes: result.etaMinutes,
-          courierName: result.courier.name,
-        };
-      } else {
-        delivery = { method: "pickup", pickupLocation: PICKUP_LOCATION.address };
-      }
-
-      // Card details are deliberately NOT saved anywhere (demo only).
-      placeOrder({
-        customer: {
-          email: values.email.trim(),
-          phone: values.phone.trim(),
-          fullName: values.fullName.trim(),
-        },
-        delivery,
-        promoCode: appliedPromo?.code ?? null,
-        totals,
-        bagLines,
-      });
-
+      const saved = await pay();
+      rememberOrder(saved);
+      cart.clearCart?.();
       router.push(CONFIRMATION_PATH);
     } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+      orderNumber.current = makeOrderNumber();
+      setSubmitError(err instanceof Error ? err.message : "Payment failed — please try again.");
       setSubmitting(false);
     }
   };
 
+  // The COMPLETE ORDER button: card, e-Transfer and pay at pickup.
+  const onSubmit = (values: FormValues) =>
+    attempt(async () => {
+      if (payment === "card") {
+        if (!cardRef.current) throw new Error("The card form is still loading.");
+        const sourceId = await cardRef.current.tokenize(totals.total, buyer(values));
+        const order = await prepareOrder(values);
+        return postPayment("/api/payments/square", { order, sourceId, method: "card" });
+      }
+      if (payment === "etransfer") {
+        return postPayment("/api/payments/etransfer", { order: await prepareOrder(values) });
+      }
+      if (payment === "in_store") {
+        return postPayment("/api/payments/in-store", { order: await prepareOrder(values) });
+      }
+      throw new Error("Choose a payment method.");
+    });
+
+  // Apple Pay / Google Pay: the wallet sheet runs first, then the form is checked.
+  const payWithWallet = (method: "apple" | "google", sourceId: string) =>
+    void handleSubmit((values) =>
+      attempt(async () => postPayment("/api/payments/square", { order: await prepareOrder(values), sourceId, method }))
+    )();
+
+  // PayPal: our server creates the PayPal order, the buyer approves it, then we capture.
+  const paypalOrder = useRef<PlacedOrder | null>(null);
+  const createPayPalOrder = async () => {
+    setSubmitError("");
+    if (!(await trigger())) throw new Error("Fill in your details first.");
+    const order = await prepareOrder(getValues());
+    paypalOrder.current = order;
+    const res = await fetch("/api/payments/paypal", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "create", order }),
+    });
+    const data = (await res.json().catch(() => ({}))) as { paypalOrderId?: string; error?: string };
+    if (!res.ok || !data.paypalOrderId) {
+      setSubmitError(data.error ?? "Couldn't start PayPal — please try again.");
+      throw new Error(data.error ?? "PayPal create failed");
+    }
+    return data.paypalOrderId;
+  };
+  const capturePayPal = (paypalOrderId: string) =>
+    attempt(() => postPayment("/api/payments/paypal", { action: "capture", order: paypalOrder.current, paypalOrderId }));
+
   const shipRequired = (message: string) => (deliveryMethod === "ship" ? message : false);
-  const cardRequired = (message: string) => (payment === "card" ? message : false);
 
   return (
     <>
@@ -262,7 +356,7 @@ export default function CheckoutPage() {
         <h1 className={styles.heading}>Checkout</h1>
         <p className={styles.subheading}>Review your order and enter your details to finish.</p>
 
-        <form className={styles.layout} onSubmit={handleSubmit(onSubmit)} noValidate>
+        <form className={styles.layout} onSubmit={(e) => void handleSubmit(onSubmit)(e)} noValidate>
           {/* ------------------------- Left column ------------------------- */}
           <div className={styles.left}>
             <button type="button" className={styles.returnCart} onClick={() => router.push(CART_PATH)}>
@@ -412,98 +506,47 @@ export default function CheckoutPage() {
             <section className={styles.section}>
               <h2>Payment Details</h2>
 
-              <div className={styles.paymentCard}>
-                <button
-                  type="button"
-                  className={styles.paymentTitle}
-                  aria-pressed={payment === "card"}
-                  onClick={() => setPayment("card")}
-                >
-                  💳 Credit / Debit Card
-                </button>
+              {available.length === 0 && (
+                <p className={styles.error} role="alert">
+                  Online payment isn&apos;t set up yet. Choose Pickup above to order now and pay at pickup.
+                </p>
+              )}
 
-                {payment === "card" && (
-                  <div className={styles.cardInputs}>
-                    <Field label="Card Number" htmlFor="cardNumber" error={errors.cardNumber?.message}>
-                      <input
-                        id="cardNumber"
-                        type="text"
-                        inputMode="numeric"
-                        autoComplete="cc-number"
-                        placeholder="0000 0000 0000 0000"
-                        aria-invalid={!!errors.cardNumber}
-                        {...register("cardNumber", {
-                          required: cardRequired("Card number is required"),
-                          validate: (v) =>
-                            payment !== "card" ||
-                            /^\d{13,19}$/.test(v.replace(/\s/g, "")) ||
-                            "Enter a valid card number",
-                        })}
-                      />
-                    </Field>
-
-                    <Field label="Expiration" htmlFor="expiry" error={errors.expiry?.message}>
-                      <input
-                        id="expiry"
-                        type="text"
-                        inputMode="numeric"
-                        autoComplete="cc-exp"
-                        placeholder="MM/YY"
-                        aria-invalid={!!errors.expiry}
-                        {...register("expiry", {
-                          required: cardRequired("Expiration is required"),
-                          validate: (v) =>
-                            payment !== "card" || /^(0[1-9]|1[0-2])\/\d{2}$/.test(v) || "Use MM/YY",
-                        })}
-                      />
-                    </Field>
-
-                    <Field label="Security Code" htmlFor="cvc" error={errors.cvc?.message}>
-                      <input
-                        id="cvc"
-                        type="text"
-                        inputMode="numeric"
-                        autoComplete="cc-csc"
-                        placeholder="CVC"
-                        aria-invalid={!!errors.cvc}
-                        {...register("cvc", {
-                          required: cardRequired("Security code is required"),
-                          validate: (v) => payment !== "card" || /^\d{3,4}$/.test(v) || "3 or 4 digits",
-                        })}
-                      />
-                    </Field>
-                  </div>
-                )}
-
-                <div className={styles.paymentLogos}>
-                  <span>VISA</span>
-                  <span>●●</span>
+              {available.map(({ id, label, badge }) => (
+                <div key={id} className={payment === id ? styles.paymentCard : undefined}>
+                  <button
+                    type="button"
+                    className={payment === id ? styles.paymentTitle : styles.altPayment}
+                    aria-pressed={payment === id}
+                    onClick={() => {
+                      setPayment(id);
+                      setSubmitError("");
+                    }}
+                  >
+                    {label}
+                    {payment !== id && <span>{badge}</span>}
+                  </button>
+                  {payment === id && id === "card" && <SquareCard ref={cardRef} />}
+                  {payment === id && id === "etransfer" && <ETransferNote total={totals.total} />}
+                  {payment === id && id === "in_store" && (
+                    <p className={styles.note}>
+                      Pay when you pick up your order at <strong>{PICKUP_LOCATION.address}</strong>. Your order is
+                      saved now and we start preparing it.
+                    </p>
+                  )}
+                  {payment === id && (id === "apple" || id === "google" || id === "paypal") && (
+                    <p className={styles.note}>Fill in your details, then use the {label} button under the order summary.</p>
+                  )}
                 </div>
-              </div>
-
-              {(
-                [
-                  ["apple", "Apple Pay", "Pay"],
-                  ["google", "Google Pay", "G Pay"],
-                  ["paypal", "PayPal", "PayPal"],
-                ] as const
-              ).map(([id, label, badge]) => (
-                <button
-                  key={id}
-                  type="button"
-                  className={styles.altPayment}
-                  aria-pressed={payment === id}
-                  onClick={() => setPayment(id)}
-                >
-                  {label}
-                  <span>{badge}</span>
-                </button>
               ))}
 
-              <p className={styles.note}>
-                Demo only: card details are not stored or sent anywhere. Use a payment provider such as Stripe
-                before taking real payments.
-              </p>
+              {(paymentsEnabled.square || paymentsEnabled.paypal) && (
+                <p className={styles.note}>
+                  Payments are processed securely by{" "}
+                  {[paymentsEnabled.square && "Square", paymentsEnabled.paypal && "PayPal"].filter(Boolean).join(" and ")}.
+                  Card details go straight to the payment provider and are never stored on our servers.
+                </p>
+              )}
             </section>
           </div>
 
@@ -585,9 +628,36 @@ export default function CheckoutPage() {
               </p>
             )}
 
-            <button type="submit" className={styles.complete} disabled={submitting || lines.length === 0}>
-              {submitting ? "PLACING ORDER…" : "COMPLETE ORDER →"}
-            </button>
+            {payment === "apple" || payment === "google" ? (
+              <WalletButton
+                key={payment}
+                wallet={payment}
+                total={totals.total}
+                disabled={submitting || lines.length === 0}
+                onToken={(token) => payWithWallet(payment, token)}
+                onError={setSubmitError}
+              />
+            ) : payment === "paypal" ? (
+              <PayPalButton
+                disabled={submitting || lines.length === 0}
+                createOrder={createPayPalOrder}
+                onApprove={capturePayPal}
+                onError={setSubmitError}
+              />
+            ) : (
+              <button
+                type="submit"
+                className={styles.complete}
+                disabled={submitting || lines.length === 0 || payment === null}
+              >
+                {submitting ? "PLACING ORDER…" : payment === "etransfer" || payment === "in_store" ? "PLACE ORDER →" : `PAY ${formatMoney(totals.total)} →`}
+              </button>
+            )}
+            {submitting && payment !== "card" && payment !== "etransfer" && (
+              <p className={styles.note} role="status">
+                Placing your order…
+              </p>
+            )}
           </aside>
         </form>
       </main>

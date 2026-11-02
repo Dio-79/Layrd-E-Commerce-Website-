@@ -13,7 +13,7 @@ export const GUEST_ROLE: RoleDefinition = {
 export function GuestPrompt({ action = "purchase items" }: { action?: string }) {
   return (
     <p role="note">
-      <Link href="/login">Sign in</Link> or <Link href="/signup">create an account</Link> to {action}.
+      <Link href="/login">Sign in</Link> or <Link href="/Signup">create an account</Link> to {action}.
     </p>
   );
 }

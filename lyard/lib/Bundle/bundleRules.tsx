@@ -1,7 +1,7 @@
 // lib/Bundle/bundleRules.ts
 // Business rules + shared types for custom bundle preorders (pickup or DoorDash delivery).
 
-export const TAX_RATE = 0.08;
+export const TAX_RATE = 0.05; // Alberta GST, same as the main checkout
 export const MAX_UNITS_PER_DAY = 150; // drinks per pickup/delivery day
 export const CANCEL_HOURS = 12;
 export const PICKUP_LOCATION = "Pickup at 123 St. NE";
@@ -36,6 +36,8 @@ export type Fulfillment = "pickup" | "delivery";
 
 export interface BundleLine {
   id: string;
+  /** Catalog product, so the server can check the price */
+  productId: number;
   name: string;
   size: string;
   flavor: string;

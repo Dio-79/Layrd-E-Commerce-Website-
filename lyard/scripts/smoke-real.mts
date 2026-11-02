@@ -58,6 +58,25 @@ try {
     uid = data.localId;
   });
 
+  await check("the site refuses a session until the email is verified", async () => {
+    const res = await fetch(`${BASE}/api/auth/session`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ idToken, name: "Smoke Test" }),
+    });
+    expect(res.status === 403, `POST /api/auth/session -> ${res.status}, expected 403`);
+
+    // Stand in for clicking the emailed link, then sign in again for a fresh token.
+    await auth.updateUser(uid, { emailVerified: true });
+    const again = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${apiKey}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password: `Smoke-${stamp}-pass`, returnSecureToken: true }),
+    });
+    idToken = (await again.json()).idToken;
+    expect(idToken, "sign-in after verification failed");
+  });
+
   await check("the site starts a session and gives the customer role", async () => {
     const res = await fetch(`${BASE}/api/auth/session`, {
       method: "POST",

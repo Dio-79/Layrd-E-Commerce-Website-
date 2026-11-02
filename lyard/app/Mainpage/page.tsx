@@ -100,23 +100,23 @@ export default function LandingPageBody() {
                 </div>
               </div>
 
-              <button type="button" className={styles.shopNowBtn}>
+              <Link href={CAKE_IN_A_CAN_PATH} className={styles.shopNowBtn}>
                 SHOP NOW
-              </button>
+              </Link>
             </div>
 
             <div className={styles.valueImages}>
               <Image
-                src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=600&auto=format&fit=crop"
-                alt="Feature Cake Can"
+                src="/home/kitchen-jars.jpg"
+                alt="Four LÄYRD cakes-in-a-can on a kitchen counter"
                 className={styles.valueImgMain}
                 width={600}
                 height={420}
                 unoptimized
               />
               <Image
-                src="https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=400&auto=format&fit=crop"
-                alt="Feature Espresso"
+                src="/home/gift-stack.jpg"
+                alt="LÄYRD cakes-in-a-can stacked and tied with a ribbon"
                 className={styles.valueImgSub}
                 width={400}
                 height={300}
@@ -134,8 +134,8 @@ export default function LandingPageBody() {
           <div className={styles.socialGrid}>
             <div className={styles.socialCard}>
               <Image
-                src="https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=400&auto=format&fit=crop"
-                alt="Social 1"
+                src="/home/gift-bag.jpg"
+                alt="A LÄYRD carry tray with cakes-in-a-can, outdoors"
                 width={400}
                 height={300}
                 unoptimized
@@ -143,8 +143,8 @@ export default function LandingPageBody() {
             </div>
             <div className={styles.socialCard}>
               <Image
-                src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400&auto=format&fit=crop"
-                alt="Social 2"
+                src="/home/jar-in-box.jpg"
+                alt="A LÄYRD cake-in-a-can presented in its gift box"
                 width={400}
                 height={300}
                 unoptimized
@@ -152,8 +152,8 @@ export default function LandingPageBody() {
             </div>
             <div className={styles.socialCard}>
               <Image
-                src="https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=400&auto=format&fit=crop"
-                alt="Social 3"
+                src="/home/bow-stack.jpg"
+                alt="LÄYRD gift stack with a satin bow"
                 width={400}
                 height={300}
                 unoptimized

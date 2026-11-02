@@ -102,7 +102,7 @@ describe("live orders", () => {
     const next = snapshots(await liveOrders(streamRequest("/api/live/orders", admin.cookie)));
     expect(numbers(await next())).toEqual(["LYD-A1"]);
 
-    await place("LYD-GUEST1");
-    expect(numbers(await next())).toEqual(["LYD-A1", "LYD-GUEST1"]);
+    await place("LYD-A2", alice.cookie);
+    expect(numbers(await next())).toEqual(["LYD-A1", "LYD-A2"]);
   });
 });

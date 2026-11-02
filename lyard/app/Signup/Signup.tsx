@@ -1,15 +1,14 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useAuth } from '@/app/context/AuthContext';
 import { useRouter } from 'next/navigation';
-import { signup } from './SignupApi';
-import { setPending } from '@/lib/Auth/store';
+import { setPendingVerification, signUpWithEmail } from '@/lib/Auth/firebaseAuth';
+import { ROUTES } from '@/lib/Routes/Routes';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as yup from 'yup';
 import styles from './Signup.module.css';
-
-// Folder of the two-step verification page.
-const VERIFY_ROUTE = '/varifcationpage';
+import GoogleButton from '@/app/components/GoogleButton';
 
 const schema = yup.object({
   username: yup.string().required('Full name is required'),
@@ -26,6 +25,13 @@ const schema = yup.object({
 
 export default function SignupForm() {
   const router = useRouter();
+  const [googleError, setGoogleError] = useState('');
+  const { user, loading, home } = useAuth();
+
+  // Already logged in: no need to sign up.
+  useEffect(() => {
+    if (!loading && user) router.replace(home);
+  }, [loading, user, home, router]);
 
   return (
     <div className={styles.pageContainer}>
@@ -47,11 +53,13 @@ export default function SignupForm() {
             onSubmit={async (values, { setSubmitting, setStatus }) => {
               setStatus(undefined);
               try {
-                // Creates the account as a "customer", then goes to two-step verification.
-                // They are signed in once the code is accepted there.
-                const result = await signup(values.email, values.username, values.password);
-                setPending(result);
-                router.push(VERIFY_ROUTE);
+                // Creates the Firebase account and emails the verification link. The site
+                // makes them a "customer" when they're signed in after verifying.
+                const email = values.email.trim();
+                const name = values.username.trim();
+                const result = await signUpWithEmail(email, values.password, name);
+                setPendingVerification({ idToken: result.idToken, refreshToken: result.refreshToken, email, name });
+                router.push(ROUTES.verify);
               } catch (err) {
                 setStatus(err instanceof Error ? err.message : 'Something went wrong.');
               } finally {
@@ -128,12 +136,12 @@ export default function SignupForm() {
 
                 {/* Social Login Options */}
                 <div className={styles.socialButtons}>
-                  <button type="button" className={styles.socialBtn}>
-                     Sign up with Apple
-                  </button>
-                  <button type="button" className={styles.socialBtn}>
-                    G Sign up with Google
-                  </button>
+                  <GoogleButton className={styles.socialBtn} label="Sign up with Google" onError={setGoogleError} />
+                  {googleError && (
+                    <div className={styles.errorText} role="alert">
+                      {googleError}
+                    </div>
+                  )}
                 </div>
 
                 {/* Main Submit CTA */}

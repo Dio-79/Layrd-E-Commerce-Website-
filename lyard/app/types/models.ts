@@ -46,7 +46,16 @@ export interface Customer extends User {
 export interface CartItem {
   product: Product;
   quantity: number;
+  /** Chosen size label (e.g. "Large", "4 cans"); product.price is that size's price */
+  size?: string;
+  flavor?: string;
+  /** Lines added together, e.g. one custom bundle */
+  group?: { id: string; name: string };
 }
+
+/** One cart line per product + size + flavor + group. */
+export const cartKey = (item: Pick<CartItem, "product" | "size" | "flavor" | "group">) =>
+  [item.product.productID, item.size ?? "", item.flavor ?? "", item.group?.id ?? ""].join("|");
 
 export interface Cart {
   cartId: number;

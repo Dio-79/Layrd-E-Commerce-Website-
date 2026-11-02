@@ -9,13 +9,11 @@ beforeEach(resetEmulators);
 const place = (body: unknown, cookie?: string) => POST(request("/api/orders", { method: "POST", body, cookie }));
 
 describe("placing an order", () => {
-  it("saves a guest order to Firestore", async () => {
+  it("refuses orders from guests (not signed in)", async () => {
     const res = await place(sampleOrder("LYD-GUEST1"));
-    expect(res.status).toBe(201);
-
-    const saved = (await adminDb.collection("orders").doc("LYD-GUEST1").get()).data();
-    expect(saved).toMatchObject({ orderNumber: "LYD-GUEST1", status: "placed", userId: null });
-    expect(saved?.lines).toHaveLength(1);
+    expect(res.status).toBe(401);
+    expect((await res.json()).error).toMatch(/Log in/);
+    expect((await adminDb.collection("orders").doc("LYD-GUEST1").get()).exists).toBe(false);
   });
 
   it("links the order to the signed-in customer", async () => {
@@ -26,15 +24,17 @@ describe("placing an order", () => {
   });
 
   it("rejects bad orders", async () => {
-    expect((await place({ ...sampleOrder("bad number") })).status).toBe(400);
-    expect((await place({ ...sampleOrder("LYD-EMPTY"), lines: [] })).status).toBe(400);
-    expect((await place(sampleOrder("LYD-NOEMAIL", "not-an-email"))).status).toBe(400);
-    expect((await place(null)).status).toBe(400);
+    const { cookie } = await signedInUser("carol@layrd.test");
+    expect((await place({ ...sampleOrder("bad number") }, cookie)).status).toBe(400);
+    expect((await place({ ...sampleOrder("LYD-EMPTY"), lines: [] }, cookie)).status).toBe(400);
+    expect((await place(sampleOrder("LYD-NOEMAIL", "not-an-email"), cookie)).status).toBe(400);
+    expect((await place(null, cookie)).status).toBe(400);
   });
 
   it("won't save the same order number twice", async () => {
-    expect((await place(sampleOrder("LYD-DUP1"))).status).toBe(201);
-    expect((await place(sampleOrder("LYD-DUP1"))).status).toBe(409);
+    const { cookie } = await signedInUser("dave@layrd.test");
+    expect((await place(sampleOrder("LYD-DUP1"), cookie)).status).toBe(201);
+    expect((await place(sampleOrder("LYD-DUP1"), cookie)).status).toBe(409);
   });
 });
 

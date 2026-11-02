@@ -1,13 +1,9 @@
 "use client";
 
-import { RequireRole } from "@/app/components/RequiredRoles";
 import AccountSettings from "./Accountsetting";
 
-// Any signed-in role with "account:manage" (customer, user, wholesale, admin) can open this page.
+// The header's person icon always opens this page. Signed-in users see their
+// settings; guests see a sign-in panel here instead of being sent to /login.
 export default function AccountPage() {
-  return (
-    <RequireRole permission="account:manage">
-      <AccountSettings />
-    </RequireRole>
-  );
+  return <AccountSettings />;
 }

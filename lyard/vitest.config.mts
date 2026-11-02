@@ -20,6 +20,7 @@ export default defineConfig({
       FIREBASE_AUTH_EMULATOR_HOST: "127.0.0.1:9199",
       EVENT_ADMIN_KEY: "test-admin-key",
       BUNDLE_ADMIN_KEY: "test-admin-key",
+      NEXT_PUBLIC_ETRANSFER_EMAIL: "pay@layrd.test",
     },
   },
 });

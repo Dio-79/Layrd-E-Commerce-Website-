@@ -100,10 +100,19 @@ try {
   if (!signUp.ok) throw new Error(`sign-up failed: ${account.error?.message}`);
   uid = account.localId;
 
+  // Sessions need a verified email: mark it verified, then sign in again for a fresh token.
+  await auth.updateUser(uid, { emailVerified: true });
+  const signIn = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${apiKey}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password: `Live-${stamp}-pass`, returnSecureToken: true }),
+  });
+  const { idToken } = await signIn.json();
+
   const session = await fetch(`${BASE}/api/auth/session`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ idToken: account.idToken, name: "Live Demo" }),
+    body: JSON.stringify({ idToken, name: "Live Demo" }),
   });
   const cookie = (session.headers.get("set-cookie") ?? "").split(";")[0];
 
