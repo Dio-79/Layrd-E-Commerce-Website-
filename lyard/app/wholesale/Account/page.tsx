@@ -1,74 +1,91 @@
-import React from 'react';
- 
+'use client';
+
+import { useState } from 'react';
+import { NOTIFICATION_OPTIONS } from '@/lib/Account/profile';
+
 export default function Page() {
+    const [businessName, setBusinessName] = useState("Café Aroma Ltd.");
+    const [contactPerson, setContactPerson] = useState("Sara Al-Harbi");
+    const [email, setEmail] = useState("orders@cafearoma.ca");
+    const [phone, setPhone] = useState("+1 (403) 555-0192");
+    const [address, setAddress] = useState("1204 17 Ave SW, Calgary, AB");
+
+    const [notifications, setNotifications] = useState(() =>
+        Object.fromEntries(NOTIFICATION_OPTIONS.map((o) => [o.key, o.defaultOn]))
+    );
+
+    function toggleNotification(key: string) {
+        setNotifications((prev) => ({ ...prev, [key]: !prev[key as keyof typeof prev] }));
+    }
+
+    function handleSave() {
+        console.log({ businessName, contactPerson, email, phone, address, notifications });
+    }
+
     return (
         <div>
-            <h1> Account settings</h1>
-            
-            {/* options */}
+            <h1>Account settings</h1>
+
             <div>
-                {/* side bar */}
                 <div>
                     <ul>
                         <li>Business profile</li>
                         <li>Delivery addresses</li>
-                        <li>payment method</li>
+                        <li>Payment method</li>
                         <li>Security</li>
                     </ul>
                 </div>
-                {/* buisness profile */}
+
                 <div>
-                    
-                    {/* buisness profile header */}
                     <div>
-                        
                         <div>
                             <h1>Business profile</h1>
-                            <p>This info appears and deliveries</p>
-
+                            <p>This info appears on invoices and deliveries</p>
                         </div>
-                        <p>Save changes </p>
-
+                        <button onClick={handleSave}>Save changes</button>
                     </div>
-                    
-                    {/* register email */}
-                    <div> 
+
+                    <div>
                         <div>
-                            <p>Buisness Name</p>
-                            <p>cafe aroma ltd</p>
+                            <p>Business Name</p>
+                            <input value={businessName} onChange={(e) => setBusinessName(e.target.value)} />
                         </div>
                         <div>
                             <p>Contact person</p>
-                            <p>Sara al-harbi</p>
+                            <input value={contactPerson} onChange={(e) => setContactPerson(e.target.value)} />
                         </div>
                         <div>
-                            <p>Buisness e-mail</p>
-                            <p>orders@caferoma.ca</p>
+                            <p>Business e-mail</p>
+                            <input value={email} onChange={(e) => setEmail(e.target.value)} />
                         </div>
                         <div>
-                            <p>phone</p>
-                            <p>403 555 0192</p>
+                            <p>Phone</p>
+                            <input value={phone} onChange={(e) => setPhone(e.target.value)} />
                         </div>
                     </div>
 
-                    {/* delivery address and notification */}
                     <div>
                         <div>
                             <p>Primary delivery address</p>
-                            <p> blah blah address goes here</p>
+                            <input value={address} onChange={(e) => setAddress(e.target.value)} />
                         </div>
-                        
-                        {/* notifications */}
+
                         <div>
                             <p>Notifications</p>
-                            <p>new wholesale pricing and offers</p>
-                            <p> delivery reminders</p>
-                            
+                            {NOTIFICATION_OPTIONS.map((option) => (
+                                <label key={option.key}>
+                                    <input
+                                        type="checkbox"
+                                        checked={notifications[option.key]}
+                                        onChange={() => toggleNotification(option.key)}
+                                    />
+                                    <span>{option.label}</span>
+                                </label>
+                            ))}
                         </div>
                     </div>
-
                 </div>
             </div>
         </div>
-    )
+    );
 }
