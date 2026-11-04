@@ -39,7 +39,22 @@ function fields(body: Record<string, unknown>) {
     featured: bool(body.featured),
     limited: bool(body.limited),
     limitedUntil: date(body.limitedUntil),
+    compareAt: num(body.compareAt, 0, 10_000),
+    contents: contents(body.contents),
   });
+}
+
+/** What's inside a bundle: up to 12 products with a quantity each. */
+function contents(value: unknown) {
+  if (!Array.isArray(value)) return undefined;
+  return value
+    .map((v) => ({
+      productID: num((v as Record<string, unknown>)?.productID, 1, 1_000_000),
+      name: str((v as Record<string, unknown>)?.name, 80) ?? "",
+      quantity: Math.floor(num((v as Record<string, unknown>)?.quantity, 1, 99) ?? 1),
+    }))
+    .filter((v): v is { productID: number; name: string; quantity: number } => v.productID !== undefined)
+    .slice(0, 12);
 }
 
 export async function POST(req: NextRequest) {

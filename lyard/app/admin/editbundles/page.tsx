@@ -1,27 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { products, CATEGORIES } from '@/lib/catelog/data';
-import { ui } from '../adminStyles';
+import { useRouter } from 'next/navigation';
+import { ui, showPlaceholder } from '../adminStyles';
+import { api, send, type AdminProduct } from '../adminApi';
 
-// Starting values come from the Classic Bundle in your product data
-const bundle = products.find((p) => p.productID === 9);
+// /admin/editbundles?id=9 edits bundle 9; with no id it creates a new bundle.
+// A bundle is a product in the "Bundles" category, plus what's inside it.
 
-const initialContents = [
-    { name: "Fruit Salad", id: "#CA-1", quantity: 1 },
-    { name: "Tiramisu", id: "#CA-2", quantity: 1 },
-    { name: "Oreo", id: "#CA-3", quantity: 1 },
-    { name: "Lotus", id: "#CA-4", quantity: 1 },
-];
-
-const sizePricing = [
-    { size: "Small", price: 25, compareAt: 26 },
-    { size: "Standard", price: 30, compareAt: 32 },
-    { size: "Large", price: 42, compareAt: 48 },
-];
-
-/* ---------- Checkbox with a title and help text ---------- */
+type Item = { productID: number; name: string; quantity: number };
 
 function Toggle({ checked, onChange, title, help }: { checked: boolean; onChange: () => void; title: string; help?: string }) {
     return (
@@ -35,239 +23,240 @@ function Toggle({ checked, onChange, title, help }: { checked: boolean; onChange
     );
 }
 
+const EMPTY: AdminProduct = { productID: 0, name: "", price: 0, description: "", imageUrl: "", categories: ["Bundles"], contents: [] };
+
 export default function EditBundlePage() {
-    const [name, setName] = useState(bundle?.name ?? "");
-    const [description, setDescription] = useState(bundle?.description ?? "");
+    const router = useRouter();
+    const [id, setId] = useState<number | null>(null);
+    const [b, setB] = useState<AdminProduct>(EMPTY);
+    const [catalog, setCatalog] = useState<AdminProduct[]>([]);
+    const [pick, setPick] = useState("");
+    const [tagInput, setTagInput] = useState("");
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
 
-    const [bundleContents, setBundleContents] = useState(initialContents);
+    useEffect(() => {
+        const raw = new URLSearchParams(window.location.search).get("id");
+        const wanted = raw ? Number(raw) : null;
+        api<{ products: AdminProduct[] }>("/api/products?all=1")
+            .then(({ products }) => {
+                setCatalog(products);
+                if (!wanted) return;
+                const found = products.find((x) => x.productID === wanted);
+                if (found) {
+                    setId(wanted);
+                    setB({ ...found, contents: found.contents ?? [] });
+                } else setMessage({ ok: false, text: `Bundle #${wanted} isn't in Firestore.` });
+            })
+            .catch((e: Error) => setMessage({ ok: false, text: e.message }))
+            .finally(() => setLoading(false));
+    }, []);
 
-    const [visibleToPublic, setVisibleToPublic] = useState(true);
-    const [highlightOnHome, setHighlightOnHome] = useState(true);
-    const [limitedEdition, setLimitedEdition] = useState(false);
-    const [limitedEndDate, setLimitedEndDate] = useState("2026-12-12");
+    const set = <K extends keyof AdminProduct>(key: K, value: AdminProduct[K]) => setB((old) => ({ ...old, [key]: value }));
+    const items: Item[] = b.contents ?? [];
+    const setItems = (next: Item[]) => set("contents", next);
+    const choices = useMemo(
+        () => catalog.filter((p) => !(p.categories ?? []).includes("Bundles") && !items.some((i) => i.productID === p.productID)),
+        [catalog, items]
+    );
+    const itemsValue = items.reduce((sum, i) => sum + (catalog.find((p) => p.productID === i.productID)?.price ?? 0) * i.quantity, 0);
+    const tracking = b.trackStock !== false && typeof b.stock === "number";
 
-    const [trackQuantity, setTrackQuantity] = useState(true);
-    const [totalAvailable, setTotalAvailable] = useState("15");
-    const [lowStockAlert, setLowStockAlert] = useState("10");
-
-    const [tags, setTags] = useState(["Fruity", "Classic"]);
-    const [newTag, setNewTag] = useState("");
-
-    function addTag() {
-        const trimmed = newTag.trim();
-        if (!trimmed || tags.includes(trimmed)) return;
-        setTags([...tags, trimmed]);
-        setNewTag("");
+    function addItem() {
+        const product = catalog.find((p) => String(p.productID) === pick);
+        if (!product) return;
+        setItems([...items, { productID: product.productID, name: product.name, quantity: 1 }]);
+        setPick("");
     }
 
-    function removeTag(tag: string) {
-        setTags(tags.filter((t) => t !== tag));
+    async function handleSave() {
+        setSaving(true);
+        setMessage(null);
+        const payload = {
+            name: b.name,
+            description: b.description ?? "",
+            price: Number(b.price),
+            compareAt: b.compareAt ? Number(b.compareAt) : 0,
+            category: "Bundles",
+            imageUrl: b.imageUrl ?? "",
+            contents: items,
+            tags: b.tags ?? [],
+            trackStock: tracking,
+            ...(tracking ? { stock: Number(b.stock ?? 0), lowStockAt: Number(b.lowStockAt ?? 10) } : {}),
+            hidden: Boolean(b.hidden),
+            featured: Boolean(b.featured),
+            limited: Boolean(b.limited),
+            limitedUntil: b.limited ? (b.limitedUntil ?? "") : "",
+        };
+        try {
+            if (id) {
+                await send("/api/admin/products", "PATCH", { productID: id, ...payload });
+                setMessage({ ok: true, text: "Saved." });
+            } else {
+                const res = await send("/api/admin/products", "POST", { ...payload, sizes: [] });
+                const newId = Number(res.productID);
+                setId(newId);
+                router.replace(`/admin/editbundles?id=${newId}`);
+                setMessage({ ok: true, text: `Bundle #${newId} added.` });
+            }
+        } catch (e) {
+            setMessage({ ok: false, text: (e as Error).message });
+        } finally {
+            setSaving(false);
+        }
     }
 
-    // Change an item's quantity by +1 / -1 (never below 1)
-    function changeQuantity(id: string, by: number) {
-        setBundleContents((items) =>
-            items.map((item) => (item.id === id ? { ...item, quantity: Math.max(1, item.quantity + by) } : item))
-        );
-    }
-
-    function removeItem(id: string) {
-        setBundleContents((items) => items.filter((item) => item.id !== id));
-    }
-
-    function handleSave() {
-        console.log({
-            name, description, bundleContents, visibleToPublic, highlightOnHome,
-            limitedEdition, limitedEndDate, trackQuantity,
-            totalAvailable, lowStockAlert, tags,
-        });
-    }
+    if (loading) return <p className="text-sm text-[var(--a-muted)]">Loading bundle…</p>;
 
     return (
         <div className={ui.page}>
-            {/* Header */}
             <div className={ui.pageHeader}>
                 <div>
                     <p className={ui.breadcrumb}>
-                        <Link href="/admin/bundles" className={ui.breadcrumbLink}>Bundles</Link> &gt; Edit Bundle
+                        <Link href="/admin/bundles" className={ui.breadcrumbLink}>Bundles</Link> &gt; {id ? "Edit Bundle" : "New Bundle"}
                     </p>
-                    <h1 className={ui.h1}>{name || "New bundle"}</h1>
+                    <h1 className={ui.h1}>{b.name || "New bundle"}</h1>
                 </div>
-                <button type="button" className={ui.btn} onClick={handleSave}>Save changes</button>
+                <button type="button" className={ui.btn} onClick={handleSave} disabled={saving}>{saving ? "Saving…" : "Save changes"}</button>
             </div>
+            {message && <p role="status" className={`text-sm ${message.ok ? "text-[var(--a-gold)]" : "text-[var(--a-danger)]"}`}>{message.text}</p>}
 
             <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
-                {/* ---------- Left column ---------- */}
                 <div className="min-w-0 space-y-5">
-                    {/* Basic information */}
                     <section className={`${ui.card} space-y-4`}>
                         <h2 className={ui.h2}>Basic Information</h2>
-
                         <label className={ui.label}>
-                            Product Name
-                            <input className={ui.input} value={name} onChange={(e) => setName(e.target.value)} />
+                            Bundle Name
+                            <input className={ui.input} value={b.name} onChange={(e) => set("name", e.target.value)} />
                         </label>
-
                         <label className={ui.label}>
                             Description
-                            <textarea rows={4} className={ui.input} value={description} onChange={(e) => setDescription(e.target.value)} />
+                            <textarea rows={4} className={ui.input} value={b.description ?? ""} onChange={(e) => set("description", e.target.value)} />
                         </label>
-
-                        <div className="grid gap-4 sm:grid-cols-2">
-                            <label className={ui.label}>
-                                Product ID
-                                <input className={`${ui.input} bg-[var(--a-inset)] text-[var(--a-muted)]`} value="#BD-3" readOnly />
-                            </label>
-                            <label className={ui.label}>
-                                Category
-                                <select className={ui.input} defaultValue={bundle?.categories[0]}>
-                                    {CATEGORIES.map((category) => (
-                                        <option key={category} value={category}>{category}</option>
-                                    ))}
-                                </select>
-                            </label>
-                        </div>
+                        <label className={`${ui.label} max-w-xs`}>
+                            Product ID
+                            <input className={`${ui.input} opacity-70`} value={id ? `#${id}` : "Assigned on save"} readOnly />
+                        </label>
                     </section>
 
-                    {/* Bundle contents */}
                     <section className={ui.card}>
-                        <div className="mb-4 flex items-center justify-between">
-                            <h2 className="text-lg font-bold">Bundle Contents</h2>
-                            <button type="button" className={ui.btnOutline}>+ Add Product</button>
+                        <h2 className={ui.h2}>Bundle Contents</h2>
+                        <div className="mb-4 flex flex-wrap gap-2">
+                            <select className={`${ui.input} mt-0 max-w-xs`} value={pick} onChange={(e) => setPick(e.target.value)} aria-label="Product to add">
+                                <option value="">Choose a product…</option>
+                                {choices.map((p) => <option key={p.productID} value={p.productID}>{p.name}</option>)}
+                            </select>
+                            <button type="button" className={ui.btnOutline} onClick={addItem} disabled={!pick}>+ Add Product</button>
                         </div>
                         <div className={ui.tableWrap}>
-                            <table className={`${ui.table} min-w-[480px]`}>
+                            <table className={`${ui.table} min-w-[420px]`}>
                                 <thead>
-                                    <tr>
-                                        <th className={ui.th}></th>
-                                        <th className={ui.th}>Name &amp; ID</th>
-                                        <th className={ui.th}>Quantity</th>
-                                        <th className={ui.th}></th>
-                                    </tr>
+                                    <tr><th className={ui.th}>Name &amp; ID</th><th className={ui.th}>Quantity</th><th className={ui.th}></th></tr>
                                 </thead>
                                 <tbody>
-                                    {bundleContents.map((item) => (
-                                        <tr key={item.id}>
-                                            <td className={ui.td}><input type="checkbox" className={ui.checkbox} aria-label={`Select ${item.name}`} /></td>
+                                    {items.map((item) => (
+                                        <tr key={item.productID}>
+                                            <td className={ui.td}><span className="font-semibold">{item.name}</span> <span className="text-[var(--a-muted)]">#{item.productID}</span></td>
                                             <td className={ui.td}>
-                                                <span className="font-semibold">{item.name}</span>{" "}
-                                                <span className="text-[var(--a-muted)]">{item.id}</span>
-                                            </td>
-                                            <td className={ui.td}>
-                                                <div className="inline-flex items-center rounded-lg border border-[var(--a-border)]">
-                                                    <button type="button" aria-label={`Fewer ${item.name}`} className="px-3 py-1 hover:bg-[var(--a-hover)]" onClick={() => changeQuantity(item.id, -1)}>-</button>
+                                                <div className="inline-flex items-center rounded-lg border border-[var(--a-strong)]">
+                                                    <button type="button" aria-label={`Fewer ${item.name}`} className="px-3 py-1 hover:bg-[var(--a-hover)]"
+                                                        onClick={() => setItems(items.map((i) => i.productID === item.productID ? { ...i, quantity: Math.max(1, i.quantity - 1) } : i))}>-</button>
                                                     <span className="w-8 text-center font-semibold">{item.quantity}</span>
-                                                    <button type="button" aria-label={`More ${item.name}`} className="px-3 py-1 hover:bg-[var(--a-hover)]" onClick={() => changeQuantity(item.id, 1)}>+</button>
+                                                    <button type="button" aria-label={`More ${item.name}`} className="px-3 py-1 hover:bg-[var(--a-hover)]"
+                                                        onClick={() => setItems(items.map((i) => i.productID === item.productID ? { ...i, quantity: Math.min(99, i.quantity + 1) } : i))}>+</button>
                                                 </div>
                                             </td>
-                                            <td className={`${ui.td} text-right`}><button type="button" className={ui.btnDanger} onClick={() => removeItem(item.id)}>Delete</button></td>
+                                            <td className={`${ui.td} text-right`}>
+                                                <button type="button" className={ui.btnDanger} onClick={() => setItems(items.filter((i) => i.productID !== item.productID))}>Delete</button>
+                                            </td>
                                         </tr>
                                     ))}
-                                    {bundleContents.length === 0 && (
-                                        <tr><td colSpan={4} className={`${ui.td} py-6 text-center text-[var(--a-muted)]`}>This bundle is empty.</td></tr>
-                                    )}
+                                    {items.length === 0 && <tr><td colSpan={3} className={`${ui.td} py-6 text-center text-[var(--a-muted)]`}>This bundle is empty.</td></tr>}
                                 </tbody>
                             </table>
                         </div>
+                        <p className="mt-2 text-xs text-[var(--a-muted)]">Bought separately these would cost ${itemsValue.toFixed(2)}.</p>
                     </section>
 
-                    {/* Pricing & inventory */}
                     <section className={ui.card}>
                         <h2 className={ui.h2}>Pricing &amp; Inventory</h2>
-
-                        <h3 className={`${ui.h3} mt-0`}>Size &amp; Pricing</h3>
-                        <div className={ui.tableWrap}>
-                            <table className={`${ui.table} min-w-[480px]`}>
-                                <thead>
-                                    <tr>
-                                        <th className={ui.th}></th>
-                                        <th className={ui.th}>Size</th>
-                                        <th className={ui.th}>Price ($)</th>
-                                        <th className={ui.th}>Compare at ($)</th>
-                                        <th className={ui.th}></th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {sizePricing.map((row) => (
-                                        <tr key={row.size}>
-                                            <td className={ui.td}><input type="checkbox" className={ui.checkbox} aria-label={`Select ${row.size}`} /></td>
-                                            <td className={`${ui.td} font-semibold`}>{row.size}</td>
-                                            <td className={ui.td}><input className={ui.smallInput} defaultValue={row.price.toFixed(2)} /></td>
-                                            <td className={ui.td}><input className={ui.smallInput} defaultValue={row.compareAt.toFixed(2)} /></td>
-                                            <td className={`${ui.td} text-right`}><button type="button" className={ui.btnDanger}>Delete</button></td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                        <div className="grid gap-4 sm:grid-cols-2">
+                            <label className={ui.label}>
+                                Bundle price ($)
+                                <input className={ui.input} inputMode="decimal" value={String(b.price ?? "")} onChange={(e) => set("price", e.target.value as unknown as number)} />
+                            </label>
+                            <label className={ui.label}>
+                                Compare at / MSRP ($)
+                                <input className={ui.input} inputMode="decimal" value={b.compareAt ? String(b.compareAt) : ""} placeholder={itemsValue ? itemsValue.toFixed(2) : "$--"}
+                                    onChange={(e) => set("compareAt", e.target.value as unknown as number)} />
+                            </label>
                         </div>
-
                         <h3 className={ui.h3}>Stock Management</h3>
-                        <Toggle checked={trackQuantity} onChange={() => setTrackQuantity(!trackQuantity)} title="Track Quantity" />
-
-                        <div className="mt-3 grid gap-4 sm:grid-cols-2">
-                            <label className={ui.label}>
-                                Total Bundles Available
-                                <input className={ui.input} inputMode="numeric" value={totalAvailable} onChange={(e) => setTotalAvailable(e.target.value)} />
-                            </label>
-                            <label className={ui.label}>
-                                Low Stock Alert
-                                <input className={ui.input} inputMode="numeric" value={lowStockAlert} onChange={(e) => setLowStockAlert(e.target.value)} />
-                            </label>
-                        </div>
+                        <Toggle checked={tracking} title="Track Quantity"
+                            onChange={() => setB((old) => ({ ...old, trackStock: !tracking, stock: !tracking ? (old.stock ?? 0) : old.stock }))} />
+                        {tracking && (
+                            <div className="mt-3 grid gap-4 sm:grid-cols-2">
+                                <label className={ui.label}>
+                                    Total Bundles Available
+                                    <input className={ui.input} inputMode="numeric" value={String(b.stock ?? 0)} onChange={(e) => set("stock", e.target.value as unknown as number)} />
+                                </label>
+                                <label className={ui.label}>
+                                    Low Stock Alert
+                                    <input className={ui.input} inputMode="numeric" value={String(b.lowStockAt ?? 10)} onChange={(e) => set("lowStockAt", e.target.value as unknown as number)} />
+                                </label>
+                            </div>
+                        )}
                     </section>
                 </div>
 
-                {/* ---------- Right column ---------- */}
                 <div className="space-y-5">
-                    {/* Media */}
                     <section className={ui.card}>
                         <h2 className={ui.h2}>Media</h2>
-                        <img src={bundle?.imageUrl} alt={name} className="aspect-square w-full rounded-lg object-cover" />
-                        <div className="mt-3 grid grid-cols-3 gap-2">
-                            <img src={bundle?.imageUrl} alt="thumbnail 1" className="aspect-square w-full rounded-md object-cover" />
-                            <img src={bundle?.imageUrl} alt="thumbnail 2" className="aspect-square w-full rounded-md object-cover" />
-                            <button type="button" className="flex aspect-square items-center justify-center rounded-md border-2 border-dashed border-[var(--a-border)] text-xs font-semibold text-[var(--a-muted)] hover:bg-[var(--a-hover)]">Upload</button>
-                        </div>
+                        <img src={b.imageUrl || "/missing.jpg"} alt={b.name} className="aspect-square w-full rounded-lg object-cover" onError={showPlaceholder} />
+                        <label className={`${ui.label} mt-3`}>
+                            Photo path
+                            <input className={ui.input} value={b.imageUrl ?? ""} placeholder="/images/classic bundle.jpg" onChange={(e) => set("imageUrl", e.target.value)} />
+                        </label>
                     </section>
 
-                    {/* Visibility */}
                     <section className={ui.card}>
                         <h2 className={ui.h2}>Visibility</h2>
                         <div className="space-y-1">
-                            <Toggle checked={visibleToPublic} onChange={() => setVisibleToPublic(!visibleToPublic)} title="Visible to Public"
-                                help="Product will be publicly visible and available to purchase in wholesale and retail." />
-                            <Toggle checked={highlightOnHome} onChange={() => setHighlightOnHome(!highlightOnHome)} title="Highlight on Home Page"
-                                help={'Feature this item on the top of the home page in the "Our Featured Selections" section.'} />
-                            <Toggle checked={limitedEdition} onChange={() => setLimitedEdition(!limitedEdition)} title="Limited Edition"
-                                help={'Adds the "Limited" indicator on the product.'} />
+                            <Toggle checked={!b.hidden} onChange={() => set("hidden", !b.hidden)} title="Visible to Public" help="Untick to hide it from the shop." />
+                            <Toggle checked={Boolean(b.featured)} onChange={() => set("featured", !b.featured)} title="Highlight on Home Page" />
+                            <Toggle checked={Boolean(b.limited)} onChange={() => set("limited", !b.limited)} title="Limited Edition" />
                         </div>
-
-                        {limitedEdition && (
+                        {b.limited && (
                             <label className={`${ui.label} mt-3`}>
                                 Limited End Date
-                                <input type="date" className={ui.input} value={limitedEndDate} onChange={(e) => setLimitedEndDate(e.target.value)} />
+                                <input type="date" className={ui.input} value={b.limitedUntil ?? ""} onChange={(e) => set("limitedUntil", e.target.value)} />
                             </label>
                         )}
                     </section>
 
-                    {/* Product tags */}
                     <section className={ui.card}>
                         <h2 className={ui.h2}>Product Tags</h2>
                         <div className="flex gap-2">
-                            <input
-                                className={`${ui.input} mt-0`}
-                                placeholder="Add a tag..."
-                                value={newTag}
-                                onChange={(e) => setNewTag(e.target.value)}
-                                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addTag(); } }}
-                            />
-                            <button type="button" className={ui.btnOutline} onClick={addTag}>ADD</button>
+                            <input className={`${ui.input} mt-0`} placeholder="Add a tag..." value={tagInput} onChange={(e) => setTagInput(e.target.value)}
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter" && tagInput.trim()) {
+                                        e.preventDefault();
+                                        set("tags", [...new Set([...(b.tags ?? []), tagInput.trim()])]);
+                                        setTagInput("");
+                                    }
+                                }} />
+                            <button type="button" className={ui.btnOutline} onClick={() => {
+                                if (!tagInput.trim()) return;
+                                set("tags", [...new Set([...(b.tags ?? []), tagInput.trim()])]);
+                                setTagInput("");
+                            }}>ADD</button>
                         </div>
                         <div className="mt-3 flex flex-wrap gap-2">
-                            {tags.map((tag) => (
+                            {(b.tags ?? []).map((tag) => (
                                 <span key={tag} className={ui.tag}>
                                     {tag}
-                                    <button type="button" aria-label={`Remove ${tag}`} className="ml-1 text-[var(--a-gold)] hover:text-[var(--a-text)]" onClick={() => removeTag(tag)}>×</button>
+                                    <button type="button" aria-label={`Remove ${tag}`} className="ml-1 text-[var(--a-gold)]" onClick={() => set("tags", (b.tags ?? []).filter((t) => t !== tag))}>×</button>
                                 </span>
                             ))}
                         </div>

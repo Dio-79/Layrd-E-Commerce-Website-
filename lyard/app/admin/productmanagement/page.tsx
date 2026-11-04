@@ -1,56 +1,65 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { products, CATEGORIES } from '@/lib/catelog/data';
-import { ui, statusClass } from '../adminStyles';
-
-type Status = "In Stock" | "Low Stock" | "Out of Stock" | "Draft";
+import { CATEGORIES } from '@/lib/catelog/data';
+import { ui, statusClass, showPlaceholder } from '../adminStyles';
+import { money, send, stockStatus, useApi, type AdminCategory, type AdminProduct, type StockStatus } from '../adminApi';
 
 const STATUS_FILTERS = ["All Products", "In Stock", "Low Stock", "Out of Stock", "Draft"] as const;
 type StatusFilter = (typeof STATUS_FILTERS)[number];
-
-// The shared product data has no stock info yet, so this is a stand-in.
-// Anything not listed here counts as "In Stock".
-const statusById: Record<number, Status> = {
-    2: "Out of Stock",
-    7: "Low Stock",
-    11: "Draft",
-};
-
-const rows = products.map((p) => ({
-    ...p,
-    status: statusById[p.productID] ?? "In Stock",
-}));
-
-// How many products are in a category, visible (hidden = false) or hidden/draft (hidden = true)
-function countIn(category: string, hidden: boolean) {
-    return rows.filter(
-        (r) => r.categories.some((c) => c === category) && (r.status === "Draft") === hidden
-    ).length;
-}
 
 const pill = (active: boolean) =>
     `flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm ${
         active ? "bg-[var(--a-gold)]/15 font-semibold text-[var(--a-gold)]" : "text-[var(--a-text-2)] hover:bg-[var(--a-hover)]"
     }`;
 
+// Live from Firestore (/api/products?all=1 includes hidden products for admins).
 export default function ProductManagementPage() {
+    const { data, error, loading, reload } = useApi<{ products: AdminProduct[]; categories?: AdminCategory[] }>("/api/products?all=1");
     const [query, setQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<StatusFilter>("All Products");
     const [category, setCategory] = useState<string | null>(null);
+    const [newCategory, setNewCategory] = useState("");
+    const [adding, setAdding] = useState(false);
+    const [message, setMessage] = useState("");
+
+    const products = useMemo(() => data?.products ?? [], [data]);
+    const rows = useMemo(() => products.map((p) => ({ ...p, status: stockStatus(p) as StockStatus })), [products]);
+
+    // Every category: the built-in ones, ones on products, and ones made here. Visible unless hidden here.
+    const categories = useMemo(() => {
+        const saved = new Map((data?.categories ?? []).map((c) => [c.name, c.visible]));
+        const names = new Set<string>([...CATEGORIES, ...products.flatMap((p) => p.categories ?? []), ...saved.keys()]);
+        return [...names].map((name) => ({ name, visible: saved.get(name) ?? true }));
+    }, [data, products]);
+
+    const countIn = (name: string) => products.filter((p) => (p.categories ?? []).includes(name)).length;
 
     const visibleRows = rows.filter((row) => {
-        const matchesQuery =
-            row.name.toLowerCase().includes(query.toLowerCase()) ||
-            String(row.productID).includes(query);
+        const q = query.toLowerCase();
+        const matchesQuery = row.name.toLowerCase().includes(q) || String(row.productID).includes(q);
         const matchesStatus = statusFilter === "All Products" || row.status === statusFilter;
-        const matchesCategory = category === null || row.categories.some((c) => c === category);
+        const matchesCategory = category === null || (row.categories ?? []).includes(category);
         return matchesQuery && matchesStatus && matchesCategory;
     });
 
-    function toggleCategory(c: string) {
-        setCategory(category === c ? null : c);
+    async function setCategoryVisible(name: string, visible: boolean) {
+        try {
+            await send("/api/admin/categories", "PUT", { name, visible });
+            setMessage(visible ? `"${name}" is now visible in the shop.` : `"${name}" is hidden from the shop.`);
+            reload();
+        } catch (e) {
+            setMessage((e as Error).message);
+        }
+    }
+
+    async function addCategory() {
+        const name = newCategory.trim();
+        if (!name) return;
+        await setCategoryVisible(name, false);
+        setNewCategory("");
+        setAdding(false);
     }
 
     return (
@@ -63,38 +72,50 @@ export default function ProductManagementPage() {
                 </div>
                 <div className="flex gap-2">
                     <Link href="/admin/editproduct" className={ui.btn}>+ Add Product</Link>
-                    <button type="button" className={ui.btnOutline}>+ Add Category</button>
+                    <button type="button" className={ui.btnOutline} onClick={() => setAdding((a) => !a)}>+ Add Category</button>
                 </div>
             </div>
 
-            <div className="grid gap-5 lg:grid-cols-[240px_minmax(0,1fr)]">
+            {adding && (
+                <div className={`${ui.card} flex flex-wrap items-end gap-3`}>
+                    <label className={`${ui.label} min-w-60 flex-1`}>
+                        New category (starts hidden, for a future product line)
+                        <input className={ui.input} value={newCategory} onChange={(e) => setNewCategory(e.target.value)}
+                            onKeyDown={(e) => e.key === "Enter" && addCategory()} placeholder="e.g. Merch" />
+                    </label>
+                    <button type="button" className={ui.btn} onClick={addCategory}>Create hidden category</button>
+                </div>
+            )}
+            {message && <p role="status" className="text-sm text-[var(--a-gold)]">{message}</p>}
+
+            <div className="grid gap-5 lg:grid-cols-[260px_minmax(0,1fr)]">
                 {/* Left panel */}
                 <aside className={`${ui.card} space-y-5 self-start`}>
                     <h2 className="text-lg font-bold">Categories</h2>
 
-                    <div>
-                        <p className={`${ui.label} mb-2`}>Visible</p>
-                        {CATEGORIES.map((c) => (
-                            <button key={c} type="button" className={pill(category === c)} onClick={() => toggleCategory(c)}>
-                                {c} <span className="text-xs text-[var(--a-muted)]">{countIn(c, false)}</span>
-                            </button>
-                        ))}
-                    </div>
-
-                    <div>
-                        <p className={`${ui.label} mb-2`}>Hidden / Drafts</p>
-                        {CATEGORIES.map((c) => (
-                            <button key={c} type="button" className={pill(false)} onClick={() => toggleCategory(c)}>
-                                {c} <span className="text-xs text-[var(--a-muted)]">{countIn(c, true)}</span>
-                            </button>
-                        ))}
-                    </div>
+                    {[true, false].map((visibleGroup) => (
+                        <div key={String(visibleGroup)}>
+                            <p className={`${ui.label} mb-2`}>{visibleGroup ? "Visible" : "Hidden / Drafts"}</p>
+                            {categories.filter((c) => c.visible === visibleGroup).map((c) => (
+                                <div key={c.name} className="flex items-center gap-1">
+                                    <button type="button" className={pill(category === c.name)} onClick={() => setCategory(category === c.name ? null : c.name)}>
+                                        {c.name} <span className="text-xs text-[var(--a-muted)]">{countIn(c.name)}</span>
+                                    </button>
+                                    <button type="button" className={ui.btnSmall} title={c.visible ? "Hide from the shop" : "Show in the shop"}
+                                        onClick={() => setCategoryVisible(c.name, !c.visible)}>
+                                        {c.visible ? "Hide" : "Show"}
+                                    </button>
+                                </div>
+                            ))}
+                            {categories.every((c) => c.visible !== visibleGroup) && <p className="px-3 text-xs text-[var(--a-faint)]">None</p>}
+                        </div>
+                    ))}
 
                     <div>
                         <p className={`${ui.label} mb-2`}>Status Filter</p>
                         {STATUS_FILTERS.map((s) => (
                             <button key={s} type="button" className={pill(statusFilter === s)} onClick={() => setStatusFilter(s)}>
-                                {s}
+                                {s} {s !== "All Products" && <span className="text-xs text-[var(--a-muted)]">{rows.filter((r) => r.status === s).length}</span>}
                             </button>
                         ))}
                     </div>
@@ -113,9 +134,13 @@ export default function ProductManagementPage() {
                             <p className="text-sm text-[var(--a-muted)]">Saturday, Aug. 01, 2026 - 12:00 AM</p>
                         </div>
                         <div className={ui.card}>
-                            <p className={ui.eyebrow}>Scheduling Queue</p>
-                            <h3 className="mt-2 text-lg font-bold">3 Upcoming Releases</h3>
-                            <Link href="/admin/releasemanagment" className="text-sm font-semibold text-[var(--a-gold)] hover:underline">View Calendar</Link>
+                            <p className={ui.eyebrow}>Stock Alerts</p>
+                            <h3 className="mt-2 text-lg font-bold">
+                                {rows.filter((r) => r.status === "Low Stock" || r.status === "Out of Stock").length} products low or out
+                            </h3>
+                            <button type="button" className="text-sm font-semibold text-[var(--a-gold)] hover:underline" onClick={() => setStatusFilter("Low Stock")}>
+                                Show low stock
+                            </button>
                         </div>
                     </div>
 
@@ -129,40 +154,44 @@ export default function ProductManagementPage() {
                             onChange={(e) => setQuery(e.target.value)}
                         />
 
-                        <div className={ui.tableWrap}>
-                            <table className={ui.table}>
-                                <thead>
-                                    <tr>
-                                        <th className={ui.th}><input type="checkbox" className={ui.checkbox} aria-label="Select all" /></th>
-                                        <th className={ui.th}>ID</th>
-                                        <th className={ui.th}>Product Name</th>
-                                        <th className={ui.th}>Type</th>
-                                        <th className={ui.th}>Base Price</th>
-                                        <th className={ui.th}>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {visibleRows.map((row) => (
-                                        <tr key={row.productID} className="hover:bg-[var(--a-hover)]">
-                                            <td className={ui.td}><input type="checkbox" className={ui.checkbox} aria-label={`Select ${row.name}`} /></td>
-                                            <td className={`${ui.td} text-[var(--a-muted)]`}>#{row.productID}</td>
-                                            <td className={ui.td}>
-                                                <Link href="/admin/editproduct" className="flex items-center gap-3 font-semibold hover:underline">
-                                                    <img src={row.imageUrl} alt={row.name} className={ui.thumb} />
-                                                    <span>{row.name}</span>
-                                                </Link>
-                                            </td>
-                                            <td className={ui.td}>{row.categories[0] ?? "Uncategorized"}</td>
-                                            <td className={ui.td}>{row.status === "Draft" ? "--" : `$${row.price.toFixed(2)}`}</td>
-                                            <td className={ui.td}><span className={statusClass(row.status)}>{row.status}</span></td>
+                        {loading && <p className="text-sm text-[var(--a-muted)]">Loading products from Firebase…</p>}
+                        {error && <p className="text-sm text-[var(--a-danger)]">{error}</p>}
+                        {data && (
+                            <div className={ui.tableWrap}>
+                                <table className={ui.table}>
+                                    <thead>
+                                        <tr>
+                                            <th className={ui.th}>ID</th>
+                                            <th className={ui.th}>Product Name</th>
+                                            <th className={ui.th}>Type</th>
+                                            <th className={ui.th}>Base Price</th>
+                                            <th className={ui.th}>Stock</th>
+                                            <th className={ui.th}>Status</th>
                                         </tr>
-                                    ))}
-                                    {visibleRows.length === 0 && (
-                                        <tr><td colSpan={6} className={`${ui.td} py-8 text-center text-[var(--a-muted)]`}>No products match these filters.</td></tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
+                                    </thead>
+                                    <tbody>
+                                        {visibleRows.map((row) => (
+                                            <tr key={row.productID} className="hover:bg-[var(--a-hover)]">
+                                                <td className={`${ui.td} text-[var(--a-muted)]`}>#{row.productID}</td>
+                                                <td className={ui.td}>
+                                                    <Link href={`/admin/editproduct?id=${row.productID}`} className="flex items-center gap-3 font-semibold hover:underline">
+                                                        <img src={row.imageUrl || "/missing.jpg"} alt={row.name} className={ui.thumb} onError={showPlaceholder} />
+                                                        <span>{row.name}</span>
+                                                    </Link>
+                                                </td>
+                                                <td className={ui.td}>{row.categories?.[0] ?? "Uncategorized"}</td>
+                                                <td className={ui.td}>{money(row.price)}</td>
+                                                <td className={ui.td}>{typeof row.stock === "number" && row.trackStock !== false ? row.stock : "—"}</td>
+                                                <td className={ui.td}><span className={statusClass(row.status)}>{row.status}</span></td>
+                                            </tr>
+                                        ))}
+                                        {visibleRows.length === 0 && (
+                                            <tr><td colSpan={6} className={`${ui.td} py-8 text-center text-[var(--a-muted)]`}>No products match these filters.</td></tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
