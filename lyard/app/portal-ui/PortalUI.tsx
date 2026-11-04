@@ -25,7 +25,8 @@ export function PortalShell({ kind, children }: { kind: "wholesale" | "admin"; c
   const pathname = usePathname();
   const permission = kind === "admin" ? "admin:portal" : "wholesale:portal";
   return (
-    <RequireRole permission={permission}>
+    // Signed-in customers who open the wholesale portal are sent to the application page.
+    <RequireRole permission={permission} fallback={kind === "wholesale" ? "/apply-wholesale" : undefined}>
       <div className="min-h-screen bg-[#faf9f6] text-zinc-900">
         <header className="border-b border-amber-300 bg-white">
           <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-6">

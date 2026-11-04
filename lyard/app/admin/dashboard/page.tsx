@@ -2,41 +2,78 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { usePortalList, type PortalOrder, type PortalProduct, currency, shortDate } from '@/app/portal-ui/usePortalData';
 import { ui } from '../adminStyles';
+import { money, shortDate, stockStatus, useApi, type AdminProduct } from '../adminApi';
+import { statusLabel } from '@/lib/Order/statuses';
 
-// "Overview" screen from the Figma. The sidebar and top bar are in app/admin/layout.tsx.
-// Every number here comes from the live product and order APIs.
+// "Overview" screen from the Figma. Everything comes from Firestore through the admin APIs.
 
-function Stat({ label, value }: { label: string; value: string | number }) {
+type Row = Record<string, unknown> & { id: string; status?: string; customer?: { email?: string; fullName?: string }; totals?: { total?: number } };
+type OrdersData = { orders: Row[]; eventPreorders: Row[]; bundlePreorders: Row[]; refunds: Row[] };
+type UsersData = { users: { role: string; createdAt: string; wholesaleApplication: { status?: string } | null }[] };
+
+const WEEK = 7 * 864e5;
+const inLastWeek = (iso: unknown) => Date.now() - Date.parse(String(iso ?? "")) < WEEK;
+const inWeekBefore = (iso: unknown) => {
+    const age = Date.now() - Date.parse(String(iso ?? ""));
+    return age >= WEEK && age < 2 * WEEK;
+};
+
+function trend(now: number, before: number) {
+    if (before === 0) return now > 0 ? { text: "new this week", up: true } : { text: "no change", up: null };
+    const pct = ((now - before) / before) * 100;
+    return { text: `${pct >= 0 ? "+" : ""}${pct.toFixed(1)}% vs last week`, up: pct > 0 ? true : pct < 0 ? false : null };
+}
+
+function Stat({ label, value, change }: { label: string; value: string | number; change?: { text: string; up: boolean | null } }) {
     return (
         <div className="rounded-md border border-[var(--a-border)] bg-[var(--a-card)] p-4 shadow-md shadow-black/20">
             <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--a-text-2)]">{label}</p>
             <p className="mt-2 text-2xl font-semibold text-[var(--a-text)]">{value}</p>
+            {change && (
+                <p className={`mt-1 text-xs ${change.up === true ? "text-[var(--a-gold)]" : change.up === false ? "text-[var(--a-danger)]" : "text-[var(--a-muted)]"}`}>
+                    {change.up === true ? "↗ " : change.up === false ? "↘ " : "→ "}{change.text}
+                </p>
+            )}
         </div>
     );
 }
 
-const OPEN = ["placed", "pending", "processing"];
-
 function statusColour(status?: string) {
-    const s = (status || "").toLowerCase();
-    if (s === "delivered" || s === "completed") return "text-[var(--a-text)] font-semibold";
-    if (s === "cancelled" || s.includes("pending payment")) return "text-[var(--a-danger)]";
-    if (OPEN.includes(s)) return "text-[var(--a-gold)]";
-    return "text-[var(--a-text-2)]";
+    if (status === "delivered" || status === "picked_up") return "text-[var(--a-text)] font-semibold";
+    if (status === "cancelled") return "text-[var(--a-danger)]";
+    return "text-[var(--a-gold)]";
 }
 
 export default function AdminDashboard() {
-    const products = usePortalList<PortalProduct>("/api/products", "products");
-    const orders = usePortalList<PortalOrder>("/api/orders", "orders");
+    const orders = useApi<OrdersData>("/api/admin/orders");
+    const products = useApi<{ products: AdminProduct[] }>("/api/products?all=1");
+    const users = useApi<UsersData>("/api/admin/users");
 
-    const show = (list: { loading: boolean; error: string | null }, value: string | number) =>
-        list.loading ? "…" : list.error ? "—" : value;
-    const items = orders.items ?? [];
-    const revenue = items.reduce((sum, o) => sum + (o.totals?.total ?? 0), 0);
-    const customers = new Set(items.map((o) => o.customer?.email).filter(Boolean)).size;
-    const openOrders = items.filter((o) => OPEN.includes((o.status || "").toLowerCase()));
+    const all = (orders.data?.orders ?? []).filter((o) => o.status !== "cancelled");
+    const when = (o: Row) => o.placedAt ?? o.savedAt;
+    const revenueNow = all.filter((o) => inLastWeek(when(o))).reduce((s, o) => s + (o.totals?.total ?? 0), 0);
+    const revenueBefore = all.filter((o) => inWeekBefore(when(o))).reduce((s, o) => s + (o.totals?.total ?? 0), 0);
+    const revenue = all.reduce((s, o) => s + (o.totals?.total ?? 0), 0);
+    const accounts = users.data?.users ?? [];
+    const newNow = accounts.filter((u) => inLastWeek(u.createdAt)).length;
+    const newBefore = accounts.filter((u) => inWeekBefore(u.createdAt)).length;
+
+    // Priority alerts (Figma): refund requests, new event orders, low stock, wholesale applications.
+    const alerts: { title: string; text: string; href: string; danger?: boolean }[] = [];
+    for (const r of (orders.data?.refunds ?? []).filter((r) => r.status === "pending")) {
+        alerts.push({ title: "Refund Request", text: `${r.id}: ${String(r.reason ?? "").slice(0, 70)}`, href: "/admin/orders", danger: true });
+    }
+    for (const e of (orders.data?.eventPreorders ?? []).filter((e) => e.status === "requested")) {
+        alerts.push({ title: "Event Order Form", text: `${e.id} for ${String(e.pickupDate ?? "")} needs confirming.`, href: "/admin/orders" });
+    }
+    for (const p of (products.data?.products ?? []).filter((p) => ["Low Stock", "Out of Stock"].includes(stockStatus(p)))) {
+        alerts.push({ title: stockStatus(p), text: `${p.name}: ${p.stock} left (alert at ${p.lowStockAt ?? 10}).`, href: `/admin/editproduct?id=${p.productID}`, danger: stockStatus(p) === "Out of Stock" });
+    }
+    const applications = accounts.filter((u) => u.wholesaleApplication?.status === "pending").length;
+    if (applications) alerts.push({ title: "Wholesale applications", text: `${applications} waiting for approval.`, href: "/admin/customers" });
+
+    const loading = orders.loading || products.loading;
 
     return (
         <div className={ui.page}>
@@ -46,22 +83,23 @@ export default function AdminDashboard() {
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                <Stat label="Revenue" value={show(orders, currency(revenue))} />
-                <Stat label="Total orders" value={show(orders, items.length)} />
-                <Stat label="Customers" value={show(orders, customers)} />
-                <Stat label="Products" value={show(products, products.items?.length ?? 0)} />
+                <Stat label="Revenue" value={orders.loading ? "…" : money(revenue)} change={orders.loading ? undefined : trend(revenueNow, revenueBefore)} />
+                <Stat label="Total orders" value={orders.loading ? "…" : all.length}
+                    change={orders.loading ? undefined : trend(all.filter((o) => inLastWeek(when(o))).length, all.filter((o) => inWeekBefore(when(o))).length)} />
+                <Stat label="New customers" value={users.loading ? "…" : newNow} change={users.loading ? undefined : trend(newNow, newBefore)} />
+                <Stat label="Active wholesale" value={users.loading ? "…" : accounts.filter((u) => u.role === "wholesale").length} />
             </div>
 
-            <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_280px]">
+            <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_300px]">
                 <section className={ui.card}>
                     <div className="mb-4 flex items-center justify-between">
                         <h2 className="text-lg font-semibold tracking-wide text-[var(--a-text)]">RECENT ORDERS</h2>
-                        <span className="text-xs font-semibold text-[var(--a-faint)]" title="The orders page is coming soon">VIEW ALL</span>
+                        <Link href="/admin/orders" className="text-xs font-semibold text-[var(--a-gold)] hover:underline">VIEW ALL</Link>
                     </div>
                     {orders.loading && <p className="text-sm text-[var(--a-muted)]">Loading…</p>}
                     {orders.error && <p className="text-sm text-[var(--a-danger)]">{orders.error}</p>}
-                    {orders.items && items.length === 0 && <p className="text-sm text-[var(--a-muted)]">No orders yet.</p>}
-                    {items.length > 0 && (
+                    {orders.data && all.length === 0 && <p className="text-sm text-[var(--a-muted)]">No orders yet.</p>}
+                    {(orders.data?.orders.length ?? 0) > 0 && (
                         <div className={ui.tableWrap}>
                             <table className={ui.table}>
                                 <thead>
@@ -74,13 +112,13 @@ export default function AdminDashboard() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {items.slice(0, 8).map((o) => (
-                                        <tr key={o.orderNumber}>
-                                            <td className={`${ui.td} text-[var(--a-muted)]`}>{o.orderNumber}</td>
+                                    {(orders.data?.orders ?? []).slice(0, 8).map((o) => (
+                                        <tr key={o.id}>
+                                            <td className={`${ui.td} text-[var(--a-muted)]`}>{o.id}</td>
                                             <td className={ui.td}>{o.customer?.fullName || o.customer?.email || "Guest"}</td>
-                                            <td className={ui.td}>{shortDate(o.placedAt ?? o.savedAt)}</td>
-                                            <td className={`${ui.td} capitalize ${statusColour(o.status)}`}>{o.status || "—"}</td>
-                                            <td className={`${ui.td} text-right`}>{currency(o.totals?.total)}</td>
+                                            <td className={ui.td}>{shortDate(String(when(o) ?? ""))}</td>
+                                            <td className={`${ui.td} ${statusColour(o.status)}`}>{statusLabel(o.status)}</td>
+                                            <td className={`${ui.td} text-right`}>{money(o.totals?.total)}</td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -94,23 +132,18 @@ export default function AdminDashboard() {
                         <span className="text-[var(--a-danger)]" aria-hidden="true">⚠</span> Priority Alerts
                     </h2>
                     <div className="space-y-3">
-                        {orders.loading && <p className="text-sm text-[var(--a-muted)]">Loading…</p>}
-                        {!orders.loading && openOrders.length === 0 && (
+                        {loading && <p className="text-sm text-[var(--a-muted)]">Loading…</p>}
+                        {!loading && alerts.length === 0 && (
                             <p className="rounded-sm border border-[var(--a-border)] bg-[var(--a-inset)] p-3 text-sm text-[var(--a-muted)]">Nothing needs attention right now.</p>
                         )}
-                        {openOrders.slice(0, 4).map((o) => (
-                            <div key={o.orderNumber} className="rounded-sm border border-[var(--a-border)] bg-[var(--a-inset)] p-3">
-                                <p className="text-sm font-semibold text-[var(--a-gold)]">Open order</p>
-                                <p className="mt-1 text-xs text-[var(--a-text-2)]">
-                                    {o.orderNumber} from {o.customer?.fullName || o.customer?.email || "a guest"} is still {o.status}.
-                                </p>
+                        {alerts.slice(0, 6).map((a, i) => (
+                            <div key={i} className="rounded-sm border border-[var(--a-border)] bg-[var(--a-inset)] p-3">
+                                <p className={`text-sm font-semibold ${a.danger ? "text-[var(--a-danger)]" : "text-[var(--a-gold)]"}`}>{a.title}</p>
+                                <p className="mt-1 text-xs text-[var(--a-text-2)]">{a.text}</p>
+                                <Link href={a.href} className="mt-1 inline-block text-xs font-semibold text-[var(--a-gold)] underline">Review</Link>
                             </div>
                         ))}
-                        <Link href="/admin/releasemanagment" className="block rounded-sm border border-[var(--a-border)] bg-[var(--a-inset)] p-3 hover:border-[var(--a-gold)]">
-                            <p className="text-sm font-semibold text-[var(--a-gold)]">Upcoming releases</p>
-                            <p className="mt-1 text-xs text-[var(--a-text-2)]">Check drop dates, distribution and marketing.</p>
-                            <p className="mt-1 text-xs font-semibold text-[var(--a-gold)] underline">Review</p>
-                        </Link>
+                        {alerts.length > 6 && <p className="text-xs text-[var(--a-muted)]">and {alerts.length - 6} more</p>}
                     </div>
                 </section>
             </div>

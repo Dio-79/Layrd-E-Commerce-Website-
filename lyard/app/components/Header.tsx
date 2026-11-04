@@ -19,6 +19,7 @@ const MENU_LINKS = [
 ];
 
 const MORE_LINKS = [
+  { href: ROUTES.orders, label: "Track My Orders" },
   { href: ROUTES.contact, label: "Contact Us" },
   { href: `${ROUTES.info}#faq`, label: "FAQ" },
   { href: `${ROUTES.info}#shipping`, label: "Shipping & Pickup" },

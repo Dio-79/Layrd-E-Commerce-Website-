@@ -77,10 +77,10 @@ const navLinks: { label: string; icon: string; href?: string }[] = [
     { label: "Products", icon: "products", href: "/admin/productmanagement" },
     { label: "Bundles", icon: "bundles", href: "/admin/bundles" },
     { label: "Releases", icon: "releases", href: "/admin/releasemanagment" },
-    { label: "Orders", icon: "orders" },
-    { label: "Customers", icon: "customers" },
-    { label: "Promotions", icon: "promotions" },
-    { label: "Analytics", icon: "analytics" },
+    { label: "Orders", icon: "orders", href: "/admin/orders" },
+    { label: "Customers", icon: "customers", href: "/admin/customers" },
+    { label: "Promotions", icon: "promotions", href: "/admin/promotions" },
+    { label: "Analytics", icon: "analytics", href: "/admin/analytics" },
 ];
 
 // The edit pages belong to a section of the sidebar.

@@ -22,6 +22,8 @@ export const ROUTES = {
   resetPassword: "/reset-password", //  app/reset-password/page.tsx
   contact: "/contact", //               app/contact/page.tsx
   refund: "/refund", //                 app/refund/page.tsx
+  orders: "/orders", //                 app/orders/page.tsx (order tracking)
+  applyWholesale: "/apply-wholesale", // app/apply-wholesale/page.tsx
   info: "/info", //                     app/info/page.tsx (shipping, FAQ, about, policies)
   wholesale: "/wholesale", //           wholesale portal (proxy.ts sends it to app/User/WholesSale)
 } as const;
@@ -34,6 +36,7 @@ export const LOGIN_REASONS = {
   "admin:portal": "Log in with an admin account to open the admin portal.",
   "wholesale:portal": "Log in with a wholesale account to open the wholesale portal.",
   refund: "Log in to request a refund on one of your orders.",
+  orders: "Log in to see and track your orders.",
 } as const;
 
 /** /login URL that comes back to `next` after logging in. */
