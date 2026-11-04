@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { products, CATEGORIES } from '@/lib/catelog/data';
+import { ui } from '../adminStyles';
 
 // Starting values come from Fruit Salad (productID 4) in your product data
 const product = products.find((p) => p.productID === 4);
@@ -36,18 +37,39 @@ function TagEditor({ tags, setTags }: TagEditorProps) {
 
     return (
         <div>
-            <div>
-                <input value={newTag} onChange={(e) => setNewTag(e.target.value)} />
-                <button onClick={addTag}>ADD</button>
+            <div className="flex gap-2">
+                <input
+                    className={`${ui.input} mt-0`}
+                    placeholder="Add a tag..."
+                    value={newTag}
+                    onChange={(e) => setNewTag(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addTag(); } }}
+                />
+                <button type="button" className={ui.btnOutline} onClick={addTag}>ADD</button>
             </div>
-            <div>
+            <div className="mt-3 flex flex-wrap gap-2">
                 {tags.map((tag) => (
-                    <span key={tag}>
-                        {tag} <button onClick={() => removeTag(tag)}>X</button>
+                    <span key={tag} className={ui.tag}>
+                        {tag}
+                        <button type="button" aria-label={`Remove ${tag}`} className="ml-1 text-[#735413] hover:text-black" onClick={() => removeTag(tag)}>×</button>
                     </span>
                 ))}
             </div>
         </div>
+    );
+}
+
+/* ---------- Checkbox with a title and help text ---------- */
+
+function Toggle({ checked, onChange, title, help }: { checked: boolean; onChange: () => void; title: string; help?: string }) {
+    return (
+        <label className={ui.checkRow}>
+            <input type="checkbox" className={ui.checkbox} checked={checked} onChange={onChange} />
+            <span>
+                <span className="block text-sm font-semibold">{title}</span>
+                {help && <span className="block text-xs text-zinc-500">{help}</span>}
+            </span>
+        </label>
     );
 }
 
@@ -82,126 +104,125 @@ export default function EditProductPage() {
     }
 
     return (
-        <div>
+        <div className={ui.page}>
             {/* Header */}
-            <div>
+            <div className={ui.pageHeader}>
                 <div>
-                    <p>
-                        <Link href="/admin/productmanagement">Products</Link> &gt; Edit Product
+                    <p className={ui.breadcrumb}>
+                        <Link href="/admin/productmanagement" className={ui.breadcrumbLink}>Products</Link> &gt; Edit Product
                     </p>
-                    <h1>{name}</h1>
+                    <h1 className={ui.h1}>{name || "New product"}</h1>
                 </div>
-                <button onClick={handleSave}>SAVE CHANGES</button>
+                <button type="button" className={ui.btn} onClick={handleSave}>SAVE CHANGES</button>
             </div>
 
-            <div>
+            <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
                 {/* ---------- Left column ---------- */}
-                <div>
+                <div className="min-w-0 space-y-5">
                     {/* Basic information */}
-                    <div>
-                        <h2>Basic Information</h2>
+                    <section className={`${ui.card} space-y-4`}>
+                        <h2 className={ui.h2}>Basic Information</h2>
 
-                        <label>
-                            <p>PRODUCT NAME</p>
-                            <input value={name} onChange={(e) => setName(e.target.value)} />
+                        <label className={ui.label}>
+                            Product Name
+                            <input className={ui.input} value={name} onChange={(e) => setName(e.target.value)} />
                         </label>
 
-                        <label>
-                            <p>DESCRIPTION</p>
-                            <textarea value={description} onChange={(e) => setDescription(e.target.value)} />
+                        <label className={ui.label}>
+                            Description
+                            <textarea rows={4} className={ui.input} value={description} onChange={(e) => setDescription(e.target.value)} />
                         </label>
 
-                        <div>
-                            <label>
-                                <p>PRODUCT ID</p>
-                                <input value="#CA-1" readOnly />
+                        <div className="grid gap-4 sm:grid-cols-2">
+                            <label className={ui.label}>
+                                Product ID
+                                <input className={`${ui.input} bg-zinc-50 text-zinc-500`} value="#CA-1" readOnly />
                             </label>
-                            <label>
-                                <p>CATEGORY</p>
-                                <select defaultValue={product?.categories[0]}>
+                            <label className={ui.label}>
+                                Category
+                                <select className={ui.input} defaultValue={product?.categories[0]}>
                                     {CATEGORIES.map((category) => (
                                         <option key={category} value={category}>{category}</option>
                                     ))}
                                 </select>
                             </label>
                         </div>
-                    </div>
+                    </section>
 
                     {/* Pricing & inventory */}
-                    <div>
-                        <h2>Pricing &amp; Inventory</h2>
+                    <section className={ui.card}>
+                        <h2 className={ui.h2}>Pricing &amp; Inventory</h2>
 
-                        <h3>Size &amp; Pricing</h3>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th></th>
-                                    <th>Size</th>
-                                    <th>Price ($)</th>
-                                    <th>Compare at ($)</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {sizePricing.map((row) => (
-                                    <tr key={row.size}>
-                                        <td><input type="checkbox" /></td>
-                                        <td>{row.size}</td>
-                                        <td><input defaultValue={row.price.toFixed(2)} /></td>
-                                        <td><input placeholder="$--" /></td>
-                                        <td><button>Delete</button></td>
+                        <h3 className={`${ui.h3} mt-0`}>Size &amp; Pricing</h3>
+                        <div className={ui.tableWrap}>
+                            <table className={`${ui.table} min-w-[480px]`}>
+                                <thead>
+                                    <tr>
+                                        <th className={ui.th}></th>
+                                        <th className={ui.th}>Size</th>
+                                        <th className={ui.th}>Price ($)</th>
+                                        <th className={ui.th}>Compare at ($)</th>
+                                        <th className={ui.th}></th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {sizePricing.map((row) => (
+                                        <tr key={row.size}>
+                                            <td className={ui.td}><input type="checkbox" className={ui.checkbox} aria-label={`Select ${row.size}`} /></td>
+                                            <td className={`${ui.td} font-semibold`}>{row.size}</td>
+                                            <td className={ui.td}><input className={ui.smallInput} defaultValue={row.price.toFixed(2)} /></td>
+                                            <td className={ui.td}><input className={ui.smallInput} placeholder="$--" /></td>
+                                            <td className={`${ui.td} text-right`}><button type="button" className={ui.btnDanger}>Delete</button></td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
 
-                        <h3>Stock Management</h3>
-                        <label>
-                            <input
-                                type="checkbox"
-                                checked={trackQuantity}
-                                onChange={() => setTrackQuantity(!trackQuantity)}
-                            />
-                            <span>Track Quantity</span>
-                        </label>
+                        <h3 className={ui.h3}>Stock Management</h3>
+                        <Toggle checked={trackQuantity} onChange={() => setTrackQuantity(!trackQuantity)} title="Track Quantity" />
 
-                        <div>
-                            <label>
-                                <p>Available Quantity</p>
-                                <input value={availableQuantity} onChange={(e) => setAvailableQuantity(e.target.value)} />
+                        <div className="mt-3 grid gap-4 sm:grid-cols-2">
+                            <label className={ui.label}>
+                                Available Quantity
+                                <input className={ui.input} inputMode="numeric" value={availableQuantity} onChange={(e) => setAvailableQuantity(e.target.value)} />
                             </label>
-                            <label>
-                                <p>Low Stock Alert</p>
-                                <input value={lowStockAlert} onChange={(e) => setLowStockAlert(e.target.value)} />
+                            <label className={ui.label}>
+                                Low Stock Alert
+                                <input className={ui.input} inputMode="numeric" value={lowStockAlert} onChange={(e) => setLowStockAlert(e.target.value)} />
                             </label>
                         </div>
-                    </div>
+                    </section>
 
                     {/* Culinary attributes */}
-                    <div>
-                        <h2>Culinary Attributes</h2>
+                    <section className={`${ui.card} space-y-4`}>
+                        <h2 className={ui.h2}>Culinary Attributes</h2>
 
-                        <label>
-                            <p>Flavor Profile</p>
-                            <input value={flavorProfile} onChange={(e) => setFlavorProfile(e.target.value)} />
+                        <label className={ui.label}>
+                            Flavor Profile
+                            <input className={ui.input} value={flavorProfile} onChange={(e) => setFlavorProfile(e.target.value)} />
                         </label>
 
-                        <div>
+                        <div className="grid gap-4 sm:grid-cols-2">
                             <div>
-                                <p>Sweetness Level</p>
-                                <p>{sweetness} / 5</p>
-                                <div>
+                                <p className={ui.label}>Sweetness Level <span className="normal-case text-zinc-700">· {sweetness} / 5</span></p>
+                                <div className="mt-2 flex gap-1.5">
                                     {[1, 2, 3, 4, 5].map((level) => (
-                                        <button key={level} onClick={() => setSweetness(level)}>
-                                            {level <= sweetness ? "■" : "□"}
-                                        </button>
+                                        <button
+                                            key={level}
+                                            type="button"
+                                            aria-label={`Sweetness ${level}`}
+                                            aria-pressed={level <= sweetness}
+                                            onClick={() => setSweetness(level)}
+                                            className={`h-8 w-8 rounded-md border ${level <= sweetness ? "border-[#9b762e] bg-[#9b762e]" : "border-zinc-300 bg-white hover:bg-amber-50"}`}
+                                        />
                                     ))}
                                 </div>
                             </div>
 
-                            <label>
-                                <p>Shelf Stable</p>
-                                <select value={shelfStable} onChange={(e) => setShelfStable(e.target.value)}>
+                            <label className={ui.label}>
+                                Shelf Stable
+                                <select className={ui.input} value={shelfStable} onChange={(e) => setShelfStable(e.target.value)}>
                                     <option>Shelf Stable</option>
                                     <option>Refrigeration Required</option>
                                 </select>
@@ -209,60 +230,50 @@ export default function EditProductPage() {
                         </div>
 
                         <div>
-                            <p>Allergens</p>
+                            <p className={`${ui.label} mb-1`}>Allergens</p>
                             <TagEditor tags={allergens} setTags={setAllergens} />
                         </div>
-                    </div>
+                    </section>
                 </div>
 
                 {/* ---------- Right column ---------- */}
-                <div>
+                <div className="space-y-5">
                     {/* Media */}
-                    <div>
-                        <h2>Media</h2>
-                        <img src={product?.imageUrl} alt={name} />
-                        <div>
-                            <img src={product?.imageUrl} alt="thumbnail 1" />
-                            <img src={product?.imageUrl} alt="thumbnail 2" />
-                            <button>Upload</button>
+                    <section className={ui.card}>
+                        <h2 className={ui.h2}>Media</h2>
+                        <img src={product?.imageUrl} alt={name} className="aspect-square w-full rounded-lg object-cover" />
+                        <div className="mt-3 grid grid-cols-3 gap-2">
+                            <img src={product?.imageUrl} alt="thumbnail 1" className="aspect-square w-full rounded-md object-cover" />
+                            <img src={product?.imageUrl} alt="thumbnail 2" className="aspect-square w-full rounded-md object-cover" />
+                            <button type="button" className="flex aspect-square items-center justify-center rounded-md border-2 border-dashed border-zinc-300 text-xs font-semibold text-zinc-500 hover:bg-zinc-50">Upload</button>
                         </div>
-                    </div>
+                    </section>
 
                     {/* Visibility */}
-                    <div>
-                        <h2>Visibility</h2>
-
-                        <label>
-                            <input type="checkbox" checked={visibleToPublic} onChange={() => setVisibleToPublic(!visibleToPublic)} />
-                            <span>Visible to Public</span>
-                            <p>Product will be publicly visible and available to purchase in wholesale and retail.</p>
-                        </label>
-
-                        <label>
-                            <input type="checkbox" checked={highlightOnHome} onChange={() => setHighlightOnHome(!highlightOnHome)} />
-                            <span>Highlight on Home Page</span>
-                            <p>Feature this item on the top of the home page in the "Our Featured Selections" section.</p>
-                        </label>
-
-                        <label>
-                            <input type="checkbox" checked={limitedEdition} onChange={() => setLimitedEdition(!limitedEdition)} />
-                            <span>Limited Edition</span>
-                            <p>Adds the "Limited" indicator on the product, and sets a date to end its availability.</p>
-                        </label>
+                    <section className={ui.card}>
+                        <h2 className={ui.h2}>Visibility</h2>
+                        <div className="space-y-1">
+                            <Toggle checked={visibleToPublic} onChange={() => setVisibleToPublic(!visibleToPublic)} title="Visible to Public"
+                                help="Product will be publicly visible and available to purchase in wholesale and retail." />
+                            <Toggle checked={highlightOnHome} onChange={() => setHighlightOnHome(!highlightOnHome)} title="Highlight on Home Page"
+                                help={'Feature this item on the top of the home page in the "Our Featured Selections" section.'} />
+                            <Toggle checked={limitedEdition} onChange={() => setLimitedEdition(!limitedEdition)} title="Limited Edition"
+                                help={'Adds the "Limited" indicator on the product, and sets a date to end its availability.'} />
+                        </div>
 
                         {limitedEdition && (
-                            <label>
-                                <p>Limited End Date</p>
-                                <input value={limitedEndDate} onChange={(e) => setLimitedEndDate(e.target.value)} />
+                            <label className={`${ui.label} mt-3`}>
+                                Limited End Date
+                                <input type="date" className={ui.input} value={limitedEndDate} onChange={(e) => setLimitedEndDate(e.target.value)} />
                             </label>
                         )}
-                    </div>
+                    </section>
 
                     {/* Product tags */}
-                    <div>
-                        <h2>Product Tags</h2>
+                    <section className={ui.card}>
+                        <h2 className={ui.h2}>Product Tags</h2>
                         <TagEditor tags={productTags} setTags={setProductTags} />
-                    </div>
+                    </section>
                 </div>
             </div>
         </div>

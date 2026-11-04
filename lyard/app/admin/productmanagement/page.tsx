@@ -1,7 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { products, CATEGORIES } from '@/lib/catelog/data';
+import { ui, statusClass } from '../adminStyles';
 
 type Status = "In Stock" | "Low Stock" | "Out of Stock" | "Draft";
 
@@ -28,6 +30,11 @@ function countIn(category: string, hidden: boolean) {
     ).length;
 }
 
+const pill = (active: boolean) =>
+    `flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm ${
+        active ? "bg-amber-100 font-semibold text-[#735413]" : "text-zinc-700 hover:bg-zinc-50"
+    }`;
+
 export default function ProductManagementPage() {
     const [query, setQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<StatusFilter>("All Products");
@@ -47,104 +54,115 @@ export default function ProductManagementPage() {
     }
 
     return (
-        <div>
+        <div className={ui.page}>
             {/* Page header */}
-            <div>
+            <div className={ui.pageHeader}>
                 <div>
-                    <h1>Product Catalog</h1>
-                    <p>Manage inventory, monitor stock levels, and coordinate upcoming releases.</p>
+                    <h1 className={ui.h1}>Product Catalog</h1>
+                    <p className={ui.subtitle}>Manage inventory, monitor stock levels, and coordinate upcoming releases.</p>
                 </div>
-                <div>
-                    <button>+ Add Product</button>
-                    <button>+ Add Category</button>
+                <div className="flex gap-2">
+                    <Link href="/admin/editproduct" className={ui.btn}>+ Add Product</Link>
+                    <button type="button" className={ui.btnOutline}>+ Add Category</button>
                 </div>
             </div>
 
-            <div>
+            <div className="grid gap-5 lg:grid-cols-[240px_minmax(0,1fr)]">
                 {/* Left panel */}
-                <div>
-                    <h2>Categories</h2>
+                <aside className={`${ui.card} space-y-5 self-start`}>
+                    <h2 className="text-lg font-bold">Categories</h2>
 
                     <div>
-                        <p>VISIBLE</p>
+                        <p className={`${ui.label} mb-2`}>Visible</p>
                         {CATEGORIES.map((c) => (
-                            <button key={c} onClick={() => toggleCategory(c)}>
-                                {c} <span>{countIn(c, false)}</span>
+                            <button key={c} type="button" className={pill(category === c)} onClick={() => toggleCategory(c)}>
+                                {c} <span className="text-xs text-zinc-500">{countIn(c, false)}</span>
                             </button>
                         ))}
                     </div>
 
                     <div>
-                        <p>HIDDEN / DRAFTS</p>
+                        <p className={`${ui.label} mb-2`}>Hidden / Drafts</p>
                         {CATEGORIES.map((c) => (
-                            <button key={c} onClick={() => toggleCategory(c)}>
-                                {c} <span>{countIn(c, true)}</span>
+                            <button key={c} type="button" className={pill(false)} onClick={() => toggleCategory(c)}>
+                                {c} <span className="text-xs text-zinc-500">{countIn(c, true)}</span>
                             </button>
                         ))}
                     </div>
 
                     <div>
-                        <p>Status Filter</p>
+                        <p className={`${ui.label} mb-2`}>Status Filter</p>
                         {STATUS_FILTERS.map((s) => (
-                            <button key={s} onClick={() => setStatusFilter(s)}>
+                            <button key={s} type="button" className={pill(statusFilter === s)} onClick={() => setStatusFilter(s)}>
                                 {s}
                             </button>
                         ))}
                     </div>
-                </div>
+                </aside>
 
                 {/* Right side */}
-                <div>
+                <div className="min-w-0 space-y-5">
                     {/* Top cards */}
-                    <div>
-                        <div>
-                            <p>NEXT DROP</p>
-                            <p>PENDING</p>
-                            <h3>Pistachio Tiramisu</h3>
-                            <p>Saturday, Aug. 01, 2026 - 12:00 AM</p>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                        <div className={ui.card}>
+                            <div className="flex items-center justify-between">
+                                <p className={ui.eyebrow}>Next Drop</p>
+                                <span className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-[#735413]">PENDING</span>
+                            </div>
+                            <h3 className="mt-2 text-lg font-bold">Pistachio Tiramisu</h3>
+                            <p className="text-sm text-zinc-600">Saturday, Aug. 01, 2026 - 12:00 AM</p>
                         </div>
-                        <div>
-                            <p>SCHEDULING QUEUE</p>
-                            <h3>3 Upcoming Releases</h3>
-                            <p>View Calendar</p>
+                        <div className={ui.card}>
+                            <p className={ui.eyebrow}>Scheduling Queue</p>
+                            <h3 className="mt-2 text-lg font-bold">3 Upcoming Releases</h3>
+                            <Link href="/admin/releasemanagment" className="text-sm font-semibold text-[#9b762e] hover:underline">View Calendar</Link>
                         </div>
                     </div>
 
                     {/* Product table */}
-                    <div>
+                    <div className={ui.card}>
                         <input
+                            className={`${ui.input} mb-4 mt-0 max-w-sm`}
                             placeholder="Filter Product ID, Name..."
+                            aria-label="Filter products"
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
                         />
 
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th><input type="checkbox" /></th>
-                                    <th>ID</th>
-                                    <th>Product Name</th>
-                                    <th>Type</th>
-                                    <th>Base Price</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {visibleRows.map((row) => (
-                                    <tr key={row.productID}>
-                                        <td><input type="checkbox" /></td>
-                                        <td>#{row.productID}</td>
-                                        <td>
-                                            <img src={row.imageUrl} alt={row.name} />
-                                            <span>{row.name}</span>
-                                        </td>
-                                        <td>{row.categories[0] ?? "Uncategorized"}</td>
-                                        <td>{row.status === "Draft" ? "--" : `$${row.price.toFixed(2)}`}</td>
-                                        <td>{row.status}</td>
+                        <div className={ui.tableWrap}>
+                            <table className={ui.table}>
+                                <thead>
+                                    <tr>
+                                        <th className={ui.th}><input type="checkbox" className={ui.checkbox} aria-label="Select all" /></th>
+                                        <th className={ui.th}>ID</th>
+                                        <th className={ui.th}>Product Name</th>
+                                        <th className={ui.th}>Type</th>
+                                        <th className={ui.th}>Base Price</th>
+                                        <th className={ui.th}>Status</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {visibleRows.map((row) => (
+                                        <tr key={row.productID} className="hover:bg-zinc-50">
+                                            <td className={ui.td}><input type="checkbox" className={ui.checkbox} aria-label={`Select ${row.name}`} /></td>
+                                            <td className={`${ui.td} text-zinc-500`}>#{row.productID}</td>
+                                            <td className={ui.td}>
+                                                <Link href="/admin/editproduct" className="flex items-center gap-3 font-semibold hover:underline">
+                                                    <img src={row.imageUrl} alt={row.name} className={ui.thumb} />
+                                                    <span>{row.name}</span>
+                                                </Link>
+                                            </td>
+                                            <td className={ui.td}>{row.categories[0] ?? "Uncategorized"}</td>
+                                            <td className={ui.td}>{row.status === "Draft" ? "--" : `$${row.price.toFixed(2)}`}</td>
+                                            <td className={ui.td}><span className={statusClass(row.status)}>{row.status}</span></td>
+                                        </tr>
+                                    ))}
+                                    {visibleRows.length === 0 && (
+                                        <tr><td colSpan={6} className={`${ui.td} py-8 text-center text-zinc-500`}>No products match these filters.</td></tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>

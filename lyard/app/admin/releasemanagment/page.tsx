@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { ui, showPlaceholder } from '../adminStyles';
 
 type Release = {
     id: number;
@@ -119,15 +120,19 @@ function MonthCalendar({ year, month, highlightedDays }: MonthCalendarProps) {
     ];
 
     return (
-        <div>
-            <p>{title}</p>
-            <div>
+        <div className={ui.card}>
+            <p className="mb-3 text-sm font-bold">{title}</p>
+            <div className="grid grid-cols-7 gap-1 text-center text-xs">
                 {WEEKDAYS.map((d) => (
-                    <p key={d}>{d}</p>
+                    <p key={d} className="py-1 font-semibold text-zinc-400">{d}</p>
                 ))}
                 {cells.map((day, index) => (
-                    <p key={index}>
-                        {day !== null && highlightedDays.includes(day) ? <mark>{day}</mark> : day}
+                    <p key={index} className="flex h-8 items-center justify-center">
+                        {day !== null && highlightedDays.includes(day) ? (
+                            <mark className="flex h-8 w-8 items-center justify-center rounded-full bg-[#9b762e] font-bold text-white">{day}</mark>
+                        ) : (
+                            <span className="text-zinc-700">{day}</span>
+                        )}
                     </p>
                 ))}
             </div>
@@ -157,38 +162,42 @@ export default function ReleaseManagementPage() {
     }
 
     return (
-        <div>
+        <div className={ui.page}>
             {/* Header */}
-            <div>
+            <div className={ui.pageHeader}>
                 <div>
-                    <p>
-                        <Link href="/admin/productmanagement">Products</Link> &gt; Upcoming Releases
+                    <p className={ui.breadcrumb}>
+                        <Link href="/admin/productmanagement" className={ui.breadcrumbLink}>Products</Link> &gt; Upcoming Releases
                     </p>
-                    <h1>Upcoming Releases</h1>
+                    <h1 className={ui.h1}>Upcoming Releases</h1>
                 </div>
-                <button>+ NEW DROP</button>
+                <button type="button" className={ui.btn}>+ NEW DROP</button>
             </div>
 
-            <div>
+            <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
                 {/* Release list */}
-                <div>
+                <div className="min-w-0 space-y-4">
                     {releases.map((release) => (
-                        <div key={release.id}>
-                            <img src={release.imageUrl} alt={release.name} />
-                            <p>{release.badge}</p>
+                        <article key={release.id} className={`${ui.card} grid gap-4 sm:grid-cols-[120px_minmax(0,1fr)]`}>
+                            <div className="relative">
+                                <img src={release.imageUrl} alt={release.name} className="aspect-square w-full rounded-lg object-cover" onError={showPlaceholder} />
+                                <p className={`absolute left-2 top-2 rounded-full px-2 py-0.5 text-[10px] font-bold ${release.released ? "bg-emerald-600 text-white" : "bg-black text-white"}`}>{release.badge}</p>
+                            </div>
 
+                            <div className="min-w-0 space-y-3">
+                            <div className="flex flex-wrap items-start justify-between gap-3">
                             <div>
-                                <h2>{release.name}</h2>
+                                <h2 className="text-lg font-bold">{release.name}</h2>
                                 {release.sizes.map((s) => (
-                                    <p key={s.size}>
+                                    <p key={s.size} className="text-sm text-zinc-600">
                                         {s.size} - {s.units} units
                                     </p>
                                 ))}
-                                {release.note && <p>{release.note}</p>}
+                                {release.note && <p className="text-sm italic text-zinc-600">{release.note}</p>}
                             </div>
 
-                            <div>
-                                <p>
+                            <div className="text-right text-sm">
+                                <p className="font-semibold">
                                     {toDate(release.date).toLocaleDateString("en-US", {
                                         weekday: "long",
                                         month: "short",
@@ -196,17 +205,19 @@ export default function ReleaseManagementPage() {
                                         year: "numeric",
                                     })}
                                 </p>
-                                <p>12:00 AM</p>
+                                <p className="text-zinc-500">12:00 AM</p>
+                            </div>
                             </div>
 
                             {!release.released && (
-                                <div>
+                                <div className="grid gap-3 border-t border-zinc-100 pt-3 sm:grid-cols-2">
                                     <div>
-                                        <p>DISTRIBUTION</p>
+                                        <p className={`${ui.label} mb-1`}>Distribution</p>
                                         {DISTRIBUTION_OPTIONS.map((option) => (
-                                            <label key={option}>
+                                            <label key={option} className="flex items-center gap-2 py-0.5 text-sm">
                                                 <input
                                                     type="checkbox"
+                                                    className={ui.checkbox}
                                                     checked={release.distribution.includes(option)}
                                                     onChange={() => toggleDistribution(release.id, option)}
                                                 />
@@ -216,11 +227,12 @@ export default function ReleaseManagementPage() {
                                     </div>
 
                                     <div>
-                                        <p>MARKETING</p>
+                                        <p className={`${ui.label} mb-1`}>Marketing</p>
                                         {MARKETING_OPTIONS.map((option) => (
-                                            <label key={option}>
+                                            <label key={option} className="flex items-center gap-2 py-0.5 text-sm">
                                                 <input
                                                     type="checkbox"
+                                                    className={ui.checkbox}
                                                     checked={release.marketing.includes(option)}
                                                     onChange={() => toggleMarketing(release.id, option)}
                                                 />
@@ -230,12 +242,13 @@ export default function ReleaseManagementPage() {
                                     </div>
                                 </div>
                             )}
-                        </div>
+                            </div>
+                        </article>
                     ))}
                 </div>
 
                 {/* Calendars */}
-                <div>
+                <div className="space-y-4 xl:sticky xl:top-5 xl:self-start">
                     <MonthCalendar year={2026} month={6} highlightedDays={releaseDaysIn(releases, 2026, 6)} />
                     <MonthCalendar year={2026} month={7} highlightedDays={releaseDaysIn(releases, 2026, 7)} />
                 </div>

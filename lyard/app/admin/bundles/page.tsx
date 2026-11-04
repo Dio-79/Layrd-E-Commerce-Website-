@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { ui, statusClass, showPlaceholder } from '../adminStyles';
 
 type BundleRow = {
     id: string;
@@ -30,70 +31,88 @@ export default function BundlesPage() {
     );
 
     return (
-        <div>
-            <h1>Bundles</h1>
-            <p>Create and manage product collections and pricing tiers</p>
+        <div className={ui.page}>
+            <div className={ui.pageHeader}>
+                <div>
+                    <h1 className={ui.h1}>Bundles</h1>
+                    <p className={ui.subtitle}>Create and manage product collections and pricing tiers</p>
+                </div>
+                <Link href="/admin/editbundles" className={ui.btn}>+ New Bundle</Link>
+            </div>
 
             {/* Top cards */}
-            <div>
-                <div>
-                    <p>NEXT DROP</p>
-                    <p>PENDING</p>
-                    <h3>Pistachio Tiramisu</h3>
-                    <p>Saturday, Aug. 01, 2026 - 12:00 AM</p>
+            <div className="grid gap-4 sm:grid-cols-2">
+                <div className={ui.card}>
+                    <div className="flex items-center justify-between">
+                        <p className={ui.eyebrow}>Next Drop</p>
+                        <span className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-[#735413]">PENDING</span>
+                    </div>
+                    <h3 className="mt-2 text-lg font-bold">Pistachio Tiramisu</h3>
+                    <p className="text-sm text-zinc-600">Saturday, Aug. 01, 2026 - 12:00 AM</p>
                 </div>
-                <div>
-                    <p>SCHEDULING QUEUE</p>
-                    <h3>3 Upcoming Releases</h3>
-                    <p>View Calendar</p>
+                <div className={ui.card}>
+                    <p className={ui.eyebrow}>Scheduling Queue</p>
+                    <h3 className="mt-2 text-lg font-bold">3 Upcoming Releases</h3>
+                    <Link href="/admin/releasemanagment" className="text-sm font-semibold text-[#9b762e] hover:underline">View Calendar</Link>
                 </div>
             </div>
 
             {/* Table */}
-            <div>
+            <div className={ui.card}>
                 <input
+                    className={`${ui.input} mb-4 mt-0 max-w-sm`}
                     placeholder="Filter Product ID, Name..."
+                    aria-label="Filter bundles"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                 />
 
-                <table>
-                    <thead>
-                        <tr>
-                            <th><input type="checkbox" /></th>
-                            <th>ID</th>
-                            <th>Product Name</th>
-                            <th>Type</th>
-                            <th>Base Price</th>
-                            <th>MSRP</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {visible.map((bundle) => (
-                            <tr key={bundle.id}>
-                                <td><input type="checkbox" /></td>
-                                <td>{bundle.id}</td>
-                                <td>
-                                    <img src={bundle.imageUrl} alt={bundle.name} />
-                                    <span>{bundle.name}</span>
-                                </td>
-                                <td>{bundle.type}</td>
-                                <td>${bundle.basePrice.toFixed(2)}</td>
-                                <td><s>${bundle.msrp.toFixed(2)}</s></td>
-                                <td>
-                                    {bundle.status === "In Stock"
-                                        ? `${bundle.stock} IN STOCK`
-                                        : bundle.status.toUpperCase()}
-                                </td>
-                                <td>
-                                    <Link href="/admin/editbundles">Edit</Link>
-                                </td>
+                <div className={ui.tableWrap}>
+                    <table className={ui.table}>
+                        <thead>
+                            <tr>
+                                <th className={ui.th}><input type="checkbox" className={ui.checkbox} aria-label="Select all" /></th>
+                                <th className={ui.th}>ID</th>
+                                <th className={ui.th}>Product Name</th>
+                                <th className={ui.th}>Type</th>
+                                <th className={ui.th}>Base Price</th>
+                                <th className={ui.th}>MSRP</th>
+                                <th className={ui.th}>Status</th>
+                                <th className={ui.th}>Actions</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {visible.map((bundle) => (
+                                <tr key={bundle.id} className="hover:bg-zinc-50">
+                                    <td className={ui.td}><input type="checkbox" className={ui.checkbox} aria-label={`Select ${bundle.name}`} /></td>
+                                    <td className={`${ui.td} text-zinc-500`}>{bundle.id}</td>
+                                    <td className={ui.td}>
+                                        <div className="flex items-center gap-3 font-semibold">
+                                            <img src={bundle.imageUrl} alt={bundle.name} className={ui.thumb} onError={showPlaceholder} />
+                                            <span>{bundle.name}</span>
+                                        </div>
+                                    </td>
+                                    <td className={ui.td}>{bundle.type}</td>
+                                    <td className={`${ui.td} font-semibold`}>${bundle.basePrice.toFixed(2)}</td>
+                                    <td className={`${ui.td} text-zinc-400`}><s>${bundle.msrp.toFixed(2)}</s></td>
+                                    <td className={ui.td}>
+                                        <span className={statusClass(bundle.status)}>
+                                            {bundle.status === "In Stock"
+                                                ? `${bundle.stock} IN STOCK`
+                                                : bundle.status.toUpperCase()}
+                                        </span>
+                                    </td>
+                                    <td className={ui.td}>
+                                        <Link href="/admin/editbundles" className={ui.btnSmall}>Edit</Link>
+                                    </td>
+                                </tr>
+                            ))}
+                            {visible.length === 0 && (
+                                <tr><td colSpan={8} className={`${ui.td} py-8 text-center text-zinc-500`}>No bundles match your search.</td></tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     );
