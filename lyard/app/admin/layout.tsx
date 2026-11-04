@@ -4,19 +4,49 @@ import React from 'react';
 import { ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { Montserrat } from 'next/font/google';
 import { RequireRole } from '@/app/components/RequiredRoles';
 import { useAuth } from '@/app/context/AuthContext';
 
+// Layout follows the team's Figma (low-fi & prototyping > "Admin Dashboard"):
+// dark charcoal, gold accents, icon sidebar, "LÄYRD Admin" top bar.
+const montserrat = Montserrat({ subsets: ['latin'], variable: '--font-montserrat' });
+
+/* ---------- Small line icons (24px, stroke = currentColor) ---------- */
+
+const ICONS: Record<string, React.ReactNode> = {
+    dashboard: <path d="M12 3 3 7.5 12 12l9-4.5L12 3Zm-9 9 9 4.5 9-4.5M3 16.5 12 21l9-4.5" />,
+    products: <path d="M3 7.5 12 3l9 4.5v9L12 21l-9-4.5v-9Zm0 0L12 12m0 0 9-4.5M12 12v9" />,
+    bundles: <path d="M4 8h16v12H4V8Zm-1-4h18v4H3V4Zm7 8h4" />,
+    releases: <path d="M4 6h16v14H4V6Zm0 4h16M8 3v4m8-4v4" />,
+    orders: <path d="M6 7h12l-1 13H7L6 7Zm3 0a3 3 0 0 1 6 0" />,
+    customers: <path d="M3 5h18v14H3V5Zm4 4h4v4H7V9Zm7 0h4m-4 4h4" />,
+    promotions: <path d="M3 12V4h8l10 10-8 8L3 12Zm5-4h.01" />,
+    analytics: <path d="M4 20V10m6 10V4m6 16v-7m4 7H2" />,
+    settings: <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm7.4-3a7.4 7.4 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 0 0-2-1.2L14.5 3h-5l-.4 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6a7.4 7.4 0 0 0 0 2.4l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 2 1.2l.4 2.6h5l.4-2.6a7 7 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6c.1-.4.1-.8.1-1.2Z" />,
+    search: <path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14Zm5-2 4 4" />,
+    bell: <path d="M6 16V11a6 6 0 1 1 12 0v5l2 2H4l2-2Zm4 4h4" />,
+    moon: <path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5Z" />,
+};
+
+function Icon({ name, className = 'h-5 w-5' }: { name: string; className?: string }) {
+    return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={className}>
+            {ICONS[name]}
+        </svg>
+    );
+}
+
 // Pages that don't exist yet have no href and show as "coming soon".
-const navLinks: { label: string; href?: string }[] = [
-    { label: "Dashboard", href: "/admin/dashboard" },
-    { label: "Products", href: "/admin/productmanagement" },
-    { label: "Bundles", href: "/admin/bundles" },
-    { label: "Upcoming releases", href: "/admin/releasemanagment" },
-    { label: "Orders" },
-    { label: "Customers" },
-    { label: "Promotions" },
-    { label: "Analytics" },
+const navLinks: { label: string; icon: string; href?: string }[] = [
+    { label: "Dashboard", icon: "dashboard", href: "/admin/dashboard" },
+    { label: "Products", icon: "products", href: "/admin/productmanagement" },
+    { label: "Bundles", icon: "bundles", href: "/admin/bundles" },
+    { label: "Releases", icon: "releases", href: "/admin/releasemanagment" },
+    { label: "Orders", icon: "orders" },
+    { label: "Customers", icon: "customers" },
+    { label: "Promotions", icon: "promotions" },
+    { label: "Analytics", icon: "analytics" },
 ];
 
 // The edit pages belong to a section of the sidebar.
@@ -27,11 +57,14 @@ function sectionOf(pathname: string) {
     return pathname;
 }
 
+const GOLD_TEXT = "text-[#e0b43a]";
+
 function AdminShell({ children }: { children: ReactNode }) {
     const pathname = usePathname();
     const router = useRouter();
     const { user, signOut } = useAuth();
     const current = sectionOf(pathname);
+    const displayName = user?.name || user?.email || "Admin Profile";
 
     async function handleSignOut() {
         await signOut();
@@ -40,55 +73,62 @@ function AdminShell({ children }: { children: ReactNode }) {
 
     return (
         // admin container
-        <div className="min-h-screen bg-[#faf9f6] text-zinc-900 md:flex">
+        <div
+            className={`${montserrat.variable} min-h-screen bg-[#2b2b2b] text-zinc-100 md:flex`}
+            style={{ fontFamily: "var(--font-montserrat), Montserrat, system-ui, sans-serif" }}
+        >
             {/* Sidebar */}
-            <aside className="border-b border-zinc-200 bg-white md:sticky md:top-0 md:flex md:h-screen md:w-64 md:shrink-0 md:flex-col md:border-b-0 md:border-r">
-                <div className="px-5 py-5">
-                    <Link href="/Mainpage" className="font-serif text-2xl font-bold tracking-[.2em] text-black">LÄYRD</Link>
-                    <p className="mt-1 text-xs font-semibold uppercase tracking-[.16em] text-[#9b762e]">Admin Dashboard</p>
+            <aside className="border-b border-[#e0b43a]/50 bg-[#262626] md:sticky md:top-0 md:flex md:h-screen md:w-60 md:shrink-0 md:flex-col md:border-b-0 md:border-r">
+                <div className="px-6 pb-4 pt-6">
+                    <Link href="/Mainpage" className={`text-2xl font-medium tracking-[.2em] ${GOLD_TEXT}`}>LÄYRD</Link>
+                    <p className="mt-1 text-sm text-zinc-200">Admin Dashboard</p>
                     <Link
                         href="/admin/editproduct"
-                        className="mt-5 flex w-full items-center justify-center rounded-lg bg-black px-4 py-2.5 text-sm font-semibold text-white hover:bg-zinc-700"
+                        className="mt-4 flex w-full items-center justify-center rounded-sm bg-[#e0b43a] px-3 py-2 text-xs font-semibold text-black hover:bg-[#ecc65a]"
                     >
                         + Create New Product
                     </Link>
                 </div>
 
-                <nav aria-label="Admin navigation" className="flex gap-1 overflow-x-auto px-3 pb-3 md:flex-1 md:flex-col md:overflow-visible">
-                    {navLinks.map((link) =>
-                        link.href ? (
+                <nav aria-label="Admin navigation" className="flex gap-1 overflow-x-auto px-3 pb-3 pt-2 md:flex-1 md:flex-col md:overflow-visible">
+                    {navLinks.map((link) => {
+                        const active = current === link.href;
+                        return link.href ? (
                             <Link
                                 key={link.label}
                                 href={link.href}
-                                aria-current={current === link.href ? "page" : undefined}
-                                className={`shrink-0 rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors hover:bg-amber-50 ${
-                                    current === link.href ? "bg-amber-100 text-[#735413]" : "text-zinc-700"
+                                aria-current={active ? "page" : undefined}
+                                className={`flex shrink-0 items-center gap-3 rounded-sm px-3 py-2.5 text-sm transition-colors hover:bg-white/5 ${
+                                    active ? `${GOLD_TEXT} underline underline-offset-4` : "text-zinc-100"
                                 }`}
                             >
+                                <Icon name={link.icon} />
                                 {link.label}
                             </Link>
                         ) : (
                             <span
                                 key={link.label}
                                 aria-disabled="true"
-                                className="flex shrink-0 items-center justify-between gap-2 rounded-lg px-4 py-2.5 text-sm text-zinc-400"
+                                title="Coming soon"
+                                className="flex shrink-0 items-center gap-3 rounded-sm px-3 py-2.5 text-sm text-zinc-500"
                             >
+                                <Icon name={link.icon} />
                                 {link.label}
-                                <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-semibold uppercase">soon</span>
+                                <span className="ml-auto rounded-sm border border-zinc-600 px-1.5 text-[9px] font-semibold uppercase tracking-wide">soon</span>
                             </span>
-                        )
-                    )}
+                        );
+                    })}
                 </nav>
 
-                <div className="hidden border-t border-zinc-200 px-3 py-3 md:block">
-                    <span aria-disabled="true" className="flex items-center justify-between rounded-lg px-4 py-2 text-sm text-zinc-400">
+                <div className="hidden border-t border-[#e0b43a]/50 px-3 py-4 md:block">
+                    <span aria-disabled="true" title="Coming soon" className="flex items-center gap-3 px-3 py-2 text-sm text-zinc-500">
+                        <Icon name="settings" />
                         Settings
-                        <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-semibold uppercase">soon</span>
                     </span>
                     <button
                         type="button"
                         onClick={handleSignOut}
-                        className="w-full rounded-lg px-4 py-2 text-left text-sm font-semibold text-zinc-700 hover:bg-zinc-50"
+                        className="w-full px-3 py-2 text-left text-sm font-semibold text-red-400 hover:text-red-300"
                     >
                         Sign Out
                     </button>
@@ -98,27 +138,31 @@ function AdminShell({ children }: { children: ReactNode }) {
             {/* Main area */}
             <div className="min-w-0 flex-1">
                 {/* Top bar */}
-                <header className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-200 bg-white px-4 py-3 sm:px-6">
-                    <input
-                        placeholder="Search orders, customers..."
-                        aria-label="Search orders and customers"
-                        className="w-full max-w-sm rounded-lg border border-zinc-300 bg-zinc-50 px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-amber-500"
-                    />
-                    <div className="flex items-center gap-3">
-                        <div className="text-right">
-                            <p className="text-sm font-semibold">{user?.name || user?.email || "Admin"}</p>
-                            <p className="text-xs text-zinc-500">LÄYRD Admin</p>
-                        </div>
-                        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-100 text-sm font-bold text-[#735413]">
-                            {(user?.name || user?.email || "A").charAt(0).toUpperCase()}
+                <header className="grid grid-cols-[1fr_auto] items-center gap-3 border-b border-[#e0b43a]/50 bg-[#262626] px-4 py-3 sm:px-6 lg:grid-cols-[1fr_auto_1fr]">
+                    <label className="flex max-w-xs items-center gap-2 rounded-sm bg-[#3a3a3a] px-3 py-2 text-zinc-400">
+                        <Icon name="search" className="h-4 w-4" />
+                        <input
+                            placeholder="Search orders, customers..."
+                            aria-label="Search orders and customers"
+                            className="w-full bg-transparent text-sm text-zinc-100 placeholder:text-zinc-400 focus:outline-none"
+                        />
+                    </label>
+                    <p className={`hidden text-xl font-semibold tracking-[.18em] lg:block ${GOLD_TEXT}`}>LÄYRD Admin</p>
+                    <div className="flex items-center justify-end gap-4 text-zinc-200">
+                        <Icon name="bell" />
+                        <Icon name="moon" />
+                        <span className="hidden h-8 w-px bg-zinc-600 sm:block" />
+                        <span className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-400 text-xs font-semibold">
+                            {displayName.charAt(0).toUpperCase()}
                         </span>
-                        <button type="button" onClick={handleSignOut} className="text-sm font-semibold text-zinc-600 hover:text-black md:hidden">
+                        <span className="hidden text-xs font-semibold sm:block">{displayName}</span>
+                        <button type="button" onClick={handleSignOut} className="text-xs font-semibold text-red-400 md:hidden">
                             Sign Out
                         </button>
                     </div>
                 </header>
 
-                <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6">{children}</main>
+                <main className="mx-auto max-w-7xl px-4 py-8 sm:px-8">{children}</main>
             </div>
         </div>
     );

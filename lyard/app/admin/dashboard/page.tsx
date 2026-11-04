@@ -5,23 +5,27 @@ import Link from 'next/link';
 import { usePortalList, type PortalOrder, type PortalProduct, currency, shortDate } from '@/app/portal-ui/usePortalData';
 import { ui } from '../adminStyles';
 
-// The sidebar and top bar are in app/admin/layout.tsx so every admin page shares them.
+// "Overview" screen from the Figma. The sidebar and top bar are in app/admin/layout.tsx.
+// Every number here comes from the live product and order APIs.
 
 function Stat({ label, value }: { label: string; value: string | number }) {
     return (
-        <div className={ui.card}>
-            <p className={ui.eyebrow}>{label}</p>
-            <p className="mt-2 text-2xl font-bold text-zinc-950">{value}</p>
+        <div className="rounded-md border border-zinc-600 bg-[#3a3a3a] p-4 shadow-md shadow-black/20">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-200">{label}</p>
+            <p className="mt-2 text-2xl font-semibold text-white">{value}</p>
         </div>
     );
 }
 
-const quickLinks = [
-    { href: "/admin/productmanagement", title: "Product catalog", text: "Inventory, stock levels and prices" },
-    { href: "/admin/bundles", title: "Bundles", text: "Collections and bundle pricing" },
-    { href: "/admin/releasemanagment", title: "Upcoming releases", text: "Drop dates, distribution and marketing" },
-    { href: "/admin/editproduct", title: "Create a product", text: "Add a new item to the shop" },
-];
+const OPEN = ["placed", "pending", "processing"];
+
+function statusColour(status?: string) {
+    const s = (status || "").toLowerCase();
+    if (s === "delivered" || s === "completed") return "text-zinc-100 font-semibold";
+    if (s === "cancelled" || s.includes("pending payment")) return "text-red-400";
+    if (OPEN.includes(s)) return "text-[#e0b43a]";
+    return "text-zinc-300";
+}
 
 export default function AdminDashboard() {
     const products = usePortalList<PortalProduct>("/api/products", "products");
@@ -29,53 +33,53 @@ export default function AdminDashboard() {
 
     const show = (list: { loading: boolean; error: string | null }, value: string | number) =>
         list.loading ? "…" : list.error ? "—" : value;
-    const revenue = (orders.items ?? []).reduce((sum, o) => sum + (o.totals?.total ?? 0), 0);
-    const open = (orders.items ?? []).filter((o) =>
-        ["placed", "pending", "processing"].includes((o.status || "").toLowerCase())
-    ).length;
+    const items = orders.items ?? [];
+    const revenue = items.reduce((sum, o) => sum + (o.totals?.total ?? 0), 0);
+    const customers = new Set(items.map((o) => o.customer?.email).filter(Boolean)).size;
+    const openOrders = items.filter((o) => OPEN.includes((o.status || "").toLowerCase()));
 
     return (
         <div className={ui.page}>
-            <div className={ui.pageHeader}>
-                <div>
-                    <h1 className={ui.h1}>Dashboard</h1>
-                    <p className={ui.subtitle}>Store overview from the live product and order data.</p>
-                </div>
-                <Link href="/admin/editproduct" className={ui.btn}>+ Create New Product</Link>
+            <div>
+                <h1 className={ui.h1}>Overview</h1>
+                <p className={ui.subtitle}>Today&apos;s performance and priority items</p>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                <Stat label="Products" value={show(products, products.items?.length ?? 0)} />
-                <Stat label="Orders" value={show(orders, orders.items?.length ?? 0)} />
-                <Stat label="Open orders" value={show(orders, open)} />
                 <Stat label="Revenue" value={show(orders, currency(revenue))} />
+                <Stat label="Total orders" value={show(orders, items.length)} />
+                <Stat label="Customers" value={show(orders, customers)} />
+                <Stat label="Products" value={show(products, products.items?.length ?? 0)} />
             </div>
 
-            <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
+            <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_280px]">
                 <section className={ui.card}>
-                    <h2 className={ui.h2}>Recent orders</h2>
-                    {orders.loading && <p className="text-sm text-zinc-500">Loading…</p>}
-                    {orders.error && <p className="text-sm text-red-700">{orders.error}</p>}
-                    {orders.items && orders.items.length === 0 && <p className="text-sm text-zinc-500">No orders yet.</p>}
-                    {orders.items && orders.items.length > 0 && (
+                    <div className="mb-4 flex items-center justify-between">
+                        <h2 className="text-lg font-semibold tracking-wide text-white">RECENT ORDERS</h2>
+                        <span className="text-xs font-semibold text-zinc-500" title="The orders page is coming soon">VIEW ALL</span>
+                    </div>
+                    {orders.loading && <p className="text-sm text-zinc-400">Loading…</p>}
+                    {orders.error && <p className="text-sm text-red-400">{orders.error}</p>}
+                    {orders.items && items.length === 0 && <p className="text-sm text-zinc-400">No orders yet.</p>}
+                    {items.length > 0 && (
                         <div className={ui.tableWrap}>
                             <table className={ui.table}>
                                 <thead>
                                     <tr>
-                                        <th className={ui.th}>Order</th>
+                                        <th className={ui.th}>Order ID</th>
                                         <th className={ui.th}>Customer</th>
                                         <th className={ui.th}>Date</th>
                                         <th className={ui.th}>Status</th>
-                                        <th className={`${ui.th} text-right`}>Total</th>
+                                        <th className={`${ui.th} text-right`}>Amount</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {orders.items.slice(0, 8).map((o) => (
+                                    {items.slice(0, 8).map((o) => (
                                         <tr key={o.orderNumber}>
-                                            <td className={`${ui.td} font-semibold`}>{o.orderNumber}</td>
+                                            <td className={`${ui.td} text-zinc-400`}>{o.orderNumber}</td>
                                             <td className={ui.td}>{o.customer?.fullName || o.customer?.email || "Guest"}</td>
                                             <td className={ui.td}>{shortDate(o.placedAt ?? o.savedAt)}</td>
-                                            <td className={`${ui.td} capitalize`}>{o.status || "—"}</td>
+                                            <td className={`${ui.td} capitalize ${statusColour(o.status)}`}>{o.status || "—"}</td>
                                             <td className={`${ui.td} text-right`}>{currency(o.totals?.total)}</td>
                                         </tr>
                                     ))}
@@ -86,14 +90,27 @@ export default function AdminDashboard() {
                 </section>
 
                 <section className={ui.card}>
-                    <h2 className={ui.h2}>Quick links</h2>
+                    <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-white">
+                        <span className="text-red-400" aria-hidden="true">⚠</span> Priority Alerts
+                    </h2>
                     <div className="space-y-3">
-                        {quickLinks.map((q) => (
-                            <Link key={q.href} href={q.href} className="block rounded-lg border border-amber-200 p-4 hover:bg-amber-50">
-                                <strong className="text-sm">{q.title}</strong>
-                                <p className="mt-1 text-xs text-zinc-600">{q.text}</p>
-                            </Link>
+                        {orders.loading && <p className="text-sm text-zinc-400">Loading…</p>}
+                        {!orders.loading && openOrders.length === 0 && (
+                            <p className="rounded-sm border border-zinc-600 bg-[#2b2b2b] p-3 text-sm text-zinc-400">Nothing needs attention right now.</p>
+                        )}
+                        {openOrders.slice(0, 4).map((o) => (
+                            <div key={o.orderNumber} className="rounded-sm border border-zinc-600 bg-[#2b2b2b] p-3">
+                                <p className="text-sm font-semibold text-[#e0b43a]">Open order</p>
+                                <p className="mt-1 text-xs text-zinc-300">
+                                    {o.orderNumber} from {o.customer?.fullName || o.customer?.email || "a guest"} is still {o.status}.
+                                </p>
+                            </div>
                         ))}
+                        <Link href="/admin/releasemanagment" className="block rounded-sm border border-zinc-600 bg-[#2b2b2b] p-3 hover:border-[#e0b43a]">
+                            <p className="text-sm font-semibold text-[#e0b43a]">Upcoming releases</p>
+                            <p className="mt-1 text-xs text-zinc-300">Check drop dates, distribution and marketing.</p>
+                            <p className="mt-1 text-xs font-semibold text-[#e0b43a] underline">Review</p>
+                        </Link>
                     </div>
                 </section>
             </div>

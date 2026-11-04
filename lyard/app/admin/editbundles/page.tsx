@@ -29,7 +29,7 @@ function Toggle({ checked, onChange, title, help }: { checked: boolean; onChange
             <input type="checkbox" className={ui.checkbox} checked={checked} onChange={onChange} />
             <span>
                 <span className="block text-sm font-semibold">{title}</span>
-                {help && <span className="block text-xs text-zinc-500">{help}</span>}
+                {help && <span className="block text-xs text-zinc-400">{help}</span>}
             </span>
         </label>
     );
@@ -116,7 +116,7 @@ export default function EditBundlePage() {
                         <div className="grid gap-4 sm:grid-cols-2">
                             <label className={ui.label}>
                                 Product ID
-                                <input className={`${ui.input} bg-zinc-50 text-zinc-500`} value="#BD-3" readOnly />
+                                <input className={`${ui.input} bg-zinc-800 text-zinc-400`} value="#BD-3" readOnly />
                             </label>
                             <label className={ui.label}>
                                 Category
@@ -151,20 +151,20 @@ export default function EditBundlePage() {
                                             <td className={ui.td}><input type="checkbox" className={ui.checkbox} aria-label={`Select ${item.name}`} /></td>
                                             <td className={ui.td}>
                                                 <span className="font-semibold">{item.name}</span>{" "}
-                                                <span className="text-zinc-500">{item.id}</span>
+                                                <span className="text-zinc-400">{item.id}</span>
                                             </td>
                                             <td className={ui.td}>
-                                                <div className="inline-flex items-center rounded-lg border border-zinc-300">
-                                                    <button type="button" aria-label={`Fewer ${item.name}`} className="px-3 py-1 hover:bg-zinc-50" onClick={() => changeQuantity(item.id, -1)}>-</button>
+                                                <div className="inline-flex items-center rounded-lg border border-zinc-600">
+                                                    <button type="button" aria-label={`Fewer ${item.name}`} className="px-3 py-1 hover:bg-white/5" onClick={() => changeQuantity(item.id, -1)}>-</button>
                                                     <span className="w-8 text-center font-semibold">{item.quantity}</span>
-                                                    <button type="button" aria-label={`More ${item.name}`} className="px-3 py-1 hover:bg-zinc-50" onClick={() => changeQuantity(item.id, 1)}>+</button>
+                                                    <button type="button" aria-label={`More ${item.name}`} className="px-3 py-1 hover:bg-white/5" onClick={() => changeQuantity(item.id, 1)}>+</button>
                                                 </div>
                                             </td>
                                             <td className={`${ui.td} text-right`}><button type="button" className={ui.btnDanger} onClick={() => removeItem(item.id)}>Delete</button></td>
                                         </tr>
                                     ))}
                                     {bundleContents.length === 0 && (
-                                        <tr><td colSpan={4} className={`${ui.td} py-6 text-center text-zinc-500`}>This bundle is empty.</td></tr>
+                                        <tr><td colSpan={4} className={`${ui.td} py-6 text-center text-zinc-400`}>This bundle is empty.</td></tr>
                                     )}
                                 </tbody>
                             </table>
@@ -226,7 +226,7 @@ export default function EditBundlePage() {
                         <div className="mt-3 grid grid-cols-3 gap-2">
                             <img src={bundle?.imageUrl} alt="thumbnail 1" className="aspect-square w-full rounded-md object-cover" />
                             <img src={bundle?.imageUrl} alt="thumbnail 2" className="aspect-square w-full rounded-md object-cover" />
-                            <button type="button" className="flex aspect-square items-center justify-center rounded-md border-2 border-dashed border-zinc-300 text-xs font-semibold text-zinc-500 hover:bg-zinc-50">Upload</button>
+                            <button type="button" className="flex aspect-square items-center justify-center rounded-md border-2 border-dashed border-zinc-600 text-xs font-semibold text-zinc-400 hover:bg-white/5">Upload</button>
                         </div>
                     </section>
 
@@ -267,7 +267,7 @@ export default function EditBundlePage() {
                             {tags.map((tag) => (
                                 <span key={tag} className={ui.tag}>
                                     {tag}
-                                    <button type="button" aria-label={`Remove ${tag}`} className="ml-1 text-[#735413] hover:text-black" onClick={() => removeTag(tag)}>×</button>
+                                    <button type="button" aria-label={`Remove ${tag}`} className="ml-1 text-[#e0b43a] hover:text-white" onClick={() => removeTag(tag)}>×</button>
                                 </span>
                             ))}
                         </div>

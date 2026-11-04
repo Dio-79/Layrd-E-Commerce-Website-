@@ -32,7 +32,7 @@ function countIn(category: string, hidden: boolean) {
 
 const pill = (active: boolean) =>
     `flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm ${
-        active ? "bg-amber-100 font-semibold text-[#735413]" : "text-zinc-700 hover:bg-zinc-50"
+        active ? "bg-[#e0b43a]/15 font-semibold text-[#e0b43a]" : "text-zinc-200 hover:bg-white/5"
     }`;
 
 export default function ProductManagementPage() {
@@ -76,7 +76,7 @@ export default function ProductManagementPage() {
                         <p className={`${ui.label} mb-2`}>Visible</p>
                         {CATEGORIES.map((c) => (
                             <button key={c} type="button" className={pill(category === c)} onClick={() => toggleCategory(c)}>
-                                {c} <span className="text-xs text-zinc-500">{countIn(c, false)}</span>
+                                {c} <span className="text-xs text-zinc-400">{countIn(c, false)}</span>
                             </button>
                         ))}
                     </div>
@@ -85,7 +85,7 @@ export default function ProductManagementPage() {
                         <p className={`${ui.label} mb-2`}>Hidden / Drafts</p>
                         {CATEGORIES.map((c) => (
                             <button key={c} type="button" className={pill(false)} onClick={() => toggleCategory(c)}>
-                                {c} <span className="text-xs text-zinc-500">{countIn(c, true)}</span>
+                                {c} <span className="text-xs text-zinc-400">{countIn(c, true)}</span>
                             </button>
                         ))}
                     </div>
@@ -107,15 +107,15 @@ export default function ProductManagementPage() {
                         <div className={ui.card}>
                             <div className="flex items-center justify-between">
                                 <p className={ui.eyebrow}>Next Drop</p>
-                                <span className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-[#735413]">PENDING</span>
+                                <span className="rounded-full bg-[#e0b43a]/15 px-2.5 py-1 text-xs font-semibold text-[#e0b43a]">PENDING</span>
                             </div>
                             <h3 className="mt-2 text-lg font-bold">Pistachio Tiramisu</h3>
-                            <p className="text-sm text-zinc-600">Saturday, Aug. 01, 2026 - 12:00 AM</p>
+                            <p className="text-sm text-zinc-400">Saturday, Aug. 01, 2026 - 12:00 AM</p>
                         </div>
                         <div className={ui.card}>
                             <p className={ui.eyebrow}>Scheduling Queue</p>
                             <h3 className="mt-2 text-lg font-bold">3 Upcoming Releases</h3>
-                            <Link href="/admin/releasemanagment" className="text-sm font-semibold text-[#9b762e] hover:underline">View Calendar</Link>
+                            <Link href="/admin/releasemanagment" className="text-sm font-semibold text-[#e0b43a] hover:underline">View Calendar</Link>
                         </div>
                     </div>
 
@@ -143,9 +143,9 @@ export default function ProductManagementPage() {
                                 </thead>
                                 <tbody>
                                     {visibleRows.map((row) => (
-                                        <tr key={row.productID} className="hover:bg-zinc-50">
+                                        <tr key={row.productID} className="hover:bg-white/5">
                                             <td className={ui.td}><input type="checkbox" className={ui.checkbox} aria-label={`Select ${row.name}`} /></td>
-                                            <td className={`${ui.td} text-zinc-500`}>#{row.productID}</td>
+                                            <td className={`${ui.td} text-zinc-400`}>#{row.productID}</td>
                                             <td className={ui.td}>
                                                 <Link href="/admin/editproduct" className="flex items-center gap-3 font-semibold hover:underline">
                                                     <img src={row.imageUrl} alt={row.name} className={ui.thumb} />
@@ -158,7 +158,7 @@ export default function ProductManagementPage() {
                                         </tr>
                                     ))}
                                     {visibleRows.length === 0 && (
-                                        <tr><td colSpan={6} className={`${ui.td} py-8 text-center text-zinc-500`}>No products match these filters.</td></tr>
+                                        <tr><td colSpan={6} className={`${ui.td} py-8 text-center text-zinc-400`}>No products match these filters.</td></tr>
                                     )}
                                 </tbody>
                             </table>

@@ -51,7 +51,7 @@ function TagEditor({ tags, setTags }: TagEditorProps) {
                 {tags.map((tag) => (
                     <span key={tag} className={ui.tag}>
                         {tag}
-                        <button type="button" aria-label={`Remove ${tag}`} className="ml-1 text-[#735413] hover:text-black" onClick={() => removeTag(tag)}>×</button>
+                        <button type="button" aria-label={`Remove ${tag}`} className="ml-1 text-[#e0b43a] hover:text-white" onClick={() => removeTag(tag)}>×</button>
                     </span>
                 ))}
             </div>
@@ -67,7 +67,7 @@ function Toggle({ checked, onChange, title, help }: { checked: boolean; onChange
             <input type="checkbox" className={ui.checkbox} checked={checked} onChange={onChange} />
             <span>
                 <span className="block text-sm font-semibold">{title}</span>
-                {help && <span className="block text-xs text-zinc-500">{help}</span>}
+                {help && <span className="block text-xs text-zinc-400">{help}</span>}
             </span>
         </label>
     );
@@ -136,7 +136,7 @@ export default function EditProductPage() {
                         <div className="grid gap-4 sm:grid-cols-2">
                             <label className={ui.label}>
                                 Product ID
-                                <input className={`${ui.input} bg-zinc-50 text-zinc-500`} value="#CA-1" readOnly />
+                                <input className={`${ui.input} bg-zinc-800 text-zinc-400`} value="#CA-1" readOnly />
                             </label>
                             <label className={ui.label}>
                                 Category
@@ -205,7 +205,7 @@ export default function EditProductPage() {
 
                         <div className="grid gap-4 sm:grid-cols-2">
                             <div>
-                                <p className={ui.label}>Sweetness Level <span className="normal-case text-zinc-700">· {sweetness} / 5</span></p>
+                                <p className={ui.label}>Sweetness Level <span className="normal-case text-zinc-200">· {sweetness} / 5</span></p>
                                 <div className="mt-2 flex gap-1.5">
                                     {[1, 2, 3, 4, 5].map((level) => (
                                         <button
@@ -214,7 +214,7 @@ export default function EditProductPage() {
                                             aria-label={`Sweetness ${level}`}
                                             aria-pressed={level <= sweetness}
                                             onClick={() => setSweetness(level)}
-                                            className={`h-8 w-8 rounded-md border ${level <= sweetness ? "border-[#9b762e] bg-[#9b762e]" : "border-zinc-300 bg-white hover:bg-amber-50"}`}
+                                            className={`h-8 w-8 rounded-md border ${level <= sweetness ? "border-[#e0b43a] bg-[#e0b43a]" : "border-zinc-600 bg-transparent hover:bg-[#e0b43a]/10"}`}
                                         />
                                     ))}
                                 </div>
@@ -245,7 +245,7 @@ export default function EditProductPage() {
                         <div className="mt-3 grid grid-cols-3 gap-2">
                             <img src={product?.imageUrl} alt="thumbnail 1" className="aspect-square w-full rounded-md object-cover" />
                             <img src={product?.imageUrl} alt="thumbnail 2" className="aspect-square w-full rounded-md object-cover" />
-                            <button type="button" className="flex aspect-square items-center justify-center rounded-md border-2 border-dashed border-zinc-300 text-xs font-semibold text-zinc-500 hover:bg-zinc-50">Upload</button>
+                            <button type="button" className="flex aspect-square items-center justify-center rounded-md border-2 border-dashed border-zinc-600 text-xs font-semibold text-zinc-400 hover:bg-white/5">Upload</button>
                         </div>
                     </section>
 
