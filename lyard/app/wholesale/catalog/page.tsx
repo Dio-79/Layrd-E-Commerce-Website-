@@ -21,7 +21,7 @@ export default function WholesaleCatalog() {
     <div className="mt-5"><DataState loading={loading} error={error} retry={reload} empty={items && !items.length ? "No catalog products available yet." : items && !filtered.length ? "No products match your search." : undefined} /></div>
     {items && filtered.length > 0 && <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{filtered.map((product) => <article key={product.productID} className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm">
       {product.imageUrl ? <div className="h-44 bg-zinc-50"><img src={product.imageUrl} alt={product.name} loading="lazy" className="h-full w-full object-cover" /></div> : <div className="flex h-44 items-center justify-center bg-zinc-100 text-sm text-zinc-500">Image unavailable</div>}
-      <div className="p-4"><p className="text-xs uppercase tracking-wide text-[#997127]">{product.section || "Product"}</p><h2 className="mt-1 font-bold">{product.name}</h2><p className="mt-2 line-clamp-2 text-sm text-zinc-600">{product.description || "No description available."}</p><p className="mt-3 font-bold">{currency(product.price)}</p><p className="mt-1 text-xs text-zinc-500">Catalog price · wholesale rate pending</p></div>
+      <div className="p-4"><p className="text-xs uppercase tracking-wide text-[#997127]">{product.section || "Product"}</p><h2 className="mt-1 font-bold">{product.name}</h2><p className="mt-2 line-clamp-2 text-sm text-zinc-600">{product.description || "No description available."}</p><p className="mt-3 font-bold">{currency(product.price)}</p><p className="mt-1 text-xs text-zinc-500">Per unit · from {currency(product.price * 0.82)} at 300+ cans</p></div>
     </article>)}</div>}
   </>;
 }

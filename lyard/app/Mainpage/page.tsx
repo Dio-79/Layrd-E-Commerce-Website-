@@ -7,6 +7,9 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import styles from "./cart.module.css";
 import ProductRow from "./featuredcollection";
+import EventBanner from "../components/EventBanner";
+import SocialEmbeds from "../components/SocialEmbeds";
+import { INSTAGRAM_HANDLE, INSTAGRAM_URL, TIKTOK_URL, TIKTOK_HANDLE } from "@/lib/Intergration/social";
 
 /** Where "View all products" goes. Use the same path your header's CAKE-IN-A-CAN link uses. */
 const CAKE_IN_A_CAN_PATH = "/products";
@@ -23,6 +26,7 @@ export default function LandingPageBody() {
   return (
     <>
       <Header />
+      <EventBanner />
 
       <div className={styles.bodyWrapper}>
         {/* 1. Hero Section */}
@@ -161,9 +165,16 @@ export default function LandingPageBody() {
             </div>
           </div>
 
-          <a href="https://instagram.com" className={styles.instagramFooterLink}>
-            <span>📸</span> Follow us on our Instagram for more announcements !
+          <SocialEmbeds />
+
+          <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className={styles.instagramFooterLink}>
+            <span>📸</span> Follow @{INSTAGRAM_HANDLE} on Instagram for more announcements !
           </a>
+          {TIKTOK_URL && (
+            <a href={TIKTOK_URL} target="_blank" rel="noopener noreferrer" className={styles.instagramFooterLink}>
+              <span>🎵</span> @{TIKTOK_HANDLE} on TikTok
+            </a>
+          )}
         </section>
       </div>
       <Footer />
