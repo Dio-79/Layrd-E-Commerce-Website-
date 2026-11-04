@@ -1,14 +1,16 @@
 import React from 'react';
 import Link from 'next/link';
 
-const navLinks = [
+// Pages that don't exist yet have no href and show as "coming soon".
+const navLinks: { label: string; href?: string }[] = [
     { label: "Dashboard", href: "/admin/dashboard" },
     { label: "Products", href: "/admin/productmanagement" },
     { label: "Bundles", href: "/admin/bundles" },
-    { label: "Orders", href: "/admin/orders" },
-    { label: "Customers", href: "/admin/customers" },
-    { label: "Promotions", href: "/admin/promotions" },
-    { label: "Analytics", href: "/admin/analytics" },
+    { label: "Upcoming releases", href: "/admin/releasemanagment" },
+    { label: "Orders" },
+    { label: "Customers" },
+    { label: "Promotions" },
+    { label: "Analytics" },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -23,15 +25,21 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 </div>
 
                 <nav>
-                    {navLinks.map((link) => (
-                        <Link key={link.href} href={link.href}>
-                            {link.label}
-                        </Link>
-                    ))}
+                    {navLinks.map((link) =>
+                        link.href ? (
+                            <Link key={link.label} href={link.href}>
+                                {link.label}
+                            </Link>
+                        ) : (
+                            <span key={link.label} aria-disabled="true">
+                                {link.label} (coming soon)
+                            </span>
+                        )
+                    )}
                 </nav>
 
                 <div>
-                    <Link href="/admin/settings">Settings</Link>
+                    <span aria-disabled="true">Settings (coming soon)</span>
                     <p>Sign Out</p>
                 </div>
             </aside>
