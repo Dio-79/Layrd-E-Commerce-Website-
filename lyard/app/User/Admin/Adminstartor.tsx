@@ -10,6 +10,10 @@ export const ADMIN_ROLE: RoleDefinition = {
   home: "/admin",
   permissions: [
     "store:view",
+    "cart:use",
+    "checkout:purchase",
+    "events:preorder",
+    "wholesale:portal", // admins can shop and open the wholesale portal to check every side
     "admin:portal",
     "stock:view",
     "stock:edit",

@@ -62,8 +62,14 @@ const ROLE_PERMISSIONS: Partial<Record<Role, readonly string[]>> = {
     "wholesale:pricing",
     "account:manage",
   ],
+  // Admins can also shop and open the wholesale portal, so one admin login can
+  // check every side of the site.
   admin: [
     "store:view",
+    "cart:use",
+    "checkout:purchase",
+    "events:preorder",
+    "wholesale:portal",
     "admin:portal",
     "stock:view",
     "stock:edit",

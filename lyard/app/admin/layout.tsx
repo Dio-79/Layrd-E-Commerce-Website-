@@ -161,6 +161,15 @@ function AdminShell({ children }: { children: ReactNode }) {
                 </nav>
 
                 <div className="hidden border-t border-[var(--a-gold)]/50 px-3 py-4 md:block">
+                    {/* Jump to the other two sides of the site */}
+                    <Link href="/Mainpage" className="flex items-center gap-3 rounded-sm px-3 py-2 text-sm text-[var(--a-text-2)] hover:bg-[var(--a-hover)] hover:text-[var(--a-gold)]">
+                        <Icon name="orders" />
+                        View shop
+                    </Link>
+                    <Link href="/wholesale" className="flex items-center gap-3 rounded-sm px-3 py-2 text-sm text-[var(--a-text-2)] hover:bg-[var(--a-hover)] hover:text-[var(--a-gold)]">
+                        <Icon name="bundles" />
+                        Wholesale portal
+                    </Link>
                     <span aria-disabled="true" title="Coming soon" className="flex items-center gap-3 px-3 py-2 text-sm text-[var(--a-faint)]">
                         <Icon name="settings" />
                         Settings
