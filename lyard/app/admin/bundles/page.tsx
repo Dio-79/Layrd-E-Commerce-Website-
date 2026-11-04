@@ -45,15 +45,15 @@ export default function BundlesPage() {
                 <div className={ui.card}>
                     <div className="flex items-center justify-between">
                         <p className={ui.eyebrow}>Next Drop</p>
-                        <span className="rounded-full bg-[#e0b43a]/15 px-2.5 py-1 text-xs font-semibold text-[#e0b43a]">PENDING</span>
+                        <span className="rounded-full bg-[var(--a-gold)]/15 px-2.5 py-1 text-xs font-semibold text-[var(--a-gold)]">PENDING</span>
                     </div>
                     <h3 className="mt-2 text-lg font-bold">Pistachio Tiramisu</h3>
-                    <p className="text-sm text-zinc-400">Saturday, Aug. 01, 2026 - 12:00 AM</p>
+                    <p className="text-sm text-[var(--a-muted)]">Saturday, Aug. 01, 2026 - 12:00 AM</p>
                 </div>
                 <div className={ui.card}>
                     <p className={ui.eyebrow}>Scheduling Queue</p>
                     <h3 className="mt-2 text-lg font-bold">3 Upcoming Releases</h3>
-                    <Link href="/admin/releasemanagment" className="text-sm font-semibold text-[#e0b43a] hover:underline">View Calendar</Link>
+                    <Link href="/admin/releasemanagment" className="text-sm font-semibold text-[var(--a-gold)] hover:underline">View Calendar</Link>
                 </div>
             </div>
 
@@ -83,9 +83,9 @@ export default function BundlesPage() {
                         </thead>
                         <tbody>
                             {visible.map((bundle) => (
-                                <tr key={bundle.id} className="hover:bg-white/5">
+                                <tr key={bundle.id} className="hover:bg-[var(--a-hover)]">
                                     <td className={ui.td}><input type="checkbox" className={ui.checkbox} aria-label={`Select ${bundle.name}`} /></td>
-                                    <td className={`${ui.td} text-zinc-400`}>{bundle.id}</td>
+                                    <td className={`${ui.td} text-[var(--a-muted)]`}>{bundle.id}</td>
                                     <td className={ui.td}>
                                         <div className="flex items-center gap-3 font-semibold">
                                             <img src={bundle.imageUrl} alt={bundle.name} className={ui.thumb} onError={showPlaceholder} />
@@ -94,7 +94,7 @@ export default function BundlesPage() {
                                     </td>
                                     <td className={ui.td}>{bundle.type}</td>
                                     <td className={`${ui.td} font-semibold`}>${bundle.basePrice.toFixed(2)}</td>
-                                    <td className={`${ui.td} text-zinc-500`}><s>${bundle.msrp.toFixed(2)}</s></td>
+                                    <td className={`${ui.td} text-[var(--a-faint)]`}><s>${bundle.msrp.toFixed(2)}</s></td>
                                     <td className={ui.td}>
                                         <span className={statusClass(bundle.status)}>
                                             {bundle.status === "In Stock"
@@ -108,7 +108,7 @@ export default function BundlesPage() {
                                 </tr>
                             ))}
                             {visible.length === 0 && (
-                                <tr><td colSpan={8} className={`${ui.td} py-8 text-center text-zinc-400`}>No bundles match your search.</td></tr>
+                                <tr><td colSpan={8} className={`${ui.td} py-8 text-center text-[var(--a-muted)]`}>No bundles match your search.</td></tr>
                             )}
                         </tbody>
                     </table>

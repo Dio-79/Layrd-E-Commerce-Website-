@@ -7,6 +7,39 @@ import { usePathname, useRouter } from 'next/navigation';
 import { Montserrat } from 'next/font/google';
 import { RequireRole } from '@/app/components/RequiredRoles';
 import { useAuth } from '@/app/context/AuthContext';
+import { THEMES, type AdminTheme } from './adminStyles';
+
+// The admin's light/dark choice is remembered in this browser.
+const THEME_KEY = 'layrd-admin-theme';
+const themeListeners = new Set<() => void>();
+
+function readTheme(): AdminTheme {
+    try {
+        return localStorage.getItem(THEME_KEY) === 'light' ? 'light' : 'dark';
+    } catch {
+        return 'dark';
+    }
+}
+
+function saveTheme(theme: AdminTheme) {
+    try {
+        localStorage.setItem(THEME_KEY, theme);
+    } catch {
+        /* storage blocked: the choice just won't be remembered */
+    }
+    themeListeners.forEach((listener) => listener());
+}
+
+function useAdminTheme(): AdminTheme {
+    return React.useSyncExternalStore(
+        (listener) => {
+            themeListeners.add(listener);
+            return () => themeListeners.delete(listener);
+        },
+        readTheme,
+        () => 'dark',
+    );
+}
 
 // Layout follows the team's Figma (low-fi & prototyping > "Admin Dashboard"):
 // dark charcoal, gold accents, icon sidebar, "LÄYRD Admin" top bar.
@@ -27,6 +60,7 @@ const ICONS: Record<string, React.ReactNode> = {
     search: <path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14Zm5-2 4 4" />,
     bell: <path d="M6 16V11a6 6 0 1 1 12 0v5l2 2H4l2-2Zm4 4h4" />,
     moon: <path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5Z" />,
+    sun: <path d="M12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm0-14v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />,
 };
 
 function Icon({ name, className = 'h-5 w-5' }: { name: string; className?: string }) {
@@ -57,7 +91,7 @@ function sectionOf(pathname: string) {
     return pathname;
 }
 
-const GOLD_TEXT = "text-[#e0b43a]";
+const GOLD_TEXT = "text-[var(--a-gold)]";
 
 function AdminShell({ children }: { children: ReactNode }) {
     const pathname = usePathname();
@@ -65,6 +99,8 @@ function AdminShell({ children }: { children: ReactNode }) {
     const { user, signOut } = useAuth();
     const current = sectionOf(pathname);
     const displayName = user?.name || user?.email || "Admin Profile";
+    const theme = useAdminTheme();
+    const nextTheme: AdminTheme = theme === "dark" ? "light" : "dark";
 
     async function handleSignOut() {
         await signOut();
@@ -74,17 +110,21 @@ function AdminShell({ children }: { children: ReactNode }) {
     return (
         // admin container
         <div
-            className={`${montserrat.variable} min-h-screen bg-[#2b2b2b] text-zinc-100 md:flex`}
-            style={{ fontFamily: "var(--font-montserrat), Montserrat, system-ui, sans-serif" }}
+            className={`${montserrat.variable} min-h-screen bg-[var(--a-page)] text-[var(--a-text)] transition-colors md:flex`}
+            style={{
+                ...(THEMES[theme] as React.CSSProperties),
+                colorScheme: theme,
+                fontFamily: "var(--font-montserrat), Montserrat, system-ui, sans-serif",
+            }}
         >
             {/* Sidebar */}
-            <aside className="border-b border-[#e0b43a]/50 bg-[#262626] md:sticky md:top-0 md:flex md:h-screen md:w-60 md:shrink-0 md:flex-col md:border-b-0 md:border-r">
+            <aside className="border-b border-[var(--a-gold)]/50 bg-[var(--a-panel)] md:sticky md:top-0 md:flex md:h-screen md:w-60 md:shrink-0 md:flex-col md:border-b-0 md:border-r">
                 <div className="px-6 pb-4 pt-6">
                     <Link href="/Mainpage" className={`text-2xl font-medium tracking-[.2em] ${GOLD_TEXT}`}>LÄYRD</Link>
-                    <p className="mt-1 text-sm text-zinc-200">Admin Dashboard</p>
+                    <p className="mt-1 text-sm text-[var(--a-text-2)]">Admin Dashboard</p>
                     <Link
                         href="/admin/editproduct"
-                        className="mt-4 flex w-full items-center justify-center rounded-sm bg-[#e0b43a] px-3 py-2 text-xs font-semibold text-black hover:bg-[#ecc65a]"
+                        className="mt-4 flex w-full items-center justify-center rounded-sm bg-[var(--a-gold)] px-3 py-2 text-xs font-semibold text-black hover:bg-[var(--a-gold-hover)]"
                     >
                         + Create New Product
                     </Link>
@@ -98,8 +138,8 @@ function AdminShell({ children }: { children: ReactNode }) {
                                 key={link.label}
                                 href={link.href}
                                 aria-current={active ? "page" : undefined}
-                                className={`flex shrink-0 items-center gap-3 rounded-sm px-3 py-2.5 text-sm transition-colors hover:bg-white/5 ${
-                                    active ? `${GOLD_TEXT} underline underline-offset-4` : "text-zinc-100"
+                                className={`flex shrink-0 items-center gap-3 rounded-sm px-3 py-2.5 text-sm transition-colors hover:bg-[var(--a-hover)] ${
+                                    active ? `${GOLD_TEXT} underline underline-offset-4` : "text-[var(--a-text)]"
                                 }`}
                             >
                                 <Icon name={link.icon} />
@@ -110,25 +150,25 @@ function AdminShell({ children }: { children: ReactNode }) {
                                 key={link.label}
                                 aria-disabled="true"
                                 title="Coming soon"
-                                className="flex shrink-0 items-center gap-3 rounded-sm px-3 py-2.5 text-sm text-zinc-500"
+                                className="flex shrink-0 items-center gap-3 rounded-sm px-3 py-2.5 text-sm text-[var(--a-faint)]"
                             >
                                 <Icon name={link.icon} />
                                 {link.label}
-                                <span className="ml-auto rounded-sm border border-zinc-600 px-1.5 text-[9px] font-semibold uppercase tracking-wide">soon</span>
+                                <span className="ml-auto rounded-sm border border-[var(--a-border)] px-1.5 text-[9px] font-semibold uppercase tracking-wide">soon</span>
                             </span>
                         );
                     })}
                 </nav>
 
-                <div className="hidden border-t border-[#e0b43a]/50 px-3 py-4 md:block">
-                    <span aria-disabled="true" title="Coming soon" className="flex items-center gap-3 px-3 py-2 text-sm text-zinc-500">
+                <div className="hidden border-t border-[var(--a-gold)]/50 px-3 py-4 md:block">
+                    <span aria-disabled="true" title="Coming soon" className="flex items-center gap-3 px-3 py-2 text-sm text-[var(--a-faint)]">
                         <Icon name="settings" />
                         Settings
                     </span>
                     <button
                         type="button"
                         onClick={handleSignOut}
-                        className="w-full px-3 py-2 text-left text-sm font-semibold text-red-400 hover:text-red-300"
+                        className="w-full px-3 py-2 text-left text-sm font-semibold text-[var(--a-danger)] hover:text-[var(--a-danger)]"
                     >
                         Sign Out
                     </button>
@@ -138,25 +178,33 @@ function AdminShell({ children }: { children: ReactNode }) {
             {/* Main area */}
             <div className="min-w-0 flex-1">
                 {/* Top bar */}
-                <header className="grid grid-cols-[1fr_auto] items-center gap-3 border-b border-[#e0b43a]/50 bg-[#262626] px-4 py-3 sm:px-6 lg:grid-cols-[1fr_auto_1fr]">
-                    <label className="flex max-w-xs items-center gap-2 rounded-sm bg-[#3a3a3a] px-3 py-2 text-zinc-400">
+                <header className="grid grid-cols-[1fr_auto] items-center gap-3 border-b border-[var(--a-gold)]/50 bg-[var(--a-panel)] px-4 py-3 sm:px-6 lg:grid-cols-[1fr_auto_1fr]">
+                    <label className="flex max-w-xs items-center gap-2 rounded-sm bg-[var(--a-card)] px-3 py-2 text-[var(--a-muted)]">
                         <Icon name="search" className="h-4 w-4" />
                         <input
                             placeholder="Search orders, customers..."
                             aria-label="Search orders and customers"
-                            className="w-full bg-transparent text-sm text-zinc-100 placeholder:text-zinc-400 focus:outline-none"
+                            className="w-full bg-transparent text-sm text-[var(--a-text)] placeholder:text-[var(--a-muted)] focus:outline-none"
                         />
                     </label>
                     <p className={`hidden text-xl font-semibold tracking-[.18em] lg:block ${GOLD_TEXT}`}>LÄYRD Admin</p>
-                    <div className="flex items-center justify-end gap-4 text-zinc-200">
+                    <div className="flex items-center justify-end gap-4 text-[var(--a-text-2)]">
                         <Icon name="bell" />
-                        <Icon name="moon" />
-                        <span className="hidden h-8 w-px bg-zinc-600 sm:block" />
-                        <span className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-400 text-xs font-semibold">
+                        <button
+                            type="button"
+                            onClick={() => saveTheme(nextTheme)}
+                            aria-label={`Switch to ${nextTheme} mode`}
+                            title={`Switch to ${nextTheme} mode`}
+                            className="rounded-full p-1 hover:bg-[var(--a-hover)] hover:text-[var(--a-gold)]"
+                        >
+                            <Icon name={theme === "dark" ? "moon" : "sun"} />
+                        </button>
+                        <span className="hidden h-8 w-px bg-[var(--a-border)] sm:block" />
+                        <span className="flex h-8 w-8 items-center justify-center rounded-full border border-[var(--a-strong)] text-xs font-semibold">
                             {displayName.charAt(0).toUpperCase()}
                         </span>
                         <span className="hidden text-xs font-semibold sm:block">{displayName}</span>
-                        <button type="button" onClick={handleSignOut} className="text-xs font-semibold text-red-400 md:hidden">
+                        <button type="button" onClick={handleSignOut} className="text-xs font-semibold text-[var(--a-danger)] md:hidden">
                             Sign Out
                         </button>
                     </div>

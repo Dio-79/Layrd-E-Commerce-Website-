@@ -10,9 +10,9 @@ import { ui } from '../adminStyles';
 
 function Stat({ label, value }: { label: string; value: string | number }) {
     return (
-        <div className="rounded-md border border-zinc-600 bg-[#3a3a3a] p-4 shadow-md shadow-black/20">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-200">{label}</p>
-            <p className="mt-2 text-2xl font-semibold text-white">{value}</p>
+        <div className="rounded-md border border-[var(--a-border)] bg-[var(--a-card)] p-4 shadow-md shadow-black/20">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--a-text-2)]">{label}</p>
+            <p className="mt-2 text-2xl font-semibold text-[var(--a-text)]">{value}</p>
         </div>
     );
 }
@@ -21,10 +21,10 @@ const OPEN = ["placed", "pending", "processing"];
 
 function statusColour(status?: string) {
     const s = (status || "").toLowerCase();
-    if (s === "delivered" || s === "completed") return "text-zinc-100 font-semibold";
-    if (s === "cancelled" || s.includes("pending payment")) return "text-red-400";
-    if (OPEN.includes(s)) return "text-[#e0b43a]";
-    return "text-zinc-300";
+    if (s === "delivered" || s === "completed") return "text-[var(--a-text)] font-semibold";
+    if (s === "cancelled" || s.includes("pending payment")) return "text-[var(--a-danger)]";
+    if (OPEN.includes(s)) return "text-[var(--a-gold)]";
+    return "text-[var(--a-text-2)]";
 }
 
 export default function AdminDashboard() {
@@ -55,12 +55,12 @@ export default function AdminDashboard() {
             <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_280px]">
                 <section className={ui.card}>
                     <div className="mb-4 flex items-center justify-between">
-                        <h2 className="text-lg font-semibold tracking-wide text-white">RECENT ORDERS</h2>
-                        <span className="text-xs font-semibold text-zinc-500" title="The orders page is coming soon">VIEW ALL</span>
+                        <h2 className="text-lg font-semibold tracking-wide text-[var(--a-text)]">RECENT ORDERS</h2>
+                        <span className="text-xs font-semibold text-[var(--a-faint)]" title="The orders page is coming soon">VIEW ALL</span>
                     </div>
-                    {orders.loading && <p className="text-sm text-zinc-400">Loading…</p>}
-                    {orders.error && <p className="text-sm text-red-400">{orders.error}</p>}
-                    {orders.items && items.length === 0 && <p className="text-sm text-zinc-400">No orders yet.</p>}
+                    {orders.loading && <p className="text-sm text-[var(--a-muted)]">Loading…</p>}
+                    {orders.error && <p className="text-sm text-[var(--a-danger)]">{orders.error}</p>}
+                    {orders.items && items.length === 0 && <p className="text-sm text-[var(--a-muted)]">No orders yet.</p>}
                     {items.length > 0 && (
                         <div className={ui.tableWrap}>
                             <table className={ui.table}>
@@ -76,7 +76,7 @@ export default function AdminDashboard() {
                                 <tbody>
                                     {items.slice(0, 8).map((o) => (
                                         <tr key={o.orderNumber}>
-                                            <td className={`${ui.td} text-zinc-400`}>{o.orderNumber}</td>
+                                            <td className={`${ui.td} text-[var(--a-muted)]`}>{o.orderNumber}</td>
                                             <td className={ui.td}>{o.customer?.fullName || o.customer?.email || "Guest"}</td>
                                             <td className={ui.td}>{shortDate(o.placedAt ?? o.savedAt)}</td>
                                             <td className={`${ui.td} capitalize ${statusColour(o.status)}`}>{o.status || "—"}</td>
@@ -90,26 +90,26 @@ export default function AdminDashboard() {
                 </section>
 
                 <section className={ui.card}>
-                    <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-white">
-                        <span className="text-red-400" aria-hidden="true">⚠</span> Priority Alerts
+                    <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-[var(--a-text)]">
+                        <span className="text-[var(--a-danger)]" aria-hidden="true">⚠</span> Priority Alerts
                     </h2>
                     <div className="space-y-3">
-                        {orders.loading && <p className="text-sm text-zinc-400">Loading…</p>}
+                        {orders.loading && <p className="text-sm text-[var(--a-muted)]">Loading…</p>}
                         {!orders.loading && openOrders.length === 0 && (
-                            <p className="rounded-sm border border-zinc-600 bg-[#2b2b2b] p-3 text-sm text-zinc-400">Nothing needs attention right now.</p>
+                            <p className="rounded-sm border border-[var(--a-border)] bg-[var(--a-inset)] p-3 text-sm text-[var(--a-muted)]">Nothing needs attention right now.</p>
                         )}
                         {openOrders.slice(0, 4).map((o) => (
-                            <div key={o.orderNumber} className="rounded-sm border border-zinc-600 bg-[#2b2b2b] p-3">
-                                <p className="text-sm font-semibold text-[#e0b43a]">Open order</p>
-                                <p className="mt-1 text-xs text-zinc-300">
+                            <div key={o.orderNumber} className="rounded-sm border border-[var(--a-border)] bg-[var(--a-inset)] p-3">
+                                <p className="text-sm font-semibold text-[var(--a-gold)]">Open order</p>
+                                <p className="mt-1 text-xs text-[var(--a-text-2)]">
                                     {o.orderNumber} from {o.customer?.fullName || o.customer?.email || "a guest"} is still {o.status}.
                                 </p>
                             </div>
                         ))}
-                        <Link href="/admin/releasemanagment" className="block rounded-sm border border-zinc-600 bg-[#2b2b2b] p-3 hover:border-[#e0b43a]">
-                            <p className="text-sm font-semibold text-[#e0b43a]">Upcoming releases</p>
-                            <p className="mt-1 text-xs text-zinc-300">Check drop dates, distribution and marketing.</p>
-                            <p className="mt-1 text-xs font-semibold text-[#e0b43a] underline">Review</p>
+                        <Link href="/admin/releasemanagment" className="block rounded-sm border border-[var(--a-border)] bg-[var(--a-inset)] p-3 hover:border-[var(--a-gold)]">
+                            <p className="text-sm font-semibold text-[var(--a-gold)]">Upcoming releases</p>
+                            <p className="mt-1 text-xs text-[var(--a-text-2)]">Check drop dates, distribution and marketing.</p>
+                            <p className="mt-1 text-xs font-semibold text-[var(--a-gold)] underline">Review</p>
                         </Link>
                     </div>
                 </section>

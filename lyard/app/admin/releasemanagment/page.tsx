@@ -124,14 +124,14 @@ function MonthCalendar({ year, month, highlightedDays }: MonthCalendarProps) {
             <p className="mb-3 text-sm font-bold">{title}</p>
             <div className="grid grid-cols-7 gap-1 text-center text-xs">
                 {WEEKDAYS.map((d) => (
-                    <p key={d} className="py-1 font-semibold text-zinc-500">{d}</p>
+                    <p key={d} className="py-1 font-semibold text-[var(--a-faint)]">{d}</p>
                 ))}
                 {cells.map((day, index) => (
                     <p key={index} className="flex h-8 items-center justify-center">
                         {day !== null && highlightedDays.includes(day) ? (
-                            <mark className="flex h-8 w-8 items-center justify-center rounded-full bg-[#e0b43a] font-bold text-black">{day}</mark>
+                            <mark className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--a-gold)] font-bold text-black">{day}</mark>
                         ) : (
-                            <span className="text-zinc-200">{day}</span>
+                            <span className="text-[var(--a-text-2)]">{day}</span>
                         )}
                     </p>
                 ))}
@@ -181,23 +181,23 @@ export default function ReleaseManagementPage() {
                         <article key={release.id} className={`${ui.card} grid gap-4 sm:grid-cols-[120px_minmax(0,1fr)]`}>
                             <div className="relative">
                                 <img src={release.imageUrl} alt={release.name} className="aspect-square w-full rounded-lg object-cover" onError={showPlaceholder} />
-                                <p className={`absolute left-2 top-2 rounded-full px-2 py-0.5 text-[10px] font-bold ${release.released ? "bg-emerald-600 text-white" : "bg-[#e0b43a] text-black"}`}>{release.badge}</p>
+                                <p className={`absolute left-2 top-2 rounded-full px-2 py-0.5 text-[10px] font-bold ${release.released ? "bg-emerald-600 text-white" : "bg-[var(--a-gold)] text-black"}`}>{release.badge}</p>
                             </div>
 
                             <div className="min-w-0 space-y-3">
                             <div className="flex flex-wrap items-start justify-between gap-3">
                             <div>
-                                <h2 className="text-xl font-medium uppercase tracking-[.18em] text-white">{release.name}</h2>
+                                <h2 className="text-xl font-medium uppercase tracking-[.18em] text-[var(--a-text)]">{release.name}</h2>
                                 {release.sizes.map((s) => (
-                                    <p key={s.size} className="text-sm text-zinc-400">
+                                    <p key={s.size} className="text-sm text-[var(--a-muted)]">
                                         {s.size} - {s.units} units
                                     </p>
                                 ))}
-                                {release.note && <p className="text-sm italic text-zinc-400">{release.note}</p>}
+                                {release.note && <p className="text-sm italic text-[var(--a-muted)]">{release.note}</p>}
                             </div>
 
                             <div className="text-right text-sm uppercase tracking-[.12em]">
-                                <p className="text-base font-medium text-white">
+                                <p className="text-base font-medium text-[var(--a-text)]">
                                     {toDate(release.date).toLocaleDateString("en-US", {
                                         weekday: "long",
                                         month: "short",
@@ -205,12 +205,12 @@ export default function ReleaseManagementPage() {
                                         year: "numeric",
                                     })}
                                 </p>
-                                <p className="text-base text-white">12:00 AM</p>
+                                <p className="text-base text-[var(--a-text)]">12:00 AM</p>
                             </div>
                             </div>
 
                             {!release.released && (
-                                <div className="grid gap-3 border-t border-zinc-700 pt-3 sm:grid-cols-2">
+                                <div className="grid gap-3 border-t border-[var(--a-border)] pt-3 sm:grid-cols-2">
                                     <div>
                                         <p className={`${ui.label} mb-1`}>Distribution</p>
                                         {DISTRIBUTION_OPTIONS.map((option) => (
