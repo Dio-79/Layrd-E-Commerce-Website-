@@ -97,8 +97,9 @@ export default function AnalyticsPage() {
     const valid = useMemo(() => (orders.data?.orders ?? []).filter((o) => o.status !== "cancelled"), [orders.data]);
     const catalog = useMemo(() => new Map((products.data?.products ?? []).map((p) => [String(p.productID), p])), [products.data]);
 
+    // When the page opened; growth compares the 30 days before it with the 30 days before that.
+    const [now] = useState(() => Date.now());
     const stats = useMemo(() => {
-        const now = Date.now();
         const per = new Map<string, { key: string; name: string; units: number; revenue: number; recent: number; before: number; sizes: Map<string, { units: number; revenue: number }> }>();
         const byType = new Map<string, number>();
         const byHour = new Array(24).fill(0);
@@ -128,7 +129,7 @@ export default function AnalyticsPage() {
         const rows = [...per.values()].map((r) => ({ ...r, growth: r.before ? ((r.recent - r.before) / r.before) * 100 : r.recent ? null : 0 }));
         const peakHour = byHour.indexOf(Math.max(...byHour));
         return { rows, byType, revenue, peakHour: valid.length ? peakHour : null };
-    }, [valid, catalog]);
+    }, [valid, catalog, now]);
 
     const points = useMemo(() => {
         const n = RANGES[range];

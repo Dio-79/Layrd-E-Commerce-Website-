@@ -36,6 +36,7 @@ export default function CustomersPage() {
     const [query, setQuery] = useState("");
     const [type, setType] = useState("all");
     const [message, setMessage] = useState("");
+    const [now] = useState(() => Date.now());
 
     const accounts = data?.users ?? [];
     const buyers = accounts.filter((a) => a.orders > 0);
@@ -66,7 +67,7 @@ export default function CustomersPage() {
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 <Stat label="Newsletter subscribers" value={loading ? "…" : data?.newsletterSubscribers ?? 0} />
                 <Stat label="Average spending" value={loading ? "…" : money(average)} />
-                <Stat label="New customers (7 days)" value={loading ? "…" : accounts.filter((a) => Date.now() - Date.parse(a.createdAt) < 7 * 864e5).length} />
+                <Stat label="New customers (7 days)" value={loading ? "…" : accounts.filter((a) => now - Date.parse(a.createdAt) < 7 * 864e5).length} />
                 <Stat label="Active wholesale" value={loading ? "…" : accounts.filter((a) => a.role === "wholesale" && a.active).length} />
             </div>
 

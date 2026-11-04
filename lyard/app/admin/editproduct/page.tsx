@@ -74,7 +74,8 @@ export default function EditProductPage() {
         const raw = new URLSearchParams(window.location.search).get("id");
         const wanted = raw ? Number(raw) : null;
         if (!wanted) {
-            setLoading(false);
+            // New product: nothing to load.
+            Promise.resolve().then(() => setLoading(false));
             return;
         }
         api<{ products: AdminProduct[] }>("/api/products?all=1")

@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/app/context/AuthContext";
 import { CartProvider } from "@/app/context/CartContext";
+import ChatBot from "@/app/components/ChatBot";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,6 +26,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <AuthProvider>
           <CartProvider>{children}</CartProvider>
+          <ChatBot />
         </AuthProvider>
       </body>
     </html>
