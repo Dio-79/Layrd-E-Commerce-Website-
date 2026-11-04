@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import type { Product } from "@/app/types/models";
 import { useCart } from "@/app/context/CartContext";
+import { useCatalog } from "@/lib/catelog/useCatalog";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import styles from "./drinks.module.css";
@@ -10,7 +11,7 @@ import {
   availableOptions,
   EMPTY_FILTERS,
   filterProducts,
-  getProductsBySection,
+  SWEETNESS_LABELS,
   type CatalogProduct,
   type Filters,
 } from "@/lib/catelog/data";
@@ -83,7 +84,8 @@ function ProductCard({ product, onCustomize }: { product: CatalogProduct; onCust
 export default function DrinksPage() {
   const { addItem } = useCart();
 
-  const drinks = useMemo(() => getProductsBySection("drinks"), []);
+  // Includes the admin's changes from Firestore (hidden products drop out)
+  const drinks = useCatalog("drinks");
   const options = useMemo(() => availableOptions(drinks), [drinks]);
 
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
@@ -149,6 +151,7 @@ export default function DrinksPage() {
     { title: "Price", key: "prices", items: options.prices.map((r) => ({ value: r.id, label: r.label })) },
     { title: "Size", key: "sizes", items: options.sizes.map((s) => ({ value: s, label: s })) },
     { title: "Flavor Profile", key: "flavors", items: options.flavors.map((f) => ({ value: f, label: f })) },
+    { title: "Sweetness", key: "sweetness", items: options.sweetness.map((s) => ({ value: s, label: SWEETNESS_LABELS[s] ?? s })) },
   ];
 
   return (

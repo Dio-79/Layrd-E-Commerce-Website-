@@ -47,6 +47,21 @@ export type CatalogProduct = Product & {
   priceRange: PriceRangeId; // filled in automatically from `price`
   sizes: SizeOption[];
   flavors: Flavor[];
+  /** 1 (light) to 5 (very sweet); set by an admin on the Edit Product page */
+  sweetness?: number;
+  allergens?: string[];
+  shelf?: string;
+  stock?: number;
+  featured?: boolean;
+};
+
+/** Labels for the sweetness filter. */
+export const SWEETNESS_LABELS: Record<string, string> = {
+  "1": "1 - Light",
+  "2": "2",
+  "3": "3 - Balanced",
+  "4": "4",
+  "5": "5 - Very sweet",
 };
 
 type RawProduct = Omit<CatalogProduct, "priceRange">;
@@ -249,9 +264,10 @@ export type Filters = {
   prices: PriceRangeId[];
   sizes: SizeOption[];
   flavors: Flavor[];
+  sweetness: string[];
 };
 
-export const EMPTY_FILTERS: Filters = { categories: [], prices: [], sizes: [], flavors: [] };
+export const EMPTY_FILTERS: Filters = { categories: [], prices: [], sizes: [], flavors: [], sweetness: [] };
 
 /** Within one group the choices are "any of" (OR); different groups must all match (AND). */
 export function filterProducts(list: CatalogProduct[], f: Filters): CatalogProduct[] {
@@ -260,6 +276,7 @@ export function filterProducts(list: CatalogProduct[], f: Filters): CatalogProdu
     if (f.sizes.length && !f.sizes.some((s) => p.sizes.includes(s))) return false;
     if (f.flavors.length && !f.flavors.some((fl) => p.flavors.includes(fl))) return false;
     if (f.prices.length && !f.prices.includes(p.priceRange)) return false;
+    if (f.sweetness.length && !f.sweetness.includes(String(p.sweetness ?? ""))) return false;
     return true;
   });
 }
@@ -271,5 +288,6 @@ export function availableOptions(list: CatalogProduct[]) {
     prices: PRICE_RANGES.filter((r) => list.some((p) => p.priceRange === r.id)),
     sizes: SIZES.filter((s) => list.some((p) => p.sizes.includes(s))),
     flavors: FLAVORS.filter((fl) => list.some((p) => p.flavors.includes(fl))),
+    sweetness: ["1", "2", "3", "4", "5"].filter((s) => list.some((p) => String(p.sweetness ?? "") === s)),
   };
 }

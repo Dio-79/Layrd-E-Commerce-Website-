@@ -47,4 +47,6 @@ export const COLLECTIONS = {
   newsletter: "newsletter",
   contactMessages: "contactMessages",
   refundRequests: "refundRequests",
+  categories: "categories",
+  coupons: "coupons",
 } as const;

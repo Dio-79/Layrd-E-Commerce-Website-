@@ -3,9 +3,11 @@
 import type { NextRequest } from "next/server";
 import { adminDb, COLLECTIONS } from "@/lib/firebase/admin";
 import { getSessionUser, type SessionUser } from "@/lib/server/session";
-import { calculateTotals, findPromo, type Totals } from "@/lib/check-out/CheckoutPricing";
+import { calculateTotals, type Totals } from "@/lib/check-out/CheckoutPricing";
 import { getSizes } from "@/lib/catelog/dataSize";
 import type { OrderLine, PlacedOrder } from "@/lib/check-out/checkoutStore";
+import { takeStock } from "@/lib/server/stock";
+import { lookupPromo, countCouponUse } from "@/lib/server/coupons";
 
 export const ORDER_NUMBER = /^LYD-[A-Z0-9]+$/;
 
@@ -83,7 +85,8 @@ export async function priceOrder(order: PlacedOrder): Promise<PlacedOrder> {
   const delivering = order.delivery?.method === "ship";
   const requested = Number(order.totals?.shipping ?? 0);
   const shipping = delivering ? Math.min(Math.max(requested || 0, 0), MAX_SHIPPING) : 0;
-  const promo = order.promoCode ? findPromo(order.promoCode) : null;
+  const subtotal = lines.reduce((sum, l) => sum + l.unitPrice * l.quantity, 0);
+  const promo = order.promoCode ? await lookupPromo(order.promoCode, subtotal) : null;
   if (order.promoCode && !promo) throw new OrderError("That promo code isn't valid.");
 
   const totals: Totals = calculateTotals(lines, shipping, promo);
@@ -111,6 +114,8 @@ export async function saveOrder(order: PlacedOrder, extra: Record<string, unknow
       if ((await tx.get(ref)).exists) throw new OrderError("That order was already saved.", 409);
       tx.set(ref, { ...order, status: "placed", ...extra, savedAt: new Date().toISOString() });
     });
+    await takeStock(order.lines);
+    if (order.promoCode) await countCouponUse(order.promoCode);
   } catch (err) {
     if (err instanceof OrderError) throw err;
     console.error("saving order failed:", err);

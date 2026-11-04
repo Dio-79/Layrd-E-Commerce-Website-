@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
@@ -12,11 +12,11 @@ import { ROUTES } from "@/lib/Routes/Routes";
 import { removeEventOrder, useCheckout } from "@/lib/check-out/checkoutStore";
 import {
   calculateTotals,
-  findPromo,
   formatDate,
   formatMoney,
   type PromoCode,
 } from "@/lib/check-out/CheckoutPricing";
+import { checkPromo } from "@/lib/check-out/checkPromo";
 
 export default function CartPage() {
   const { increaseQuantity, decreaseQuantity, removeItem } = useCart();
@@ -28,17 +28,28 @@ export default function CartPage() {
   const [appliedPromo, setAppliedPromo] = useState<PromoCode | null>(null);
   const [promoMessage, setPromoMessage] = useState("");
 
-  const storedPromo = useMemo(() => (promoCode ? findPromo(promoCode) : null), [promoCode]);
+  // A code saved earlier (e.g. at checkout) is checked with the server again.
+  const [storedPromo, setStoredPromo] = useState<PromoCode | null>(null);
+  useEffect(() => {
+    if (!promoCode) return;
+    let live = true;
+    checkPromo(promoCode, calculateTotals(lines, null, null).subtotal).then((r) => {
+      if (live) setStoredPromo("promo" in r ? r.promo : null);
+    });
+    return () => {
+      live = false;
+    };
+  }, [promoCode, lines]);
   const promo = appliedPromo ?? storedPromo;
 
-  const applyPromo = () => {
-    const found = findPromo(promoInput);
-    if (found) {
-      setAppliedPromo(found);
-      setPromoMessage(`${found.code} applied (${found.label})`);
+  const applyPromo = async () => {
+    const result = await checkPromo(promoInput, calculateTotals(lines, null, null).subtotal);
+    if ("promo" in result) {
+      setAppliedPromo(result.promo);
+      setPromoMessage(`${result.promo.code} applied (${result.promo.label})`);
     } else {
       setAppliedPromo(null);
-      setPromoMessage(promoInput.trim() ? "That promo code isn't valid." : "Enter a promo code.");
+      setPromoMessage(result.error);
     }
   };
 

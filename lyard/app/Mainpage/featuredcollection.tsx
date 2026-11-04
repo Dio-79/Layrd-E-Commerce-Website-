@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { products, type CatalogProduct } from "@/lib/catelog/data";
+import { type CatalogProduct } from "@/lib/catelog/data";
+import { useCatalog } from "@/lib/catelog/useCatalog";
 import CustomizeModal from "@/app/components/Customizemodal";
 import { toCustomizable } from "@/app/components/toCustomizable";
 import styles from "./ProductGrid.module.css";
@@ -51,6 +52,9 @@ function ProductCard({ product, onCustomize }: ProductCardProps) {
 
 export default function ProductRow() {
   const [selected, setSelected] = useState<CatalogProduct | null>(null);
+  // Products an admin ticked "Highlight on Home Page" come first.
+  const all = useCatalog();
+  const products = [...all.filter((p) => p.featured), ...all.filter((p) => !p.featured)];
 
   return (
     <div className={styles.container}>

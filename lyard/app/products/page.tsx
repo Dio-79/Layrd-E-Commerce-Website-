@@ -6,11 +6,11 @@ import {
   availableOptions,
   EMPTY_FILTERS,
   filterProducts,
-  getProductsBySection,
   SECTIONS,
   type CatalogProduct,
   type Filters,
 } from "@/lib/catelog/data";
+import { useCatalog } from "@/lib/catelog/useCatalog";
 import CustomizeModal from "@/app/components/Customizemodal";
 import { toCustomizable } from "@/app/components/toCustomizable";
 import Header from "../components/Header";
@@ -22,7 +22,6 @@ import { sortProducts, type SortOption } from "./sortProducts";
 
 // Loads the Montserrat font and exposes it as --font-montserrat (the CSS reads that variable)
 // This is the Cake-in-a-Can page; drinks have their own page (/Drinks).
-const cakes = getProductsBySection("cake-in-a-can");
 
 const montserrat = Montserrat({ subsets: ["latin"], variable: "--font-montserrat" });
 
@@ -68,7 +67,9 @@ function ProductCard({ product, onCustomize }: { product: CatalogProduct; onCust
 
 export default function ProductsPage() {
   // Only the filter options that actually exist in the product data
-  const options = useMemo(() => availableOptions(cakes), []);
+  // Includes the admin's changes from Firestore (hidden products drop out)
+  const cakes = useCatalog("cake-in-a-can");
+  const options = useMemo(() => availableOptions(cakes), [cakes]);
 
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
   const [minPrice, setMinPrice] = useState("");
@@ -81,7 +82,7 @@ export default function ProductsPage() {
     const max = maxPrice === "" ? Infinity : Number(maxPrice);
     const filtered = filterProducts(cakes, filters).filter((p) => p.price >= min && p.price <= max);
     return sortProducts(filtered, sortBy);
-  }, [filters, minPrice, maxPrice, sortBy]);
+  }, [cakes, filters, minPrice, maxPrice, sortBy]);
 
   const toggle = (key: keyof Filters, value: string) =>
     setFilters((f) => {
