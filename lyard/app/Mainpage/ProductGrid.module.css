@@ -2,6 +2,10 @@
 .container {
   max-width: 1440px; 
   width: 100%;
+  /* Fill the whole featured row and let the cards scroll inside it on phones,
+     instead of pushing the page wider than the screen. */
+  grid-column: 1 / -1;
+  min-width: 0;
   margin: 0 auto;
   padding: 40px 24px; 
   font-family: Montserrat, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;

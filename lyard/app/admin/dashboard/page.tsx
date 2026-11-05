@@ -90,7 +90,7 @@ export default function AdminDashboard() {
                 <Stat label="Active wholesale" value={users.loading ? "…" : accounts.filter((u) => u.role === "wholesale").length} />
             </div>
 
-            <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_300px]">
+            <div className="grid gap-5 2xl:grid-cols-[minmax(0,1fr)_300px]">
                 <section className={ui.card}>
                     <div className="mb-4 flex items-center justify-between">
                         <h2 className="text-lg font-semibold tracking-wide text-[var(--a-text)]">RECENT ORDERS</h2>
