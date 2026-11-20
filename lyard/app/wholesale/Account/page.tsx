@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useAuth } from "@/app/context/AuthContext";
 import { PageHeading, Panel, buttonStyle } from "@/app/portal-ui/PortalUI";
+import TaxExemptionPanel from "./TaxExemptionPanel";
 
 export default function WholesaleAccount() {
   const { user } = useAuth();
@@ -17,6 +18,7 @@ export default function WholesaleAccount() {
       <Panel title="Wholesale business profile"><p className="text-sm text-zinc-600">Business name, delivery addresses, invoice preferences, and notification settings will be available here once the wholesale account API supports them.</p>
         <div className="mt-5 rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-4 text-sm text-zinc-500">No wholesale business profile connected yet.</div>
       </Panel>
+      <div className="lg:col-span-2"><TaxExemptionPanel /></div>
     </div>
   </>;
 }

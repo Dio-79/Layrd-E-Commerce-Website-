@@ -3,6 +3,7 @@
 import { Fragment, useMemo, useState } from 'react';
 import { ui, statusClass } from '../adminStyles';
 import { money, stockStatus, useApi, type AdminProduct } from '../adminApi';
+import ReportsPanel from './ReportsPanel';
 
 // Analytics (Figma "Analytics", FR-16): revenue trend, best sellers, sales by
 // type, peak sale times and a per-product table with a size breakdown.
@@ -181,6 +182,8 @@ export default function AnalyticsPage() {
                 <Stat label="Most units sold" value={loading ? "…" : mostUnits ? mostUnits.name : "—"} sub={mostUnits ? `${mostUnits.units} units` : undefined} />
                 <Stat label="Peak sale time" value={loading ? "…" : stats.peakHour === null ? "—" : `${hourText(stats.peakHour)}–${hourText((stats.peakHour + 1) % 24)}`} />
             </div>
+
+            <ReportsPanel />
 
             <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
                 <section className={ui.card}>

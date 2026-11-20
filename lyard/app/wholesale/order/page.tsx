@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { DataState, PageHeading, Panel, inputStyle, buttonStyle } from "@/app/portal-ui/PortalUI";
 import { usePortalList, type PortalProduct, currency } from "@/app/portal-ui/usePortalData";
@@ -18,8 +18,17 @@ export default function BulkOrderBuilder() {
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState<{ ok: boolean; text: string; orderNumber?: string } | null>(null);
 
+  // Approved tax exemption document (story 8): no GST
+  const [taxExempt, setTaxExempt] = useState(false);
+  useEffect(() => {
+    fetch("/api/wholesale/tax-exemption", { credentials: "include", cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { const t = d?.taxExemption; setTaxExempt(t?.status === "approved" && (!t.expiresOn || t.expiresOn >= new Date().toISOString().slice(0, 10))); })
+      .catch(() => {});
+  }, []);
+
   const selected = useMemo(() => (items ?? []).filter((p) => (counts[p.productID] || 0) > 0), [items, counts]);
-  const totals = wholesaleTotals(selected.map((p) => ({ unitPrice: p.price, quantity: counts[p.productID] })));
+  const totals = wholesaleTotals(selected.map((p) => ({ unitPrice: p.price, quantity: counts[p.productID] })), { taxExempt });
   const tier = tierFor(totals.units);
   const next = nextTier(totals.units);
   const enough = totals.units >= MIN_WHOLESALE_UNITS;
@@ -71,7 +80,7 @@ export default function BulkOrderBuilder() {
         <div className="space-y-1 border-t border-zinc-200 pt-3 text-sm">
           <div className="flex justify-between"><span>Subtotal</span><span>{currency(totals.subtotal)}</span></div>
           <div className="flex justify-between text-green-700"><span>Tier discount{tier ? ` (${Math.round(tier.discount * 100)}%)` : ""}</span><span>−{currency(totals.discount)}</span></div>
-          <div className="flex justify-between"><span>GST</span><span>{currency(totals.tax)}</span></div>
+          <div className="flex justify-between"><span>GST{taxExempt ? " (tax exempt)" : ""}</span><span>{currency(totals.tax)}</span></div>
           <div className="flex justify-between text-base font-bold"><span>Total</span><span>{currency(totals.total)}</span></div>
         </div>
         {!enough && totals.units > 0 && <p className="mt-2 text-xs text-amber-700">Add {MIN_WHOLESALE_UNITS - totals.units} more units to reach the minimum.</p>}
@@ -91,7 +100,7 @@ export default function BulkOrderBuilder() {
         <button type="button" disabled={!enough || sending} onClick={submit} className={`${buttonStyle} mt-4 w-full disabled:cursor-not-allowed disabled:bg-zinc-300 disabled:text-zinc-700`}>
           {sending ? "Placing order…" : recurringWeeks ? "Start recurring order" : "Place order"}
         </button>
-        <p className="mt-2 text-xs text-zinc-500">Paid by invoice. Prices are checked again on our side when you place the order.</p>
+        <p className="mt-2 text-xs text-zinc-500">Need a bigger or custom order? <Link className="underline" href="/wholesale/quotes">Ask for a custom quote</Link>. Paid by invoice. Prices are checked again on our side when you place the order.</p>
       </Panel></div>
     </div>}
   </>;

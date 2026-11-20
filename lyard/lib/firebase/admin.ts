@@ -49,4 +49,7 @@ export const COLLECTIONS = {
   refundRequests: "refundRequests",
   categories: "categories",
   coupons: "coupons",
+  reviews: "reviews",
+  quoteRequests: "quoteRequests",
+  taxDocuments: "taxDocuments",
 } as const;

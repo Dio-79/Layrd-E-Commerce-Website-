@@ -610,3 +610,7 @@
     aspect-ratio: 1 / 1;
   }
 }
+/* Reviews in the drink popup (story 5) */
+.reviewsBox {
+  margin: 1rem 0;
+}

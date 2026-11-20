@@ -101,6 +101,7 @@ export default function EditProductPage() {
             name: p.name,
             description: p.description ?? "",
             price: Number(p.price),
+            ingredientCost: Number(p.ingredientCost ?? 0),
             category: p.categories?.[0],
             imageUrl: p.imageUrl ?? "",
             tag: p.tag ?? "",
@@ -196,10 +197,17 @@ export default function EditProductPage() {
 
                     <section className={ui.card}>
                         <h2 className={ui.h2}>Pricing &amp; Inventory</h2>
-                        <label className={`${ui.label} max-w-xs`}>
-                            Base price ($)
-                            <input className={ui.input} inputMode="decimal" value={String(p.price ?? "")} onChange={(e) => set("price", e.target.value as unknown as number)} />
-                        </label>
+                        <div className="grid max-w-xl gap-4 sm:grid-cols-2">
+                            <label className={ui.label}>
+                                Base price ($)
+                                <input className={ui.input} inputMode="decimal" value={String(p.price ?? "")} onChange={(e) => set("price", e.target.value as unknown as number)} />
+                            </label>
+                            <label className={ui.label}>
+                                Ingredient cost per unit ($)
+                                <input className={ui.input} inputMode="decimal" value={String(p.ingredientCost ?? "")} placeholder="0.00" onChange={(e) => set("ingredientCost", e.target.value as unknown as number)} />
+                            </label>
+                        </div>
+                        <p className="mt-1 text-xs text-[var(--a-faint)]">What the ingredients and packaging cost to make one. Used for the profit report on Analytics.</p>
 
                         <h3 className={ui.h3}>Size &amp; Pricing</h3>
                         {sizes && sizes.length > 0 ? (

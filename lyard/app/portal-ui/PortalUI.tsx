@@ -10,6 +10,7 @@ const menus = {
     { href: "/wholesale/dashboard", label: "Dashboard" },
     { href: "/wholesale/catalog", label: "Catalog" },
     { href: "/wholesale/order", label: "Bulk order" },
+    { href: "/wholesale/quotes", label: "Custom quotes" },
     { href: "/wholesale/history", label: "Order history" },
     { href: "/wholesale/Account", label: "Account" },
   ],

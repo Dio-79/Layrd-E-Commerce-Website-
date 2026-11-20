@@ -30,12 +30,17 @@ export function nextTier(units: number) {
   return next ? { ...next, unitsToGo: next.minUnits - units } : null;
 }
 
-export function wholesaleTotals(lines: { unitPrice: number; quantity: number }[]) {
+/**
+ * Order totals with the tier discount. `taxExempt` (an approved tax exemption
+ * document, story 8) drops the GST; `noTier` is for agreed quote prices,
+ * which already include any discount.
+ */
+export function wholesaleTotals(lines: { unitPrice: number; quantity: number }[], opts: { taxExempt?: boolean; noTier?: boolean } = {}) {
   const units = lines.reduce((s, l) => s + l.quantity, 0);
   const subtotal = round(lines.reduce((s, l) => s + l.unitPrice * l.quantity, 0));
-  const tier = tierFor(units);
+  const tier = opts.noTier ? null : tierFor(units);
   const discount = round(subtotal * (tier?.discount ?? 0));
-  const tax = round((subtotal - discount) * WHOLESALE_TAX_RATE);
+  const tax = opts.taxExempt ? 0 : round((subtotal - discount) * WHOLESALE_TAX_RATE);
   const total = round(subtotal - discount + tax);
   return { units, subtotal, discountRate: tier?.discount ?? 0, discount, tax, total };
 }

@@ -50,6 +50,8 @@ export interface AdminProduct {
   productID: number;
   name: string;
   price: number;
+  /** Ingredient cost to make one unit (admin only) */
+  ingredientCost?: number;
   description?: string;
   imageUrl?: string;
   tag?: string;

@@ -15,6 +15,9 @@ import CustomizeModal from "@/app/components/Customizemodal";
 import { toCustomizable } from "@/app/components/toCustomizable";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import { StarSummary } from "@/app/components/ProductReviews";
+import { useRatings } from "@/lib/reviews/useRatings";
+import type { RatingSummary } from "@/lib/reviews/reviews";
 import styles from "./mainpage.module.css";
 import Sidebar from "./sidebar";
 import CatalogHeader from "./sorting";
@@ -29,7 +32,7 @@ const montserrat = Montserrat({ subsets: ["latin"], variable: "--font-montserrat
 /* Product card                                                        */
 /* ------------------------------------------------------------------ */
 
-function ProductCard({ product, onCustomize }: { product: CatalogProduct; onCustomize: (p: CatalogProduct) => void }) {
+function ProductCard({ product, rating, onCustomize }: { product: CatalogProduct; rating?: RatingSummary; onCustomize: (p: CatalogProduct) => void }) {
   return (
     <div className={styles.card}>
       <div className={styles.imageWrapper}>
@@ -44,6 +47,7 @@ function ProductCard({ product, onCustomize }: { product: CatalogProduct; onCust
 
       <div className={styles.content}>
         <h3 className={styles.productName}>{product.name}</h3>
+        <StarSummary average={rating?.average ?? 0} count={rating?.count ?? 0} />
         <p className={styles.description}>{product.description}</p>
       </div>
 
@@ -69,6 +73,7 @@ export default function ProductsPage() {
   // Only the filter options that actually exist in the product data
   // Includes the admin's changes from Firestore (hidden products drop out)
   const cakes = useCatalog("cake-in-a-can");
+  const ratings = useRatings();
   const options = useMemo(() => availableOptions(cakes), [cakes]);
 
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
@@ -125,7 +130,7 @@ export default function ProductsPage() {
           {visible.length === 0 ? (
             <p className={styles.emptyMsg}>No products match those filters.</p>
           ) : (
-            visible.map((item) => <ProductCard key={item.productID} product={item} onCustomize={setSelected} />)
+            visible.map((item) => <ProductCard key={item.productID} product={item} rating={ratings[String(item.productID)]} onCustomize={setSelected} />)
           )}
         </div>
 

@@ -56,6 +56,8 @@ const ICONS: Record<string, React.ReactNode> = {
     customers: <path d="M3 5h18v14H3V5Zm4 4h4v4H7V9Zm7 0h4m-4 4h4" />,
     promotions: <path d="M3 12V4h8l10 10-8 8L3 12Zm5-4h.01" />,
     analytics: <path d="M4 20V10m6 10V4m6 16v-7m4 7H2" />,
+    wholesale: <path d="M7 3h7l5 5v13H7V3Zm7 0v5h5M10 13h6m-6 4h6" />,
+    reviews: <path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9L12 3Z" />,
     settings: <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm7.4-3a7.4 7.4 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 0 0-2-1.2L14.5 3h-5l-.4 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6a7.4 7.4 0 0 0 0 2.4l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 2 1.2l.4 2.6h5l.4-2.6a7 7 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6c.1-.4.1-.8.1-1.2Z" />,
     search: <path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14Zm5-2 4 4" />,
     bell: <path d="M6 16V11a6 6 0 1 1 12 0v5l2 2H4l2-2Zm4 4h4" />,
@@ -79,6 +81,8 @@ const navLinks: { label: string; icon: string; href?: string }[] = [
     { label: "Releases", icon: "releases", href: "/admin/releasemanagment" },
     { label: "Orders", icon: "orders", href: "/admin/orders" },
     { label: "Customers", icon: "customers", href: "/admin/customers" },
+    { label: "Wholesale", icon: "wholesale", href: "/admin/wholesale" },
+    { label: "Reviews", icon: "reviews", href: "/admin/reviews" },
     { label: "Promotions", icon: "promotions", href: "/admin/promotions" },
     { label: "Analytics", icon: "analytics", href: "/admin/analytics" },
 ];

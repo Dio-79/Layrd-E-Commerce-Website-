@@ -8,6 +8,7 @@ import { adminDb, COLLECTIONS } from "@/lib/firebase/admin";
 import { getSessionUser } from "@/lib/server/session";
 import { fail, readJson, text } from "@/lib/server/forms";
 import { takeStock } from "@/lib/server/stock";
+import { isTaxExempt } from "@/lib/server/taxExempt";
 import { MIN_WHOLESALE_UNITS, RECURRING_OPTIONS, wholesaleTotals } from "@/lib/wholesale/tiers";
 
 export const runtime = "nodejs";
@@ -38,7 +39,9 @@ export async function POST(req: NextRequest) {
     lines.push({ productId: Number(snap.id), name: String(p.name), quantity: wanted.get(Number(snap.id)) ?? 0, unitPrice: p.price });
   }
 
-  const totals = wholesaleTotals(lines);
+  // An approved tax exemption document drops the GST (story 8)
+  const taxExempt = await isTaxExempt(user.id);
+  const totals = wholesaleTotals(lines, { taxExempt });
   if (totals.units < MIN_WHOLESALE_UNITS) return fail(`Wholesale orders start at ${MIN_WHOLESALE_UNITS} units.`);
 
   const recurringWeeks = Number(body?.recurringWeeks ?? 0);
@@ -59,6 +62,7 @@ export async function POST(req: NextRequest) {
     lines,
     totals: { itemCount: totals.units, originalSubtotal: totals.subtotal, subtotal: totals.subtotal, discount: totals.discount, shipping: 0, tax: totals.tax, total: totals.total },
     discountRate: totals.discountRate,
+    taxExempt,
     delivery: { method, address: method === "ship" ? address : "" },
     notes: text(body?.notes, 1000),
     recurring: recurringWeeks ? { everyWeeks: recurringWeeks, nextDate: next, active: true } : null,

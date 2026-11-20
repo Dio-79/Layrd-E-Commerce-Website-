@@ -23,6 +23,8 @@ function fields(body: Record<string, unknown>) {
     name: str(body.name, 80) || undefined,
     description: str(body.description, 2000),
     price,
+    // Ingredient cost to make one unit, for the cost and profit report (story 3)
+    ingredientCost: num(body.ingredientCost, 0, 10_000),
     priceRange: price === undefined ? undefined : getPriceRangeId(price),
     tag: str(body.tag, 30),
     imageUrl: str(body.imageUrl, 300),

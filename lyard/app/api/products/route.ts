@@ -22,9 +22,14 @@ export async function GET(req?: NextRequest) {
     if (isAdmin) return NextResponse.json({ products: all, categories: cats.docs.map((d) => d.data()) });
 
     const hiddenCats = new Set(cats.docs.map((d) => d.data()).filter((c) => c.visible === false).map((c) => c.name));
-    const products = all.filter(
-      (p) => p.hidden !== true && !(Array.isArray(p.categories) && p.categories.some((c: string) => hiddenCats.has(c)))
-    );
+    const products = all
+      .filter((p) => p.hidden !== true && !(Array.isArray(p.categories) && p.categories.some((c: string) => hiddenCats.has(c))))
+      // Ingredient cost is admin-only (cost and profit report)
+      .map((p) => {
+        const shown = { ...p };
+        delete shown.ingredientCost;
+        return shown;
+      });
     return NextResponse.json({ products });
   } catch (err) {
     console.error("products GET failed:", err);
