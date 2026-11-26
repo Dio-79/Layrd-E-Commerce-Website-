@@ -3,14 +3,18 @@
 import { useMemo, useState } from "react";
 import type { Product } from "@/app/types/models";
 import { useCart } from "@/app/context/CartContext";
+import { useCatalog } from "@/lib/catelog/useCatalog";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import ProductReviews, { StarSummary } from "@/app/components/ProductReviews";
+import { useRatings } from "@/lib/reviews/useRatings";
+import type { RatingSummary } from "@/lib/reviews/reviews";
 import styles from "./drinks.module.css";
 import {
   availableOptions,
   EMPTY_FILTERS,
   filterProducts,
-  getProductsBySection,
+  SWEETNESS_LABELS,
   type CatalogProduct,
   type Filters,
 } from "@/lib/catelog/data";
@@ -45,7 +49,7 @@ function sortProducts(list: CatalogProduct[], sortBy: SortOption): CatalogProduc
 /* Product card                                                        */
 /* ------------------------------------------------------------------ */
 
-function ProductCard({ product, onCustomize }: { product: CatalogProduct; onCustomize: (p: CatalogProduct) => void }) {
+function ProductCard({ product, rating, onCustomize }: { product: CatalogProduct; rating?: RatingSummary; onCustomize: (p: CatalogProduct) => void }) {
   return (
     <div className={styles.card}>
       <div className={styles.imageWrapper}>
@@ -60,6 +64,7 @@ function ProductCard({ product, onCustomize }: { product: CatalogProduct; onCust
 
       <div className={styles.content}>
         <h3 className={styles.productName}>{product.name}</h3>
+        <StarSummary average={rating?.average ?? 0} count={rating?.count ?? 0} />
         <p className={styles.description}>{product.description}</p>
       </div>
 
@@ -83,7 +88,9 @@ function ProductCard({ product, onCustomize }: { product: CatalogProduct; onCust
 export default function DrinksPage() {
   const { addItem } = useCart();
 
-  const drinks = useMemo(() => getProductsBySection("drinks"), []);
+  // Includes the admin's changes from Firestore (hidden products drop out)
+  const drinks = useCatalog("drinks");
+  const ratings = useRatings();
   const options = useMemo(() => availableOptions(drinks), [drinks]);
 
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
@@ -149,6 +156,7 @@ export default function DrinksPage() {
     { title: "Price", key: "prices", items: options.prices.map((r) => ({ value: r.id, label: r.label })) },
     { title: "Size", key: "sizes", items: options.sizes.map((s) => ({ value: s, label: s })) },
     { title: "Flavor Profile", key: "flavors", items: options.flavors.map((f) => ({ value: f, label: f })) },
+    { title: "Sweetness", key: "sweetness", items: options.sweetness.map((s) => ({ value: s, label: SWEETNESS_LABELS[s] ?? s })) },
   ];
 
   return (
@@ -234,7 +242,7 @@ export default function DrinksPage() {
           {visible.length === 0 ? (
             <p className={styles.emptyMsg}>No drinks match those filters.</p>
           ) : (
-            visible.map((item) => <ProductCard key={item.productID} product={item} onCustomize={openModal} />)
+            visible.map((item) => <ProductCard key={item.productID} product={item} rating={ratings[String(item.productID)]} onCustomize={openModal} />)
           )}
         </div>
 
@@ -304,6 +312,10 @@ export default function DrinksPage() {
                 </div>
 
                 <hr className={styles.modalDivider} />
+
+                <div className={styles.reviewsBox}>
+                  <ProductReviews productId={Number(selected.productID)} />
+                </div>
 
                 <div className={styles.productMetaNotes}>
                   {allergenInfo && allergenInfo.allergens.length > 0 && (

@@ -8,8 +8,8 @@ const ALIASES: Record<string, string> = {
   "/cart": "/Cart", // ROUTES.cart, checkout's "Return to Cart"
   "/drinks": "/Drinks", // ROUTES.drinks (header "Drinks" link)
   "/order-confirmation": "/OrderConfirmation", // where checkout goes after placing an order
-  "/admin": "/User/Admin", // admin role's home page
-  "/wholesale": "/User/WholesSale", // wholesale role's home page and "Apply for Wholesale"
+  "/admin": "/admin/dashboard", // admin portal (Jordi's admin pages)
+  "/wholesale": "/wholesale/dashboard", // wholesale portal (Neil's portal pages)
 };
 
 export function proxy(request: NextRequest) {

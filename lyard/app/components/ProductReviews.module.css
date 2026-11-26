@@ -1,0 +1,27 @@
+/* Product reviews (MVP story 5) */
+.wrap { display: grid; gap: 0.75rem; }
+.head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0.5rem; }
+.title { margin: 0; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+.stars { color: #c9a227; letter-spacing: 0.05em; }
+.summarySmall { font-size: 0.8rem; color: #555; }
+.form { display: grid; gap: 0.5rem; padding: 0.75rem; border: 1px solid #e5e0d6; border-radius: 0.5rem; background: #fbfaf7; }
+.picker { display: flex; align-items: center; gap: 0.15rem; }
+.star { border: 0; background: none; padding: 0 0.1rem; font-size: 1.5rem; line-height: 1; color: #d6d0c4; cursor: pointer; }
+.starOn { color: #c9a227; }
+.star:focus-visible, .submit:focus-visible, .linkBtn:focus-visible { outline: 2px solid #1f5fbf; outline-offset: 2px; }
+.pickerText { margin-left: 0.5rem; font-size: 0.75rem; color: #666; }
+.textarea { width: 100%; padding: 0.5rem; border: 1px solid #cfc8bb; border-radius: 0.35rem; font: inherit; font-size: 0.85rem; resize: vertical; }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; }
+.submit { padding: 0.45rem 1rem; border: 1px solid #1a1a1a; background: #1a1a1a; color: #fff; font: inherit; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; }
+.submit:disabled { opacity: 0.6; cursor: default; }
+.linkBtn { border: 0; background: none; padding: 0; color: #a33; font: inherit; font-size: 0.8rem; text-decoration: underline; cursor: pointer; }
+.message { font-size: 0.8rem; color: #2e7d4f; }
+.error { margin: 0; font-size: 0.8rem; color: #b42318; }
+.muted { margin: 0; font-size: 0.85rem; color: #666; }
+.link { color: inherit; font-weight: 700; text-decoration: underline; }
+.list { display: grid; gap: 0.6rem; margin: 0; padding: 0; list-style: none; max-height: 16rem; overflow-y: auto; }
+.item { padding-bottom: 0.6rem; border-bottom: 1px solid #eee8dd; }
+.itemHead { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; font-size: 0.85rem; }
+.badge { padding: 0.05rem 0.45rem; border-radius: 999px; background: #eef8f0; border: 1px solid #9fd1ab; color: #1e4d31; font-size: 0.7rem; font-weight: 600; }
+.date { margin-left: auto; font-size: 0.75rem; color: #888; }
+.comment { margin: 0.3rem 0 0; font-size: 0.85rem; line-height: 1.45; white-space: pre-line; overflow-wrap: anywhere; }

@@ -1,6 +1,6 @@
 "use client";
 
-import type { availableOptions, Filters } from "@/lib/catelog/data";
+import { SWEETNESS_LABELS, type availableOptions, type Filters } from "@/lib/catelog/data";
 import styles from "./sidebar.module.css";
 
 type Options = ReturnType<typeof availableOptions>;
@@ -30,6 +30,7 @@ export default function Sidebar({
     { title: "Price", key: "prices", items: options.prices.map((r) => ({ value: r.id, label: r.label })) },
     { title: "Size", key: "sizes", items: options.sizes.map((s) => ({ value: s, label: s })) },
     { title: "Flavor Profile", key: "flavors", items: options.flavors.map((f) => ({ value: f, label: f })) },
+    { title: "Sweetness", key: "sweetness", items: options.sweetness.map((s) => ({ value: s, label: SWEETNESS_LABELS[s] ?? s })) },
   ];
 
   return (

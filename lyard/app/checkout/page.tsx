@@ -32,7 +32,8 @@ import {
 import { useCart } from "@/app/context/CartContext";
 import { cartItemToLine } from "@/lib/check-out/CartLine";
 import { ROUTES } from "@/lib/Routes/Routes";
-import { calculateTotals, findPromo, formatDate, formatMoney, type PromoCode } from "@/lib/check-out/CheckoutPricing";
+import { calculateTotals, formatDate, formatMoney, type PromoCode } from "@/lib/check-out/CheckoutPricing";
+import { checkPromo } from "@/lib/check-out/checkPromo";
 import {
   createDelivery,
   getDeliveryQuote,
@@ -206,14 +207,14 @@ function CheckoutPageBody() {
   const [appliedPromo, setAppliedPromo] = useState<PromoCode | null>(null);
   const [promoMessage, setPromoMessage] = useState("");
 
-  const applyPromo = () => {
-    const found = findPromo(promoInput);
-    if (found) {
-      setAppliedPromo(found);
-      setPromoMessage(`${found.code} applied (${found.label})`);
+  const applyPromo = async () => {
+    const result = await checkPromo(promoInput, calculateTotals(lines as OrderLine[], null, null).subtotal);
+    if ("promo" in result) {
+      setAppliedPromo(result.promo);
+      setPromoMessage(`${result.promo.code} applied (${result.promo.label})`);
     } else {
       setAppliedPromo(null);
-      setPromoMessage(promoInput.trim() ? "That promo code isn't valid." : "Enter a promo code.");
+      setPromoMessage(result.error);
     }
   };
 

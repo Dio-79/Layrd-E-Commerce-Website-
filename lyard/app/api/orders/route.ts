@@ -6,6 +6,8 @@ import { adminDb, COLLECTIONS } from "@/lib/firebase/admin";
 import { getSessionUser } from "@/lib/server/session";
 import { OrderError, requireBuyer } from "@/lib/server/orders";
 import type { PlacedOrder } from "@/lib/check-out/checkoutStore";
+import { takeStock } from "@/lib/server/stock";
+import { countCouponUse } from "@/lib/server/coupons";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -35,6 +37,8 @@ export async function POST(req: NextRequest) {
         savedAt: new Date().toISOString(),
       });
     });
+    await takeStock(order.lines);
+    if (order.promoCode) await countCouponUse(order.promoCode);
     return NextResponse.json({ orderNumber: order.orderNumber }, { status: 201 });
   } catch (err) {
     if (err instanceof Error && err.message === "duplicate") return fail("That order was already saved.", 409);

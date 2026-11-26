@@ -6,6 +6,7 @@ import { useCart } from "@/app/context/CartContext";
 import { getSizes, getPrice } from "@/lib/catelog/dataSize";
 import { getAllergenInfo, ALLERGY_DISCLAIMER } from "@/lib/catelog/dataAllergens";
 import styles from "./Customizemodal.module.css";
+import ProductReviews from "./ProductReviews";
 
 /* These two types are taken from the helpers themselves, so the modal always
    agrees with whatever id / product shape dataSize.ts expects. */
@@ -191,6 +192,10 @@ export default function CustomizeModal({ product, breadcrumb = "Shop", onClose }
             )}
             <p className={styles.note}>{ALLERGY_DISCLAIMER}</p>
           </section>
+
+          <hr className={styles.divider} />
+
+          {Number(product.productID) > 0 && <ProductReviews productId={Number(product.productID)} />}
         </div>
       </div>
     </div>
